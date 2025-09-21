@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Hồ sơ cá nhân – Laptop Shop</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+<link rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<style>
+body {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  margin: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 15px;
+}
+.card { border-radius: 16px; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25); overflow: hidden; }
+.card-header { background-color: #5865f2; color: #fff; text-align: center; padding: 1rem 1.25rem; font-size: 1.25rem; font-weight: 600; }
+.section-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+.badge { font-size: 0.85rem; }
+.btn-back { margin-bottom: 20px; }
+a:hover { text-decoration: underline; }
+.thumb-48{width:48px;height:48px;object-fit:cover;border-radius:8px}
+</style>
+</head>
+
+<body>
+  <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+  <div class="container" style="margin-top: 100px;">
+    <div class="container">
+      <div class="btn-back">
+        <button type="button" class="btn btn-light shadow-sm" onclick="history.back()">
+          <i class="fas fa-arrow-left me-1"></i>Quay lại
+        </button>
+        <a th:href="@{/}" class="btn btn-light shadow-sm">
+          <i class="fas fa-home me-1"></i>Trang chủ
+        </a>
+      </div>
+
+      <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+          <div class="card">
+            <div class="card-header">Hồ sơ cá nhân</div>
+            <div class="card-body">
+
+              <!-- THÔNG TIN NGƯỜI DÙNG -->
+              <form th:action="@{/profile/update}" method="post" class="mb-4">
+                <!-- CSRF -->
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                <div class="section-title">
+                  <i class="fas fa-user-circle"></i> Thông tin người dùng
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Tên đăng nhập</label>
+                  <input type="text" name="username" class="form-control"
+                         th:value="${user.username}"
+                         th:disabled="${oauth2}"/>
+                  <div class="form-text text-muted" th:if="${oauth2}">
+                    Tài khoản đăng nhập bằng Google – tên đăng nhập được đồng bộ, không chỉnh sửa tại đây.
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Số điện thoại</label>
+                  <input type="text" name="phone" class="form-control" th:value="${user.phone}" required />
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Email</label>
+                  <input type="email" name="email" class="form-control" th:value="${user.email}" required />
+                </div>
+
+                <div class="d-grid">
+                  <button type="submit" class="btn btn-primary">Cập nhật</button>
+                </div>
+              </form>
+
+              <!-- Đổi mật khẩu: chỉ hiện với tài khoản local -->
+              <div class="text-center mb-4" th:if="${!oauth2}">
+                <a th:href="@{/profile/change-password}">
+                  <i class="fas fa-lock me-1"></i>Đổi mật khẩu
+                </a>
+              </div>
+              <div class="text-center mb-4 text-muted" th:if="${oauth2}">
+                <i class="fas fa-lock me-1"></i>
+                Tài khoản Google không đổi mật khẩu tại đây.
+              </div>
+
+              <div th:if="${error}" class="alert alert-danger mt-3" th:text="${error}"></div>
+              <div th:if="${message}" class="alert alert-success mt-3" th:text="${message}"></div>
+
+              <hr />
+
+              <div class="section-title">
+                <i class="fas fa-box-open"></i> Đơn hàng của bạn
+              </div>
+              <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                  <thead class="table-light">
+                    <tr>
+                      <th>#</th>
+                      <th>Ngày tạo</th>
+                      <th>Tổng tiền</th>
+                      <th>Trạng thái</th>
+                      <th>Sản phẩm</th>
+                      <th>Hành động</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr th:each="order : ${orders}">
+                      <td th:text="${order.id}">1</td>
+                      <td th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2025 12:00</td>
+                      <td th:text="${#numbers.formatDecimal(order.total, 0, 'COMMA', 2, 'POINT')}">10,000,000</td>
+                      <td>
+                        <span th:text="${order.status}"
+                              th:class="${ 'badge ' + (
+                                order.status == T(com.bigkhoa.model.OrderStatus).PENDING    ? 'bg-warning text-dark'  :
+                                order.status == T(com.bigkhoa.model.OrderStatus).CONFIRMED  ? 'bg-info text-dark'     :
+                                order.status == T(com.bigkhoa.model.OrderStatus).SHIPPED    ? 'bg-primary text-light' :
+                                order.status == T(com.bigkhoa.model.OrderStatus).DELIVERED  ? 'bg-success text-light' :
+                                order.status == T(com.bigkhoa.model.OrderStatus).CANCELED   ? 'bg-danger text-light'  :
+                                'bg-secondary'
+                              ) }"></span>
+                      </td>
+
+                      <!-- Hiển thị tối đa 4 ảnh sản phẩm -->
+                      <td>
+                        <div class="d-flex flex-wrap align-items-center gap-2">
+                          <div th:each="it, stat : ${order.items}" th:if="${stat.index < 4}" class="position-relative">
+                            <img class="thumb-48 border"
+                                 th:src="${it.product.imageUrl}"
+                                 th:alt="${it.product.name}"
+                                 th:title="${it.product.name}" />
+                            <span class="badge bg-dark position-absolute top-0 start-100 translate-middle rounded-pill"
+                                  th:text="${it.quantity}">1</span>
+                          </div>
+                          <span class="small text-muted"
+                                th:if="${#lists.size(order.items) > 4}"
+                                th:text="'+' + (${#lists.size(order.items)} - 4) + ' sp'">+2 sp</span>
+                        </div>
+                      </td>
+
+                      <td>
+                        <a th:href="@{/profile/order/{id}(id=${order.id})}" class="btn btn-sm btn-outline-primary">
+                          <i class="fas fa-eye"></i> Xem
+                        </a>
+                      </td>
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(orders)}">
+                      <td colspan="6" class="text-center text-muted">Bạn chưa có đơn hàng nào.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div th:replace="~{fragments/footer :: footer}"></div>
+    </div>
+
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+  </div>
+</body>
+</html>

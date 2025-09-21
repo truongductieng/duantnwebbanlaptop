@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Form Thông báo</title>
+  <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+</head>
+<body class="bg-light">
+<div class="container py-4" style="max-width:720px">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0" th:text="${announcement.id == null} ? 'Tạo thông báo' : 'Sửa thông báo'">Form</h3>
+    <a class="btn btn-outline-secondary" th:href="@{/admin/ann}">&larr; Quay về</a>
+  </div>
+
+  <form th:action="${announcement.id == null} ? @{/admin/ann} : @{|/admin/ann/${announcement.id}|}"
+        method="post" class="card p-3 shadow-sm" enctype="multipart/form-data">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+    <div class="mb-3">
+      <label class="form-label">Nội dung (hỗ trợ HTML cơ bản)</label>
+      <textarea class="form-control" name="message" rows="3"
+                th:text="${announcement.message}" required></textarea>
+      <div class="form-text">Có thể dùng &lt;b&gt;, &lt;i&gt;, &lt;a&gt;...</div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Kiểu (màu)</label>
+        <select class="form-select" name="variant" th:value="${announcement.variant}">
+          <option>INFO</option><option>SUCCESS</option><option>WARNING</option><option>DANGER</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Vị trí</label>
+        <select class="form-select" name="position" th:value="${announcement.position}">
+          <option>TOP</option><option>BOTTOM</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Ảnh nền (JPG/PNG/WebP)</label>
+      <input type="file" name="imageFile" class="form-control" accept=".jpg,.jpeg,.png,.webp">
+      <div th:if="${announcement.imageUrl}" class="mt-2">
+        Ảnh hiện tại:
+        <img th:src="${announcement.imageUrl}" style="max-height:80px;border-radius:6px">
+      </div>
+      <div class="form-text">Không chọn ảnh mới thì giữ nguyên ảnh cũ.</div>
+    </div>
+
+    <div class="form-check form-switch my-3">
+      <input class="form-check-input" type="checkbox" role="switch" name="enabled"
+             th:checked="${announcement.enabled}">
+      <label class="form-check-label">Bật ngay</label>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button class="btn btn-primary">Lưu</button>
+      <a class="btn btn-secondary" th:href="@{/admin/ann}">Hủy</a>
+    </div>
+  </form>
+</div>
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

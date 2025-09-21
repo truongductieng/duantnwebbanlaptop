@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Quản lý Thông báo</title>
+  <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+  <style>
+    body { background: #f7f8fb; }
+    .table td, .table th { vertical-align: middle; }
+    img.thumb { height:48px; border-radius:6px; object-fit:cover; }
+  </style>
+</head>
+<body class="bg-light p-3">
+<div class="container">
+
+  <!-- Thanh nút điều hướng -->
+  <div class="mb-3 d-flex gap-2 flex-wrap">
+    <a th:href="@{/admin/dashboard}" class="btn btn-outline-secondary">⬅ Trang chủ Admin</a>
+    <a class="btn btn-primary" th:href="@{/admin/ann/new}">+ Tạo thông báo</a>
+  </div>
+
+  <!-- flash -->
+  <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+  <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h3 class="mb-0">Thông báo</h3>
+  </div>
+
+  <div th:if="${active != null}" class="alert alert-info">
+    <strong>Đang bật: </strong>
+    <span th:utext="${active.message}">Nội dung</span>
+    <span class="badge bg-secondary ms-2" th:text="${active.variant}">INFO</span>
+    <span class="badge bg-dark ms-2" th:text="${active.position}">TOP</span>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-striped align-middle">
+      <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nội dung</th>
+        <th>Ảnh</th>
+        <th>Kiểu</th>
+        <th>Vị trí</th>
+        <th>Trạng thái</th>
+        <th style="width:320px" class="text-end">Thao tác</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="a : ${announcements}">
+        <td th:text="${a.id}">1</td>
+        <td th:utext="${a.message}">Nội dung</td>
+        <td>
+          <img th:if="${a.imageUrl}" th:src="${a.imageUrl}" class="thumb" alt="banner">
+          <span th:if="${a.imageUrl==null}" class="text-muted small">—</span>
+        </td>
+        <td><span class="badge bg-dark" th:text="${a.variant}">INFO</span></td>
+        <td th:text="${a.position}">TOP</td>
+        <td>
+          <span th:classappend="${a.enabled} ? 'badge bg-success' : 'badge bg-secondary'"
+                th:text="${a.enabled} ? 'Bật' : 'Tắt'">Tắt</span>
+        </td>
+        <td class="text-end d-flex gap-2 justify-content-end flex-wrap">
+
+          <!-- BẬT/TẮT -->
+          <form th:action="@{|/admin/ann/${a.id}/toggle|}" method="post" class="d-inline">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="btn btn-sm"
+                    th:classappend="${a.enabled} ? 'btn-warning' : 'btn-success'">
+              <span th:text="${a.enabled} ? 'Tắt' : 'Bật'">Bật</span>
+            </button>
+          </form>
+
+          <!-- SỬA -->
+          <a class="btn btn-sm btn-outline-primary" th:href="@{|/admin/ann/${a.id}/edit|}">Sửa</a>
+
+          <!-- XÓA: disable khi đang BẬT -->
+          <form th:action="@{|/admin/ann/${a.id}/delete|}" method="post" class="d-inline"
+                onsubmit="return confirm('Xóa thông báo này?')">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="btn btn-sm btn-outline-danger" th:disabled="${a.enabled}">Xóa</button>
+            <small th:if="${a.enabled}" class="text-muted ms-2">Tắt banner để xóa</small>
+          </form>
+        </td>
+      </tr>
+
+      <tr th:if="${#lists.isEmpty(announcements)}">
+        <td colspan="7" class="text-center text-muted py-4">Chưa có thông báo nào</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- Fragment: gọi bằng th:replace="fragments/announcement :: announcement(announcement=${announcement})" -->
+<th:block th:fragment="announcement(announcement)">
+  <div th:if="${announcement != null}"
+       th:with="variant=${announcement.variant} ?: 'INFO',
+                pos=${announcement.position} ?: 'TOP'"
+       id="site-announcement"
+       th:class="'site-annc ' + 'site-annc--' + ${variant.toLowerCase()} + ' ' + 'site-annc--' + ${pos.toLowerCase()}">
+    <div class="site-annc__inner">
+      <span class="site-annc__text" th:utext="${announcement.message}">Thông báo</span>
+      <button class="site-annc__close" type="button" aria-label="Đóng" onclick="(function(btn){
+         var bar = document.getElementById('site-announcement');
+         if(bar){ bar.style.display='none'; }
+      })(this)">
+        &times;
+      </button>
+    </div>
+  </div>
+
+  <style>
+    .site-annc{
+      position: fixed;
+      left: 0; right: 0;
+      z-index: 1100; /* cao hơn navbar của anh */
+      padding: 10px 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,.08);
+      font-size: 14px;
+    }
+    .site-annc--top{ top:0; }
+    .site-annc--bottom{ bottom:0; }
+    .site-annc__inner{
+      max-width: 1200px;
+      margin: 0 auto;
+      display:flex; align-items:center; gap:10px;
+      justify-content:center; position:relative;
+    }
+    .site-annc__text{ text-align:center; }
+    .site-annc__close{
+      position:absolute; right:0; top:50%; transform:translateY(-50%);
+      border:none; background:transparent; font-size:22px; line-height:1; cursor:pointer;
+      padding: 0 6px;
+    }
+    /* Màu theo variant */
+    .site-annc--info   { background:#e9f2ff; color:#0b5ed7; }
+    .site-annc--success{ background:#eaf7ea; color:#1e7e34; }
+    .site-annc--warning{ background:#fff3cd; color:#664d03; }
+    .site-annc--danger { background:#fde8e8; color:#b02a37; }
+  </style>
+</th:block>
+</body>
+</html>

@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Quản trị viên · Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+  <style>
+    :root{ --brand-grad: linear-gradient(90deg, #6f42c1 0%, #0d6efd 100%); }
+    body{ background:#f5f7fb; }
+    .page-header{
+      background:var(--brand-grad); color:#fff; border-radius:16px; padding:16px 20px;
+      box-shadow:0 6px 14px rgba(13,110,253,.15);
+    }
+    .chat-shell{ border-radius:16px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,.08); }
+    .chat-left{ background:#ffffff; border-right:1px solid #eef0f4; min-height:70vh; }
+    .chat-right{ background:#fff; min-height:70vh; display:flex; flex-direction:column; }
+    .chat-title{ display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:1px solid #eef0f4; background:#fff; }
+    .chat-box{
+      padding:16px; height:58vh; overflow:auto;
+      background:
+        radial-gradient(1200px 300px at 100% -20%, rgba(13,110,253,.08), transparent 60%),
+        radial-gradient(1200px 300px at -10% 100%, rgba(111,66,193,.08), transparent 60%),
+        #fafbff;
+    }
+    .msg{ margin-bottom:.9rem; display:flex; flex-direction:column; align-items:flex-start; }
+    .msg .meta{ font-size:.78rem; color:#6c757d; margin-bottom:.25rem; }
+    .msg .bubble{
+      background:#fff; border:1px solid #eff2f7; border-radius:14px; padding:.55rem .75rem;
+      display:inline-block; max-width:78%; box-shadow:0 2px 6px rgba(0,0,0,.04);
+    }
+    .msg.me{ align-items:flex-end; }           /* tin của admin (mình) sang phải */
+    .msg.me .bubble{ background:#d7e9ff; border-color:#cde1ff; }
+    .thread-item{ border-radius:10px; padding:10px 12px; cursor:pointer; }
+    .thread-item:hover{ background:#f4f7ff; }
+    .thread-item.active{ background:#e9f1ff; border:1px solid #d6e6ff; }
+    .list-scroll{ height:46vh; overflow:auto; }
+    .search-input{ border-radius:12px; }
+    .btn-soft{ background:#f1f4ff; border:1px solid #e3e9ff; color:#244; border-radius:10px; }
+    .btn-soft:hover{ background:#e7edff; color:#122; }
+    .badge-unread{ display:none; }
+  </style>
+</head>
+<body>
+
+<div class="container py-3">
+  <div class="page-header mb-3">
+    <div class="d-flex align-items-center justify-content-between">
+      <div>
+        <div class="fw-semibold">Bảng điều khiển Chat</div>
+        <div class="small opacity-75">Quản trị viên trao đổi 1-1 với người dùng</div>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-light btn-sm" onclick="history.back()">⟵ Quay về</button>
+        <a class="btn btn-warning btn-sm" href="/admin/dashboard">🏠 Trang chủ Admin</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 chat-shell">
+    <!-- LEFT -->
+    <div class="col-lg-4 chat-left p-3">
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Tìm nhanh username để mở chat</label>
+        <div class="input-group">
+          <span class="input-group-text">🔎</span>
+          <input id="partnerInput" class="form-control search-input" placeholder="vd: khoa1, BigKhoa...">
+          <button class="btn btn-primary" id="btnOpen">Mở</button>
+        </div>
+      </div>
+
+      <div class="d-flex align-items-center justify-content-between">
+        <div class="fw-semibold">Gần đây</div>
+        <button class="btn btn-outline-danger btn-sm" id="btnClearRecent">Xoá danh sách tạm</button>
+      </div>
+      <div id="recentList" class="list-scroll mt-2"></div>
+
+      <div class="mt-3">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="autoOpenToggle" checked>
+          <label class="form-check-label" for="autoOpenToggle">Tự động mở cuộc chat khi có tin mới</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="col-lg-8 chat-right p-0">
+      <div class="chat-title">
+        <div class="fw-semibold" id="chatTitle">Hãy chọn một cuộc trò chuyện ở cột bên trái, hoặc đợi user nhắn – khung này sẽ tự mở.</div>
+        <div class="d-flex gap-2">
+          <span id="statusDot" class="badge text-bg-secondary">Socket: Đang kết nối…</span>
+        </div>
+      </div>
+
+      <div id="chatBox" class="chat-box"></div>
+
+      <div class="p-3 border-top">
+        <form id="chatForm" class="d-flex gap-2">
+          <input type="text" class="form-control" id="chatInput" placeholder="Nhập tin nhắn và nhấn Enter…">
+          <button class="btn btn-primary px-4" type="submit">Gửi</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script th:inline="javascript">
+  // Lấy username từ server nếu có; nếu không, vẫn OK vì căn phải dựa trên 'partner'
+  const myUsername = /*[[${username}?:'ADMIN']]*/ 'ADMIN';
+  window.currentUsername = myUsername;
+
+  // === State ===
+  let stompClient = null;
+  let partner = null;                     // user đang mở phòng
+  const RECENT_KEY = 'adminRecentChatPartners';
+  const unreadMap = {};                   // { username: count }
+
+  // === Utils ===
+  function escapeHtml(s=''){ return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function normalize(m){
+    return {
+      from: (m.from ?? m.sender ?? '').toString(),
+      to: (m.to ?? m.recipient ?? '').toString(),
+      content: (m.content ?? '').toString(),
+      timestamp: m.timestamp ?? m.sentAt ?? m.sent_at ?? null
+    };
+  }
+  function timeStr(ts){ const d = ts?new Date(ts):new Date(); return d.toLocaleString('vi-VN'); }
+
+  // === Recent threads (localStorage) ===
+  function getRecent(){ try{ return JSON.parse(localStorage.getItem(RECENT_KEY)||'[]'); }catch{ return []; } }
+  function setRecent(arr){ localStorage.setItem(RECENT_KEY, JSON.stringify(arr.slice(0,30))); }
+  function pushRecent(name){
+    if(!name) return;
+    const arr = getRecent().filter(x=>x!==name);
+    arr.unshift(name);
+    setRecent(arr);
+    renderRecent();
+  }
+  function clearRecent(){ localStorage.removeItem(RECENT_KEY); renderRecent(); }
+
+  // === Badge helpers ===
+  function setBadge(user, count){
+    unreadMap[user] = Math.max(0, count||0);
+    const el = document.querySelector(`[data-user="${CSS.escape(user)}"] .badge-unread`);
+    if(!el) return;
+    const val = unreadMap[user];
+    if(val>0){
+      el.style.display = 'inline-block';
+      el.textContent = val>99 ? '99+' : String(val);
+    }else{
+      el.style.display = 'none';
+      el.textContent = '';
+    }
+  }
+
+  // === Render sidebar (có badge) ===
+  function renderRecent(){
+    const wrap = document.getElementById('recentList');
+    const arr = getRecent();
+    if(!arr.length){ wrap.innerHTML = '<div class="text-muted small">Chưa có lịch sử tạm.</div>'; return; }
+    wrap.innerHTML = '';
+    arr.forEach(u=>{
+      const div = document.createElement('div');
+      div.className = 'thread-item d-flex align-items-center justify-content-between ' + (u===partner?'active':'');
+      div.setAttribute('data-user', u);
+      div.innerHTML = `
+        <div class="d-flex align-items-center gap-2">
+          <div class="badge text-bg-primary">U</div>
+          <div class="fw-semibold">${escapeHtml(u)}</div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge text-bg-danger badge-unread"></span>
+          <button class="btn btn-soft btn-sm">Mở</button>
+        </div>
+      `;
+      div.addEventListener('click', ()=> openConversation(u));
+      wrap.appendChild(div);
+      setBadge(u, unreadMap[u]||0);
+    });
+  }
+
+  // === (Optional) Load từ server ===
+  async function preloadRecentFromServer(){
+    try{
+      const res = await fetch('/api/chat/partners', { headers:{'Accept':'application/json'} });
+      if(!res.ok) return;
+      const list = await res.json(); // [{username,lastMessage,lastTime}]
+      const serverUsers = list.map(x=>x.username);
+      const merged = [...serverUsers, ...getRecent().filter(x=>!serverUsers.includes(x))];
+      setRecent(merged);
+      renderRecent();
+    }catch(e){ }
+  }
+  async function preloadUnread(){
+    try{
+      const res = await fetch('/api/chat/unread-map', { headers:{'Accept':'application/json'} });
+      if(!res.ok) return;
+      const map = await res.json(); // { "userA": 2, "userB": 5 }
+      Object.keys(map).forEach(u => setBadge(u, map[u]));
+    }catch(e){ }
+  }
+
+  // === Chat UI ===
+  function setStatus(text, ok){
+    const el = document.getElementById('statusDot');
+    el.textContent = text;
+    el.className = 'badge ' + (ok ? 'text-bg-success' : 'text-bg-secondary');
+  }
+
+  function appendMessage(raw){
+    const msg = normalize(raw);
+    // ✅ Quy tắc căn trái/phải:
+    // Nếu đã chọn 'partner': tin có from === partner => TRÁI, còn lại => PHẢI (admin)
+    // Nếu chưa chọn partner (hiếm khi) thì fallback theo myUsername.
+    const mine = partner ? (msg.from !== partner) : (msg.from === myUsername);
+
+    const box = document.getElementById('chatBox');
+    const div = document.createElement('div');
+    div.className = 'msg' + (mine ? ' me' : '');
+    const who = mine ? myUsername : msg.from || 'User';
+    div.innerHTML = `
+      <div class="meta">${escapeHtml(who)} • ${timeStr(msg.timestamp)}</div>
+      <div class="bubble">${escapeHtml(msg.content)}</div>
+    `;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function renderHistory(list){
+    const box = document.getElementById('chatBox');
+    box.innerHTML = '';
+    list.map(normalize)
+        .sort((a,b)=> new Date(a.timestamp||0)-new Date(b.timestamp||0))
+        .forEach(appendMessage);
+  }
+
+  async function loadHistory(){
+    if(!partner) return;
+    try{
+      const res = await fetch('/api/chat/history?with=' + encodeURIComponent(partner), { headers:{'Accept':'application/json'} });
+      if(!res.ok) return;
+      renderHistory(await res.json());
+      setBadge(partner, 0);
+    }catch(e){ }
+  }
+
+  async function openConversation(name){
+    partner = name;
+    document.getElementById('chatTitle').textContent = 'Chat với ' + name;
+    pushRecent(name);
+    await loadHistory();
+    try{ await fetch('/api/chat/mark-read?with='+encodeURIComponent(name), { method:'POST' }); }catch(e){}
+    setBadge(name, 0);
+    setTimeout(()=> document.getElementById('chatInput').focus(), 0);
+  }
+
+  // === Socket ===
+  function connectSocket(){
+    const socket = new SockJS('/ws-chat');
+    stompClient = Stomp.over(socket);
+    stompClient.debug = null;
+
+    stompClient.connect({}, () => {
+      setStatus('Socket: Đã kết nối', true);
+
+      stompClient.subscribe('/user/queue/messages', frame => {
+        const msg = normalize(JSON.parse(frame.body));
+        const from = msg.from;
+        const to   = msg.to;
+
+        if(from && from !== myUsername) pushRecent(from);
+
+        const isCurrentRoomInbound = partner && from === partner && to === myUsername;
+        const isCurrentRoomEchoOut = partner && from === myUsername && to === partner;
+
+        // Dù 2 cờ trên có sai vì myUsername rỗng, phần căn phải vẫn OK nhờ logic dựa vào 'partner' trong appendMessage.
+        if(partner && (from === partner || to === partner || from !== partner)){
+          appendMessage(msg);
+          if(partner){ fetch('/api/chat/mark-read?with=' + encodeURIComponent(partner), { method:'POST' }).catch(()=>{}); }
+          if(from !== myUsername) setBadge(from, 0);
+          return;
+        }
+
+        // Badge cho phòng khác
+        if(to === myUsername && from !== myUsername){
+          setBadge(from, (unreadMap[from]||0)+1);
+        }
+
+        const autoOpen = document.getElementById('autoOpenToggle').checked;
+        if(autoOpen && from && from !== myUsername && from !== partner){
+          openConversation(from);
+          return;
+        }
+      });
+    }, () => setStatus('Socket: Mất kết nối', false));
+  }
+
+  // === Events ===
+  document.getElementById('btnOpen').addEventListener('click', () => {
+    const v = document.getElementById('partnerInput').value.trim();
+    if(v) openConversation(v);
+  });
+  document.getElementById('partnerInput').addEventListener('keyup', (e) => {
+    if(e.key === 'Enter'){
+      const v = e.target.value.trim();
+      if(v) openConversation(v);
+    }
+  });
+  document.getElementById('btnClearRecent').addEventListener('click', clearRecent);
+
+  document.getElementById('chatForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const input = document.getElementById('chatInput');
+    const content = input.value.trim();
+    if(!content) return;
+    if(!stompClient || !stompClient.connected){ alert('Chưa kết nối socket. Vui lòng tải lại trang.'); return; }
+    if(!partner){ alert('Hãy chọn người dùng trước.'); return; }
+    stompClient.send('/app/chat.send', {}, JSON.stringify({ to: partner, content }));
+    input.value = '';
+  });
+
+  // === Boot ===
+  renderRecent();
+  preloadRecentFromServer();
+  preloadUnread();
+  connectSocket();
+</script>
+</body>
+</html>

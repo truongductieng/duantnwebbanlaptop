@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title th:text="${product.id == null ? 'Thêm sản phẩm mới' : 'Chỉnh sửa sản phẩm'}">Quản lý sản phẩm</title>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet"/>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <!-- FontAwesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" rel="stylesheet"/>
+
+  <style>
+    body { font-family:'Poppins',sans-serif; background:#f0f2f5; }
+    .navbar { background:linear-gradient(90deg,#1d2671,#c33764)!important; }
+    .navbar-brand { font-weight:700; letter-spacing:1px; }
+    .card { border:none; border-radius:1rem; box-shadow:0 8px 20px rgba(0,0,0,.1); }
+    .card-header { background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; font-weight:500; }
+    .btn-primary { background:linear-gradient(135deg,#ff416c,#ff4b2b); border:none; }
+    .btn-secondary { background:#6c757d; border:none; }
+    .form-label { font-weight:500; }
+    .img-preview { width:100%; max-width:140px; height:auto; margin-top:10px; border-radius:.5rem; object-fit:cover; border:1px solid #e5e7eb; background:#fff; padding:4px; }
+    .featured-flag { font-size:.8rem; }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark mb-4 fixed-top">
+    <div class="container">
+      <a class="navbar-brand" th:href="@{/admin/dashboard}">
+        <i class="fas fa-gem me-2"></i>ADMIN MANAGER
+      </a>
+      <div class="ms-auto d-flex align-items-center gap-2">
+        <a class="btn btn-outline-light" th:href="@{/}"><i class="fas fa-home"></i></a>
+        <form th:action="@{/logout}" method="post" class="d-inline">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+          <button type="submit" class="btn btn-outline-light" title="Logout">
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="card mx-auto" style="max-width: 820px;">
+      <div class="card-header d-flex align-items-center">
+        <i class="fas fa-box-open me-2"></i>
+        <h5 class="mb-0" th:text="${product.id == null ? 'Thêm sản phẩm mới' : 'Chỉnh sửa sản phẩm'}">Form sản phẩm</h5>
+      </div>
+
+      <div class="card-body">
+
+        <!-- FLASH MESSAGES -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+          <i class="fa-regular fa-circle-check me-1"></i>
+          <span th:text="${success}">Thành công</span>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+          <i class="fa-regular fa-circle-xmark me-1"></i>
+          <span th:text="${error}">Có lỗi xảy ra</span>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <!-- /FLASH MESSAGES -->
+
+        <form th:action="@{/admin/product/save}"
+              th:object="${product}"
+              method="post"
+              enctype="multipart/form-data"
+              onsubmit="return confirm('Bạn có chắc chắn muốn lưu sản phẩm này không?');">
+
+          <!-- CSRF -->
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+          <!-- Nếu edit, gửi kèm ID -->
+          <input type="hidden" th:if="${product.id != null}" th:field="*{id}"/>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Tên sản phẩm</label>
+                <input type="text" class="form-control" th:field="*{name}" placeholder="Nhập tên sản phẩm" required/>
+                <div th:if="${#fields.hasErrors('name')}" class="text-danger" th:errors="*{name}"></div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Hãng</label>
+                <input type="text" class="form-control" th:field="*{brand}" placeholder="Nhập tên hãng" required/>
+                <div th:if="${#fields.hasErrors('brand')}" class="text-danger" th:errors="*{brand}"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Giá</label>
+                <input type="number" step="0.01" min="0" class="form-control" th:field="*{price}" placeholder="Nhập giá" required/>
+                <div th:if="${#fields.hasErrors('price')}" class="text-danger" th:errors="*{price}"></div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Số lượng</label>
+                <input type="number" min="0" class="form-control" th:field="*{quantity}" placeholder="Nhập tồn kho" required/>
+                <div th:if="${#fields.hasErrors('quantity')}" class="text-danger" th:errors="*{quantity}"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== DANH MỤC (động từ DB + fallback 3 loại) ===== -->
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="category" class="form-label">Danh mục</label>
+
+                <!-- Dùng danh sách từ controller nếu có -->
+                <th:block th:if="${categories != null and !#lists.isEmpty(categories)}">
+                  <select id="category" class="form-select" th:field="*{category.id}" required>
+                    <option value="" disabled th:selected="${product.category == null}">-- Chọn danh mục --</option>
+                    <option th:each="c : ${categories}"
+                            th:value="${c.id}"
+                            th:text="${c.name}">
+                    </option>
+                  </select>
+                </th:block>
+
+                <!-- Fallback: 3 danh mục cố định (đúng id 1-3 như DB) -->
+                <th:block th:unless="${categories != null and !#lists.isEmpty(categories)}">
+                  <select id="category" class="form-select" th:field="*{category.id}" required>
+                    <option value="" disabled th:selected="${product.category == null}">-- Chọn danh mục --</option>
+                    <option value="1">Laptop văn phòng</option>
+                    <option value="2">Laptop gaming</option>
+                    <option value="3">Laptop sinh viên</option>
+                  </select>
+                </th:block>
+
+                <div th:if="${#fields.hasErrors('category')}" class="text-danger" th:errors="*{category}"></div>
+                <div th:if="${#fields.hasErrors('category.id')}" class="text-danger" th:errors="*{category.id}"></div>
+              </div>
+            </div>
+          </div>
+          <!-- ===== /DANH MỤC ===== -->
+
+          <!-- CẤU HÌNH (tổng hợp) -->
+          <div class="mb-3">
+            <label class="form-label">Cấu hình (hiển thị cho người dùng)</label>
+            <textarea class="form-control" th:field="*{configuration}" rows="2"
+                      placeholder="Intel Core i5-1135G7, 8GB RAM, 512GB SSD, 13.3&quot; FHD, Windows 11 ..."></textarea>
+            <small class="text-muted">Nhập tay hoặc dùng phần “Cấu hình chi tiết” bên dưới để tạo tự động.</small>
+          </div>
+
+          <!-- === CẤU HÌNH CHI TIẾT === -->
+          <div class="card mt-3">
+            <button class="btn btn-light text-start border-0 p-3 d-flex w-100 align-items-center justify-content-between"
+                    type="button" data-bs-toggle="collapse" data-bs-target="#cfgCollapse" aria-expanded="false">
+              <span class="fw-semibold">
+                <i class="fa-solid fa-sliders me-2"></i> Cấu hình chi tiết (tùy chọn)
+              </span>
+              <i class="fa-solid fa-angle-down"></i>
+            </button>
+
+            <div id="cfgCollapse" class="collapse">
+              <div class="card-body pt-0">
+                <div class="row g-3">
+                  <div class="col-md-4">
+                    <label class="form-label">CPU</label>
+                    <select class="form-select cfg-select" data-label="">
+                      <option value="">-- Chọn CPU --</option>
+                      <option>Intel Core i5-1240P</option>
+                      <option>Intel Core i7-1360P</option>
+                      <option>Intel Core Ultra 5 125H</option>
+                      <option>AMD Ryzen 5 7640U</option>
+                      <option>AMD Ryzen 7 7840U</option>
+                    </select>
+                  </div>
+
+                  <div class="col-md-3">
+                    <label class="form-label">RAM</label>
+                    <select class="form-select cfg-select" data-label="RAM">
+                      <option value="">-- Chọn RAM --</option>
+                      <option>8GB DDR4 3200MHz</option>
+                      <option>16GB DDR5 4800MHz</option>
+                      <option>16GB DDR5 5200MHz</option>
+                      <option>32GB DDR5 5600MHz</option>
+                    </select>
+                  </div>
+
+                  <div class="col-md-3">
+                    <label class="form-label">Lưu trữ</label>
+                    <select class="form-select cfg-select" data-label="">
+                      <option value="">-- Chọn ổ lưu trữ --</option>
+                      <option>512GB NVMe</option>
+                      <option>1TB NVMe</option>
+                      <option>512GB NVMe / 1TB SSD</option>
+                    </select>
+                  </div>
+
+                  <div class="col-md-4">
+                    <label class="form-label">GPU</label>
+                    <select class="form-select cfg-select" data-label="">
+                      <option value="">-- Chọn GPU --</option>
+                      <option>iGPU</option>
+                      <option>RTX 3050 6GB</option>
+                      <option>RTX 4050 6GB</option>
+                      <option>RTX 4060 8GB</option>
+                    </select>
+                  </div>
+
+                  <div class="col-md-4">
+                    <label class="form-label">Màn hình</label>
+                    <select class="form-select cfg-select" data-label="">
+                      <option value="">-- Chọn màn hình --</option>
+                      <option>14&quot; FHD IPS 60Hz</option>
+                      <option>14&quot; 2.8K 90Hz OLED</option>
+                      <option>15.6&quot; FHD 144Hz</option>
+                      <option>16&quot; 2.5K 165Hz</option>
+                    </select>
+                  </div>
+
+                  <div class="col-md-4">
+                    <label class="form-label">Hệ điều hành</label>
+                    <select class="form-select cfg-select" data-label="">
+                      <option value="">-- Chọn hệ điều hành --</option>
+                      <option>Windows 11 Home</option>
+                      <option>Windows 11 Pro</option>
+                      <option>Ubuntu 22.04</option>
+                      <option>FreeDOS</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="mt-3 small text-muted">
+                  Xem trước: <span id="cfg-preview" class="fst-italic"></span>
+                </div>
+
+                <div class="mt-2 d-flex gap-2">
+                  <button type="button" class="btn btn-outline-primary btn-sm" id="btn-apply-cfg">
+                    Dùng gợi ý này cho "Cấu hình"
+                  </button>
+                  <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-clear-cfg">
+                    Xóa các lựa chọn
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- === /CẤU HÌNH CHI TIẾT === -->
+
+          <!-- Ảnh hiện có -->
+          <div class="mb-3 mt-4" th:if="${product.id != null}">
+            <label class="form-label d-flex align-items-center">
+              <i class="fa-regular fa-images me-2"></i> Ảnh hiện có của sản phẩm
+            </label>
+            <div class="row g-3">
+              <div class="col-6 col-md-4 col-lg-3" th:each="i : ${#numbers.sequence(1,5)}">
+                <img class="img-preview"
+                     th:src="@{/product/{id}/image/{i}(id=${product.id}, i=${i})}"
+                     th:alt="${'Ảnh ' + i}"
+                     onerror="this.style.display='none'"/>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5 ảnh upload + chọn ảnh đại diện -->
+          <div class="mb-2">
+            <label class="form-label d-flex align-items-center">
+              <i class="fa-regular fa-images me-2"></i> Hình ảnh sản phẩm (tối đa 5 ảnh)
+            </label>
+            <small class="text-muted d-block mb-2">
+              Mỗi ô tương ứng 1 ảnh. Chọn một ảnh làm <b>ảnh đại diện</b> (hiển thị ngoài trang chủ / danh sách).
+            </small>
+          </div>
+
+          <div class="row g-4">
+            <!-- 1 -->
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+              <label class="form-label d-flex justify-content-between">
+                <span>Ảnh 1</span>
+                <span class="featured-flag text-muted">
+                  <input class="form-check-input me-1" type="radio" name="featuredIndex" value="1"
+                         th:checked="${product.featuredIndex == null ? true : (product.featuredIndex == 1)}"/>
+                  Đặt làm đại diện
+                </span>
+              </label>
+              <input type="file" class="form-control" id="imageFile1" name="imageFiles" accept="image/*"
+                     th:attr="required=${product.id == null}" />
+              <img class="img-preview" th:if="${product.id != null}"
+                   th:src="@{/product/{id}/image/1(id=${product.id})}" alt="Ảnh 1"
+                   onerror="this.style.display='none'"/>
+              <img class="img-preview" id="preview1" style="display:none" alt="Preview 1"/>
+            </div>
+
+            <!-- 2 -->
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+              <label class="form-label d-flex justify-content-between">
+                <span>Ảnh 2</span>
+                <span class="featured-flag text-muted">
+                  <input class="form-check-input me-1" type="radio" name="featuredIndex" value="2"
+                         th:checked="${product.featuredIndex != null and product.featuredIndex == 2}"/>
+                  Đặt làm đại diện
+                </span>
+              </label>
+              <input type="file" class="form-control" id="imageFile2" name="imageFiles" accept="image/*" />
+              <img class="img-preview" th:if="${product.id != null}"
+                   th:src="@{/product/{id}/image/2(id=${product.id})}" alt="Ảnh 2"
+                   onerror="this.style.display='none'"/>
+              <img class="img-preview" id="preview2" style="display:none" alt="Preview 2"/>
+            </div>
+
+            <!-- 3 -->
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+              <label class="form-label d-flex justify-content-between">
+                <span>Ảnh 3</span>
+                <span class="featured-flag text-muted">
+                  <input class="form-check-input me-1" type="radio" name="featuredIndex" value="3"
+                         th:checked="${product.featuredIndex != null and product.featuredIndex == 3}"/>
+                  Đặt làm đại diện
+                </span>
+              </label>
+              <input type="file" class="form-control" id="imageFile3" name="imageFiles" accept="image/*" />
+              <img class="img-preview" th:if="${product.id != null}"
+                   th:src="@{/product/{id}/image/3(id=${product.id})}" alt="Ảnh 3"
+                   onerror="this.style.display='none'"/>
+              <img class="img-preview" id="preview3" style="display:none" alt="Preview 3"/>
+            </div>
+
+            <!-- 4 -->
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+              <label class="form-label d-flex justify-content-between">
+                <span>Ảnh 4</span>
+                <span class="featured-flag text-muted">
+                  <input class="form-check-input me-1" type="radio" name="featuredIndex" value="4"
+                         th:checked="${product.featuredIndex != null and product.featuredIndex == 4}"/>
+                  Đặt làm đại diện
+                </span>
+              </label>
+              <input type="file" class="form-control" id="imageFile4" name="imageFiles" accept="image/*" />
+              <img class="img-preview" th:if="${product.id != null}"
+                   th:src="@{/product/{id}/image/4(id=${product.id})}" alt="Ảnh 4"
+                   onerror="this.style.display='none'"/>
+              <img class="img-preview" id="preview4" style="display:none" alt="Preview 4"/>
+            </div>
+
+            <!-- 5 -->
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+              <label class="form-label d-flex justify-content-between">
+                <span>Ảnh 5</span>
+                <span class="featured-flag text-muted">
+                  <input class="form-check-input me-1" type="radio" name="featuredIndex" value="5"
+                         th:checked="${product.featuredIndex != null and product.featuredIndex == 5}"/>
+                  Đặt làm đại diện
+                </span>
+              </label>
+              <input type="file" class="form-control" id="imageFile5" name="imageFiles" accept="image/*" />
+              <img class="img-preview" th:if="${product.id != null}"
+                   th:src="@{/product/{id}/image/5(id=${product.id})}" alt="Ảnh 5"
+                   onerror="this.style.display='none'"/>
+              <img class="img-preview" id="preview5" style="display:none" alt="Preview 5"/>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between mt-4">
+            <div class="d-flex gap-2">
+              <button type="submit" name="action" value="save" class="btn btn-primary">
+                <i class="fas fa-save me-1"></i>
+                <span th:text="${product.id == null ? 'Tạo mới' : 'Cập nhật'}">Lưu</span>
+              </button>
+              <button type="submit" name="action" value="save_list" class="btn btn-outline-secondary">
+                <i class="fas fa-list me-1"></i> Lưu &amp; về trang chủ
+              </button>
+            </div>
+            <a th:href="@{/admin/dashboard}" class="btn btn-secondary"
+               onclick="return confirm('Bạn có chắc chắc muốn hủy không?');">
+              <i class="fas fa-times me-1"></i>Hủy
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <footer th:fragment="admin-footer">
+    <div class="container text-center py-4 border-top mt-5">
+      <p class="mb-1">&copy; <span th:text="${T(java.time.Year).now()}">2025</span> ADMIN MANAGER - All rights reserved.</p>
+      <p class="text-muted small">Hệ thống quản trị dành cho quản lý sản phẩm, đơn hàng và người dùng.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // Preview ảnh mới chọn
+    function bindPreview(inputId, previewId) {
+      const input = document.getElementById(inputId);
+      const preview = document.getElementById(previewId);
+      if (!input || !preview) return;
+      input.addEventListener('change', e => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) { preview.style.display = 'none'; preview.src = ''; return; }
+        const reader = new FileReader();
+        reader.onload = ev => { preview.src = ev.target.result; preview.style.display = 'block'; };
+        reader.readAsDataURL(file);
+      });
+    }
+    bindPreview('imageFile1','preview1');
+    bindPreview('imageFile2','preview2');
+    bindPreview('imageFile3','preview3');
+    bindPreview('imageFile4','preview4');
+    bindPreview('imageFile5','preview5');
+  </script>
+
+  <!-- JS ghép cấu hình -->
+  <script>
+  (function(){
+    const configField = document.getElementById('configuration') || document.querySelector('[name="configuration"]');
+    const selects     = document.querySelectorAll('.cfg-select');
+    const preview     = document.getElementById('cfg-preview');
+    const applyBtn    = document.getElementById('btn-apply-cfg');
+    const clearBtn    = document.getElementById('btn-clear-cfg');
+
+    function buildConfig() {
+      const parts = [];
+      selects.forEach(s => {
+        const val = (s.value || '').trim();
+        if (!val) return;
+        const label = (s.dataset.label || '').trim();
+        parts.push(label ? `${val.replace(/, *$/,'')}, ${label}` : val);
+      });
+      return parts.join(', ');
+    }
+
+    function updatePreviewAndField() {
+      const text = buildConfig();
+      if (preview) preview.textContent = text;
+      if (configField) configField.value = text;
+    }
+
+    selects.forEach(s => s.addEventListener('change', updatePreviewAndField));
+
+    applyBtn && applyBtn.addEventListener('click', function(){
+      const text = buildConfig();
+      if (configField) configField.value = text;
+      if (preview) preview.textContent = text;
+    });
+
+    clearBtn && clearBtn.addEventListener('click', function(){
+      selects.forEach(s => s.value = '');
+      updatePreviewAndField();
+    });
+
+    if (configField && configField.value) {
+      const savedParts = configField.value.split(',').map(p => p.trim().toLowerCase());
+      selects.forEach(s => {
+        for (let opt of s.options) {
+          if (savedParts.includes(opt.text.trim().toLowerCase())) {
+            s.value = opt.text;
+            break;
+          }
+        }
+      });
+      updatePreviewAndField();
+    } else {
+      updatePreviewAndField();
+    }
+  })();
+  </script>
+
+</body>
+</html>

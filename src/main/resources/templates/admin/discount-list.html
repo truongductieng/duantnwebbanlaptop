@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Quản lý mã giảm giá</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
+  <style>
+    body { background:#fafbfe; }
+    .table td, .table th { vertical-align: middle; }
+    .nowrap { white-space: nowrap; }
+  </style>
+</head>
+
+<body class="container py-4">
+  <h2 class="mb-3">Mã giảm giá</h2>
+
+  <div class="mb-3 d-flex gap-2 flex-wrap">
+    <a class="btn btn-primary" th:href="@{/admin/discounts/new}">+ Thêm mã</a>
+    <a class="btn btn-secondary" th:href="@{/admin/dashboard}">← Trang chủ Admin</a>
+  </div>
+
+  <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+  <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+  <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+  <div class="table-responsive">
+    <table class="table table-striped align-middle">
+      <thead class="table-light">
+      <tr>
+        <th>#</th>
+        <th>Code</th>
+        <th class="nowrap">%</th>
+        <th>Bắt đầu</th>
+        <th>Kết thúc</th>
+        <th>Đã dùng</th>
+        <th>Trạng thái</th>
+        <th style="width:320px" class="text-end">Hành động</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="d : ${list}">
+        <td th:text="${d.id}">1</td>
+        <td th:text="${d.code}">CODE10</td>
+        <td th:text="${d.percent}">10</td>
+        <td th:text="${d.startDate != null ? #temporals.format(d.startDate,'dd/MM/yyyy') : '-'}">-</td>
+        <td th:text="${d.endDate   != null ? #temporals.format(d.endDate,'dd/MM/yyyy')   : '-'}">-</td>
+
+        <!-- ĐÃ DÙNG -->
+        <td><span class="badge bg-dark" th:text="${usage[d.id]}">0</span></td>
+
+        <!-- TRẠNG THÁI -->
+        <td>
+          <span th:classappend="${d.active} ? 'badge bg-success' : 'badge bg-secondary'"
+                th:text="${d.active} ? 'Bật' : 'Tắt'">Tắt</span>
+        </td>
+
+        <!-- ACTIONS -->
+        <td class="text-end d-flex gap-2 justify-content-end flex-wrap">
+
+          <!-- BẬT/TẮT nhanh -->
+          <form th:action="@{|/admin/discounts/${d.id}/toggle|}" method="post" class="d-inline">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="btn btn-sm"
+                    th:classappend="${d.active} ? 'btn-warning' : 'btn-success'">
+              <span th:text="${d.active} ? 'Tắt' : 'Bật'">Bật</span>
+            </button>
+          </form>
+
+          <!-- SỬA -->
+          <a class="btn btn-sm btn-outline-primary"
+             th:href="@{'/admin/discounts/' + ${d.id} + '/edit'}">Sửa</a>
+
+          <!-- XÓA -->
+          <form th:action="@{'/admin/discounts/' + ${d.id} + '/delete'}" method="post"
+                onsubmit="return confirm('Xoá mã này?');" class="d-inline">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+          </form>
+        </td>
+      </tr>
+
+      <tr th:if="${#lists.isEmpty(list)}">
+        <td colspan="8" class="text-center text-muted py-4">Chưa có mã giảm giá.</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

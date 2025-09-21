@@ -1,0 +1,85 @@
+<!-- templates/fragments/navbar.html -->
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top shadow">
+  <div class="container">
+    <a class="navbar-brand fw-bold" th:href="@{/}">Laptop Shop</a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+            data-bs-target="#navbarNav" aria-controls="navbarNav"
+            aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <!-- Tìm kiếm -->
+      <form class="d-flex me-auto" th:action="@{/laptops}" method="get">
+        <input class="form-control me-2" type="search" name="brand"
+               th:value="${brand} ?: ''" placeholder="Bạn cần tìm gì?">
+        <!-- Nếu không có pageLaptops trên 1 số trang, tránh lỗi bằng fallback số -->
+        <input type="hidden" name="size" th:value="${pageLaptops != null ? pageLaptops.size : 12}">
+        <button class="btn btn-outline-light" type="submit">Tìm</button>
+      </form>
+
+      <ul class="navbar-nav align-items-center ms-auto gap-2">
+        <li class="nav-item">
+          <a class="btn btn-secondary" th:href="@{/contact}">Liên hệ</a>
+        </li>
+        <li class="nav-item">
+          <button class="btn btn-outline-light" data-bs-toggle="modal" data-bs-target="#infoModal">Địa chỉ</button>
+        </li>
+
+        <!-- Giỏ hàng (hiển thị mọi trang) -->
+        <li class="nav-item">
+          <a class="btn btn-primary position-relative" th:href="@{/cart}">
+            <i class="bi bi-cart2 me-1"></i> Giỏ hàng
+            <span class="badge bg-danger position-absolute top-0 start-100 translate-middle px-2"
+                  th:text="${cartItemCount} ?: 0">0</span>
+          </a>
+        </li>
+
+        <!-- User -->
+        <li class="nav-item dropdown" th:if="${#authorization.expression('isAuthenticated()')}">
+          <button class="btn btn-outline-light dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown">
+            <i class="bi bi-person-circle me-1"></i>
+            <span th:text="${#authentication.name}">User</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+            <li><a class="dropdown-item" th:href="@{/profile}">Hồ sơ</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <form th:action="@{/logout}" method="post" class="dropdown-item p-0 m-0">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <button type="submit" class="btn btn-link dropdown-item">Đăng xuất</button>
+              </form>
+            </li>
+          </ul>
+        </li>
+        <li class="nav-item" th:if="${#authorization.expression('!isAuthenticated()')}">
+          <a class="btn btn-outline-light" th:href="@{/login}">Đăng nhập</a>
+        </li>
+        <li class="nav-item" th:if="${#authorization.expression('!isAuthenticated()')}">
+          <a class="btn btn-light" th:href="@{/register}">Đăng ký</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Modal địa chỉ -->
+  <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content text-dark">
+        <div class="modal-header">
+          <h5 class="modal-title" id="infoModalLabel">Thông tin địa chỉ</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+        </div>
+        <div class="modal-body">
+          123 Đường QL1A, Quận 12, TP. HCM<br>
+          Điện thoại: 0394166913<br>
+          Email: khoas1612@gmail.com
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>

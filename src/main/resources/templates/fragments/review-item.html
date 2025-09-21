@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- Single review item -->
+<div th:fragment="item">
+  <div class="d-flex align-items-start gap-3">
+    <div class="flex-grow-1">
+      <div class="d-flex align-items-center gap-2">
+        <strong th:text="${r.user.username}">User</strong>
+
+        <!-- Stars -->
+        <span class="text-warning" aria-label="Số sao">
+          <i th:each="i : ${#numbers.sequence(1,5)}"
+             th:class="${i <= r.rating} ? 'bi bi-star-fill me-1' : 'bi bi-star me-1'"></i>
+        </span>
+
+        <!-- Time -->
+        <small class="text-muted ms-auto"
+               th:text="${#temporals.format(r.createdAt, 'dd/MM/yyyy HH:mm')}">time</small>
+      </div>
+
+      <!-- Comment -->
+      <div class="mt-1" th:text="${r.comment}">Bình luận…</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

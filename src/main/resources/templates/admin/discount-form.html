@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title th:text="${discount.id == null ? 'Thêm mã giảm giá' : 'Sửa mã giảm giá'}">Mã giảm giá</title>
+  <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
+</head>
+
+
+<body class="container py-4">
+  <h2 th:text="${discount.id == null ? 'Thêm mã giảm giá' : 'Sửa mã giảm giá'}"></h2>
+
+  <form th:action="@{/admin/discounts/save}" method="post" th:object="${discount}" novalidate>
+    <input type="hidden" th:field="*{id}" />
+
+    <!-- Thông báo lỗi tổng quát (CHUYỂN VÀO TRONG FORM) -->
+    <div th:if="${#fields.hasAnyErrors()}" class="alert alert-danger mb-3">
+      Vui lòng kiểm tra lại các trường bên dưới.
+    </div>
+
+    <!-- CODE -->
+    <div class="mb-3">
+      <label class="form-label">Code</label>
+      <input class="form-control" th:field="*{code}" required id="codeInput" autocomplete="off" />
+      <div class="text-danger small" th:if="${#fields.hasErrors('code')}" th:errors="*{code}"></div>
+      <div class="form-text">Ví dụ: OFF10, OFF20… (tự động viết HOA)</div>
+    </div>
+
+    <!-- PERCENT -->
+    <div class="mb-3">
+      <label class="form-label">% giảm</label>
+      <input type="number" min="1" max="100" class="form-control" th:field="*{percent}" required />
+      <div class="text-danger small" th:if="${#fields.hasErrors('percent')}" th:errors="*{percent}"></div>
+    </div>
+
+   <!-- DATES -->
+<div class="row g-3 mb-3">
+  <div class="col">
+    <label class="form-label">Ngày bắt đầu</label>
+    <input type="date" class="form-control" id="startDate"
+           th:field="*{startDate}"
+           th:value="${discount.startDate != null ? #temporals.format(discount.startDate,'yyyy-MM-dd') : ''}" />
+  </div>
+  <div class="col">
+    <label class="form-label">Ngày kết thúc</label>
+    <input type="date" class="form-control" id="endDate"
+           th:field="*{endDate}"
+           th:value="${discount.endDate != null ? #temporals.format(discount.endDate,'yyyy-MM-dd') : ''}" />
+    <div class="text-danger small" th:if="${#fields.hasErrors('endDate')}" th:errors="*{endDate}"></div>
+  </div>
+</div>
+
+
+    <!-- ACTIVE -->
+    <div class="form-check mb-3">
+      <input class="form-check-input" type="checkbox" th:field="*{active}" id="activeChk" />
+      <label class="form-check-label" for="activeChk">Active</label>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button class="btn btn-success" type="submit">Lưu</button>
+      <a class="btn btn-secondary" th:href="@{/admin/discounts}">Hủy</a>
+    </div>
+  </form>
+
+  <script>
+    // Auto uppercase CODE khi gõ/blur
+    const codeInput = document.getElementById('codeInput');
+    if (codeInput) {
+      const toUpper = () => { codeInput.value = (codeInput.value || '').trim().toUpperCase(); };
+      codeInput.addEventListener('input', toUpper);
+      codeInput.addEventListener('blur', toUpper);
+    }
+
+    // Ràng buộc: endDate >= startDate
+    const start = document.getElementById('startDate');
+    const end   = document.getElementById('endDate');
+    function syncMinEnd() {
+      if (start && end && start.value) {
+        end.min = start.value;
+        if (end.value && end.value < start.value) end.value = start.value;
+      }
+    }
+    if (start && end) {
+      start.addEventListener('change', syncMinEnd);
+      window.addEventListener('DOMContentLoaded', syncMinEnd);
+      syncMinEnd();
+    }
+  </script>
+</body>
+</html>

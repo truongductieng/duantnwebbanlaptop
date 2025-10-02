@@ -47,71 +47,66 @@ public class SecurityConfig {
         requestHandler.setCsrfRequestAttributeName("_csrf");
 
         http
-            .csrf(csrf -> csrf
-                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                .csrfTokenRequestHandler(requestHandler)
-                // BỎ CSRF cho WebSocket handshake + REST chat (nếu cần)
-                .ignoringRequestMatchers(
-                    "/ws-chat/**",
-                    "/api/chat/**"
-                )
-            )
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .csrfTokenRequestHandler(requestHandler)
+                        // BỎ CSRF cho WebSocket handshake + REST chat (nếu cần)
+                        .ignoringRequestMatchers(
+                                "/ws-chat/**",
+                                "/api/chat/**"))
 
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                    "/css/**", "/js/**", "/images/**", "/favicon.ico",
-                    "/", "/laptops/**",
-                    "/product/**",
-                    "/login", "/register",
-                    "/auth/**",           // <--- mở quyền cho /auth/check-unique
-                    "/error",
-                    "/forgot-password", "/reset-password",
-                    "/oauth2/**",
-                    "/ws-chat/**"
-                ).permitAll()
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/css/**", "/js/**", "/images/**", "/favicon.ico",
+                                "/", "/laptops/**",
+                                "/product/**",
+                                "/login", "/register",
+                                "/auth/**", // <--- mở quyền cho /auth/check-unique
+                                "/error",
+                                "/forgot-password", "/reset-password",
+                                "/oauth2/**",
+                                "/ws-chat/**",
+                                "/contact" // <--- thêm trang liên hệ
+                        ).permitAll()
 
-                // Trang chat (view) yêu cầu đăng nhập
-                .requestMatchers("/chat").hasAnyRole("USER","CUSTOMER","ADMIN")
+                        // Trang chat (view) yêu cầu đăng nhập
+                        .requestMatchers("/chat").hasAnyRole("USER", "CUSTOMER", "ADMIN")
 
-                // API chat phải đăng nhập
-                .requestMatchers("/api/chat/partners").hasRole("ADMIN")
-                .requestMatchers("/api/chat/**").authenticated()
+                        // API chat phải đăng nhập
+                        .requestMatchers("/api/chat/partners").hasRole("ADMIN")
+                        .requestMatchers("/api/chat/**").authenticated()
 
-                .requestMatchers("/my-orders/**").hasAnyRole("USER","CUSTOMER","ADMIN")
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/customer/**").hasRole("CUSTOMER")
-                .anyRequest().authenticated()
-            )
+                        .requestMatchers("/my-orders/**").hasAnyRole("USER", "CUSTOMER", "ADMIN")
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/customer/**").hasRole("CUSTOMER")
+                        .anyRequest().authenticated())
 
-            .formLogin(form -> form
-                .loginPage("/login")
-                .usernameParameter("username")
-                .passwordParameter("password")
-                .successHandler((request, response, authentication) -> {
-                    // Cho popup khuyến mãi chỉ hiện 1 lần sau đăng nhập
-                    request.getSession().setAttribute("SHOW_DISCOUNT_ANN_ON_LOGIN", Boolean.TRUE);
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .usernameParameter("username")
+                        .passwordParameter("password")
+                        .successHandler((request, response, authentication) -> {
+                            // Cho popup khuyến mãi chỉ hiện 1 lần sau đăng nhập
+                            request.getSession().setAttribute("SHOW_DISCOUNT_ANN_ON_LOGIN", Boolean.TRUE);
 
-                    boolean isAdmin = authentication.getAuthorities().stream()
-                        .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-                    response.sendRedirect(isAdmin ? "/admin/dashboard" : "/laptops");
-                })
-                .failureUrl("/login?error")
-                .permitAll()
-            )
+                            boolean isAdmin = authentication.getAuthorities().stream()
+                                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+                            response.sendRedirect(isAdmin ? "/admin/dashboard" : "/laptops");
+                        })
+                        .failureUrl("/login?error")
+                        .permitAll())
 
-            .oauth2Login(oauth2 -> oauth2
-                .loginPage("/login")
-                .defaultSuccessUrl("/laptops", true)
-            )
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/login")
+                        .defaultSuccessUrl("/laptops", true))
 
-            .logout(logout -> logout
-                .logoutUrl("/logout")
-                .logoutSuccessUrl("/login?logout")
-                .invalidateHttpSession(true)
-                .clearAuthentication(true)
-                .deleteCookies("JSESSIONID")
-                .permitAll()
-            );
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login?logout")
+                        .invalidateHttpSession(true)
+                        .clearAuthentication(true)
+                        .deleteCookies("JSESSIONID")
+                        .permitAll());
 
         return http.build();
     }

@@ -1,480 +1,1539 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head>
-  <meta charset="UTF-8">
-  <title>Danh sách Laptop</title>
-  <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-  <style>
-    body { background: #f8f9fa; }
-    .navbar { z-index: 1100; }
-    body { padding-top: 72px; }
-    @media (max-width: 991.98px) { body { padding-top: 56px; } }
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Danh sách Laptop</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+    />
+    <link rel="stylesheet" th:href="@{/css/trangchu.css}" />
+    <style>
+      #hero {
+        width: 100%;
+      }
+      #hero .row {
+        display: flex;
+        margin: 0;
+      }
+      #hero .col-12 {
+        flex: 1;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #hero img {
+        max-width: 100%;
+        width: auto;
+        height: auto;
+        max-height: 340px;
+        object-fit: contain;
+        display: block;
+        margin: 0 auto;
+      }
 
-    #hero { width: 100%; }
-    #hero .row { display: flex; margin: 0; }
-    #hero .col-12 { flex: 1; padding: 0; display: flex; align-items: center; justify-content: center; }
-    #hero img { max-width: 100%; width: auto; height: auto; max-height: 340px; object-fit: contain; display: block; margin: 0 auto; }
+      .card-product {
+        border: none;
+        border-radius: 1rem;
+        overflow: hidden;
+        transition: transform 0.3s, box-shadow 0.3s;
+      }
+      .card-product:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.2);
+      }
+      .card-product .card-img-top {
+        object-fit: cover;
+        height: 180px;
+      }
 
-    .card-product { border: none; border-radius: 1rem; overflow: hidden; transition: transform .3s, box-shadow .3s; }
-    .card-product:hover { transform: translateY(-5px); box-shadow: 0 1rem 2rem rgba(0,0,0,.2); }
-    .card-product .card-img-top { object-fit: cover; height: 180px; }
+      #contact-home {
+        background: #5865f2;
+        color: #fff;
+        padding: 4rem 0;
+      }
+      #contact-home .contact-item {
+        text-align: center;
+        margin-bottom: 1.5rem;
+      }
+      #contact-home .contact-item i {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        display: block;
+      }
+      #contact-home .contact-item p {
+        margin: 0;
+        font-size: 1.1rem;
+      }
 
-    #contact-home { background: #5865f2; color: #fff; padding: 4rem 0; }
-    #contact-home .contact-item { text-align: center; margin-bottom: 1.5rem; }
-    #contact-home .contact-item i { font-size: 2rem; margin-bottom: .5rem; display: block; }
-    #contact-home .contact-item p { margin: 0; font-size: 1.1rem; }
+      .offcanvas-end {
+        width: 300px;
+      }
 
-    .offcanvas-end { width: 300px; }
+      #chat-toggle {
+        position: fixed;
+        bottom: 90px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+        background: #5865f2;
+        color: #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 1200;
+        box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.3);
+        text-decoration: none;
+      }
 
-    #chat-toggle {
-      position: fixed; bottom: 90px; right: 20px; width: 50px; height: 50px;
-      background: #5865f2; color: #fff; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; z-index: 1200; box-shadow: 0 0 .5rem rgba(0,0,0,.3);
-      text-decoration: none;
-    }
+      #chat-box {
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        width: 300px;
+        max-height: 400px;
+        background: #fff;
+        border: 1px solid #ccc;
+        border-radius: 0.5rem;
+        box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.3);
+        display: none;
+        flex-direction: column;
+        z-index: 1200;
+      }
+      #chat-box.open {
+        display: flex;
+      }
+      #chat-header {
+        padding: 8px;
+        background: #5865f2;
+        color: #fff;
+        font-weight: bold;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      #chat-header button {
+        background: transparent;
+        border: none;
+        color: #fff;
+        font-size: 1.2rem;
+        cursor: pointer;
+      }
+      #chat-box #messageArea {
+        flex: 1;
+        padding: 10px;
+        overflow-y: auto;
+      }
+      #chat-box #inputArea {
+        display: flex;
+        padding: 8px;
+        border-top: 1px solid #eee;
+      }
+      #chat-box #inputArea input {
+        flex: 1;
+        padding: 5px;
+        border: 1px solid #ccc;
+        border-radius: 0.25rem;
+      }
+      #chat-box #inputArea button {
+        margin-left: 5px;
+        padding: 5px 10px;
+      }
 
-    #chat-box { position: fixed; bottom: 80px; right: 20px; width: 300px; max-height: 400px; background: #fff; border: 1px solid #ccc; border-radius: .5rem; box-shadow: 0 0 .5rem rgba(0,0,0,.3); display: none; flex-direction: column; z-index: 1200; }
-    #chat-box.open { display: flex; }
-    #chat-header { padding: 8px; background: #5865f2; color: #fff; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
-    #chat-header button { background: transparent; border: none; color: #fff; font-size: 1.2rem; cursor: pointer; }
-    #chat-box #messageArea { flex: 1; padding: 10px; overflow-y: auto; }
-    #chat-box #inputArea { display: flex; padding: 8px; border-top: 1px solid #eee; }
-    #chat-box #inputArea input { flex: 1; padding: 5px; border: 1px solid #ccc; border-radius: .25rem; }
-    #chat-box #inputArea button { margin-left: 5px; padding: 5px 10px; }
+      .site-annc--hero {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 240px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 16px;
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-color: #000;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        z-index: 1300;
+      }
+      @media (max-width: 991.98px) {
+        .site-annc--hero {
+          height: 200px;
+        }
+      }
+      .site-annc__inner {
+        max-width: 1200px;
+        width: 100%;
+        position: relative;
+      }
+      .site-annc__content {
+        text-align: center;
+      }
+      .site-annc__text {
+        font-size: clamp(22px, 3.6vw, 40px);
+        font-weight: 800;
+        color: #fff;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+        line-height: 1.2;
+      }
+      .site-annc__close {
+        position: absolute;
+        right: 14px;
+        top: 14px;
+        font-size: 32px;
+        line-height: 1;
+        border: none;
+        background: transparent;
+        color: #fff;
+        opacity: 0.95;
+        cursor: pointer;
+      }
 
-    .site-annc--hero{
-      position: fixed; top:0; left:0; width:100%;
-      height: 240px; display:flex; align-items:center; justify-content:center;
-      padding: 0 16px; background-size: contain; background-repeat: no-repeat; background-position: center center;
-      background-color: #000; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 1300;
-    }
-    @media (max-width: 991.98px){ .site-annc--hero{ height:200px; } }
-    .site-annc__inner{ max-width:1200px; width:100%; position:relative; }
-    .site-annc__content{ text-align:center; }
-    .site-annc__text{ font-size: clamp(22px, 3.6vw, 40px); font-weight: 800; color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,.35); line-height: 1.2; }
-    .site-annc__close{ position:absolute; right:14px; top:14px; font-size: 32px; line-height:1; border:none; background:transparent; color:#fff; opacity:.95; cursor:pointer; }
+      .site-annc--info {
+        background-color: #5aa0ff;
+      }
+      .site-annc--success {
+        background-color: #2e7d32;
+      }
+      .site-annc--warning {
+        background-color: #ff9800;
+      }
+      .site-annc--danger {
+        background-color: #c81e1e;
+      }
 
-    .site-annc--info{ background-color:#5aa0ff; }
-    .site-annc--success{ background-color:#2e7d32; }
-    .site-annc--warning{ background-color:#ff9800; }
-    .site-annc--danger{ background-color:#c81e1e; }
-
-    /* ⭐ Rating stars */
-    .stars { position:relative; display:inline-block; font-size:14px; line-height:1; }
-    .stars::before { content:"★★★★★"; letter-spacing:2px; color:#e5e7eb; }
-    .stars .fill { position:absolute; inset:0; width:0; overflow:hidden; white-space:nowrap; }
-    .stars .fill::before { content:"★★★★★"; letter-spacing:2px; color:#f59e0b; }
-  </style>
-</head>
-<body>
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow fixed-top">
-    <div class="container">
-      <a class="navbar-brand fw-bold" th:href="@{/}">Laptop Shop</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
-              aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarCollapse">
-        <form class="d-flex me-auto" th:action="@{/laptops}" method="get">
-          <input class="form-control me-2" type="search" name="brand" th:value="${brand}" placeholder="Bạn cần tìm gì?">
-          <input type="hidden" name="size" th:value="${pageLaptops.size}">
-          <input type="hidden" name="category" th:value="${category}">
-          <input type="hidden" name="categoryId" th:value="${selectedCategoryId}">
-          <input type="hidden" name="sort" th:value="${sort}">
-          <input type="hidden" name="priceRange" th:value="${priceRange}">
-          <input type="hidden" name="ram" th:value="${ram}">
-          <input type="hidden" name="cpu" th:value="${cpu}">
-          <input type="hidden" name="brandFilter" th:value="${brandFilter}">
-          <button class="btn btn-outline-light" type="submit">Tìm</button>
-        </form>
-        <ul class="navbar-nav mx-auto">
-          <li class="nav-item me-2"><a class="btn btn-primary" th:href="@{/contact}">Liên hệ</a></li>
-          <li class="nav-item">
-            <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#infoModal">Địa chỉ</button>
-          </li>
-        </ul>
-        <ul class="navbar-nav ms-auto align-items-center">
-          <li class="nav-item me-2" sec:authorize="!isAuthenticated()">
-            <a class="btn btn-primary" th:href="@{/login}">Đăng nhập</a>
-          </li>
-          <li class="nav-item" sec:authorize="!isAuthenticated()">
-            <a class="btn btn-primary" th:href="@{/register}">Đăng ký</a>
-          </li>
-
-          <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
-            <button class="btn btn-primary dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown">
-              <i class="bi bi-person-circle me-1"></i><span sec:authentication="name">User</span>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
-              <li><a class="dropdown-item" th:href="@{/profile}">Hồ sơ</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li>
-                <form th:action="@{/logout}" method="post" class="m-0">
-                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                  <button type="submit" class="dropdown-item w-100 text-start bg-transparent border-0">Đăng xuất</button>
-                </form>
-              </li>
-            </ul>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-
-  <!-- ===== ANNOUNCEMENT HERO ===== -->
-  <div sec:authorize="isAuthenticated()"
-       th:if="${activeAnn != null and (showDiscountAnn != null ? showDiscountAnn : false)}"
-       th:with="variant=${#strings.toLowerCase(activeAnn.variant != null ? activeAnn.variant : 'INFO')}">
-    <div id="site-announcement"
-         th:class="|site-annc site-annc--hero site-annc--${variant}|"
-         th:style="${activeAnn.imageUrl} != null ?
-                   'background-image: linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,.35)), url(' + activeAnn.imageUrl + ');'
-                   : null">
-      <div class="site-annc__inner">
-        <div class="site-annc__content">
-          <span class="site-annc__text" th:utext="${activeAnn.message}">Thông báo</span>
-        </div>
-        <button class="site-annc__close" type="button" aria-label="Đóng" onclick="hideAnn()">×</button>
-      </div>
-    </div>
-    <div id="site-annc-spacer"></div>
-  </div>
-
-  <!-- Hero Banner -->
-  <section id="hero" class="container-fluid px-0 mb-5">
-    <div class="row g-0">
-      <div class="col-12 col-md-3"><img th:src="@{/images/banner-left.jpg}" alt="" class="img-fluid"></div>
-      <div class="col-12 col-md-6"><img th:src="@{/images/banner-center.jpg}" alt="" class="img-fluid"></div>
-      <div class="col-12 col-md-3"><img th:src="@{/images/banner-right.jpg}" alt="" class="img-fluid"></div>
-    </div>
-  </section>
-
-  <!-- 1. Classification Tabs + Controls -->
-  <div class="container py-4">
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
-      <ul class="nav nav-tabs">
-        <li class="nav-item">
-          <a class="nav-link"
-             th:classappend="${(selectedCategoryId==null and (category=='all' or category==null))}?'active':''"
-             th:href="@{/laptops(brand=${brand}, sort=${sort}, priceRange=${priceRange}, ram=${ram}, cpu=${cpu}, brandFilter=${brandFilter}, size=${pageLaptops.size})}">
-            Tất cả
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link"
-             th:classappend="${selectedCategoryId==1 or category=='office'}?'active':''"
-             th:href="@{/laptops(categoryId=1, brand=${brand}, sort=${sort}, priceRange=${priceRange}, ram=${ram}, cpu=${cpu}, brandFilter=${brandFilter}, size=${pageLaptops.size})}">
-            Laptop văn phòng
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link"
-             th:classappend="${selectedCategoryId==3 or category=='gaming'}?'active':''"
-             th:href="@{/laptops(categoryId=3, brand=${brand}, sort=${sort}, priceRange=${priceRange}, ram=${ram}, cpu=${cpu}, brandFilter=${brandFilter}, size=${pageLaptops.size})}">
-            Laptop gaming
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link"
-             th:classappend="${selectedCategoryId==2 or category=='study'}?'active':''"
-             th:href="@{/laptops(categoryId=2, brand=${brand}, sort=${sort}, priceRange=${priceRange}, ram=${ram}, cpu=${cpu}, brandFilter=${brandFilter}, size=${pageLaptops.size})}">
-            Laptop sinh viên
-          </a>
-        </li>
-      </ul>
-      <div class="d-flex mt-2 mt-md-0">
-        <button class="btn btn-outline-secondary me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#filterOffcanvas">
-          <i class="bi bi-funnel-fill me-1"></i>Bộ lọc
+      /* ⭐ Rating stars */
+      .stars {
+        position: relative;
+        display: inline-block;
+        font-size: 14px;
+        line-height: 1;
+      }
+      .stars::before {
+        content: "★★★★★";
+        letter-spacing: 2px;
+        color: #e5e7eb;
+      }
+      .stars .fill {
+        position: absolute;
+        inset: 0;
+        width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+      .stars .fill::before {
+        content: "★★★★★";
+        letter-spacing: 2px;
+        color: #f59e0b;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow fixed-top">
+      <div class="container">
+        <a class="navbar-brand fw-bold" th:href="@{/}">Laptop Shop</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarCollapse"
+          aria-controls="navbarCollapse"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="dropdown">
-          <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown">
-            <i class="bi bi-arrow-down-up me-1"></i>Sắp xếp
-          </button>
-          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="sortDropdown">
-            <li><a class="dropdown-item"
-                   th:href="@{/laptops(sort='new',      category=${category}, categoryId=${selectedCategoryId}, brand=${brand}, priceRange=${priceRange}, ram=${ram}, cpu=${cpu}, brandFilter=${brandFilter}, size=${pageLaptops.size})}">Mới nhất</a></li>
-            <li><a class="dropdown-item"
-                   th:href="@{/laptops(sort='priceAsc', category=${category}, categoryId=${selectedCategoryId}, brand=${brand}, priceRange=${priceRange}, ram=${ram}, cpu=${cpu}, brandFilter=${brandFilter}, size=${pageLaptops.size})}">Giá thấp → cao</a></li>
-            <li><a class="dropdown-item"
-                   th:href="@{/laptops(sort='priceDesc',category=${category}, categoryId=${selectedCategoryId}, brand=${brand}, priceRange=${priceRange}, ram=${ram}, cpu=${cpu}, brandFilter=${brandFilter}, size=${pageLaptops.size})}">Giá cao → thấp</a></li>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+          <form class="d-flex me-auto" th:action="@{/laptops}" method="get">
+            <input
+              class="form-control me-2"
+              type="search"
+              name="brand"
+              th:value="${brand}"
+              placeholder="Bạn cần tìm gì?"
+            />
+            <input type="hidden" name="size" th:value="${pageLaptops.size}" />
+            <input type="hidden" name="category" th:value="${category}" />
+            <input
+              type="hidden"
+              name="categoryId"
+              th:value="${selectedCategoryId}"
+            />
+            <input type="hidden" name="sort" th:value="${sort}" />
+            <input type="hidden" name="priceRange" th:value="${priceRange}" />
+            <input type="hidden" name="ram" th:value="${ram}" />
+            <input type="hidden" name="cpu" th:value="${cpu}" />
+            <input type="hidden" name="brandFilter" th:value="${brandFilter}" />
+            <button class="btn btn-outline-light" type="submit">Tìm</button>
+          </form>
+          <ul class="navbar-nav ms-auto align-items-center">
+            <li class="nav-item dropdown me-2">
+              <button
+                class="btn btn-outline-light dropdown-toggle"
+                type="button"
+                id="contactMenu"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <i class="bi bi-info-circle me-1"></i>Thông tin
+              </button>
+              <ul
+                class="dropdown-menu dropdown-menu-end"
+                aria-labelledby="contactMenu"
+              >
+                <li>
+                  <a
+                    class="dropdown-item"
+                    data-bs-toggle="modal"
+                    data-bs-target="#infoModal"
+                    role="button"
+                  >
+                    <i class="bi bi-geo-fill me-2"></i>Địa chỉ cửa hàng
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" th:href="@{/contact}">
+                    <i class="bi bi-chat-text me-2"></i>Liên hệ chúng tôi
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li class="nav-item me-2" sec:authorize="!isAuthenticated()">
+              <a class="btn btn-primary" th:href="@{/login}">Đăng nhập</a>
+            </li>
+            <li class="nav-item" sec:authorize="!isAuthenticated()">
+              <a class="btn btn-primary" th:href="@{/register}">Đăng ký</a>
+            </li>
+
+            <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
+              <button
+                class="btn btn-primary dropdown-toggle"
+                type="button"
+                id="userMenu"
+                data-bs-toggle="dropdown"
+              >
+                <i class="bi bi-person-circle me-1"></i
+                ><span sec:authentication="name">User</span>
+              </button>
+              <ul
+                class="dropdown-menu dropdown-menu-end"
+                aria-labelledby="userMenu"
+              >
+                <li>
+                  <a class="dropdown-item" th:href="@{/profile}">Hồ sơ</a>
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                  <form th:action="@{/logout}" method="post" class="m-0">
+                    <input
+                      type="hidden"
+                      th:name="${_csrf.parameterName}"
+                      th:value="${_csrf.token}"
+                    />
+                    <button
+                      type="submit"
+                      class="dropdown-item w-100 text-start bg-transparent border-0"
+                    >
+                      Đăng xuất
+                    </button>
+                  </form>
+                </li>
+              </ul>
+            </li>
           </ul>
         </div>
       </div>
+    </nav>
+
+    <!-- ===== ANNOUNCEMENT HERO ===== -->
+    <div
+      sec:authorize="isAuthenticated()"
+      th:if="${activeAnn != null and (showDiscountAnn != null ? showDiscountAnn : false)}"
+      th:with="variant=${#strings.toLowerCase(activeAnn.variant != null ? activeAnn.variant : 'INFO')}"
+    >
+      <div
+        id="site-announcement"
+        th:class="|site-annc site-annc--hero site-annc--${variant}|"
+        th:style="${activeAnn.imageUrl} != null ?
+                   'background-image: linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,.35)), url(' + activeAnn.imageUrl + ');'
+                   : null"
+      >
+        <div class="site-annc__inner">
+          <div class="site-annc__content">
+            <span class="site-annc__text" th:utext="${activeAnn.message}"
+              >Thông báo</span
+            >
+          </div>
+          <button
+            class="site-annc__close"
+            type="button"
+            aria-label="Đóng"
+            onclick="hideAnn()"
+          >
+            ×
+          </button>
+        </div>
+      </div>
+      <div id="site-annc-spacer"></div>
     </div>
-  </div>
 
-  <!-- 1.1 Offcanvas Filter Sidebar -->
-  <div class="offcanvas offcanvas-end" tabindex="-1" id="filterOffcanvas">
-    <div class="offcanvas-header">
-      <h5 class="offcanvas-title">Bộ lọc</h5>
-      <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"></button>
-    </div>
-    <div class="offcanvas-body">
-      <form th:action="@{/laptops}" method="get">
-        <input type="hidden" name="category"    th:value="${category}"    />
-        <input type="hidden" name="categoryId"  th:value="${selectedCategoryId}" />
-        <input type="hidden" name="brand"       th:value="${brand}"       />
-        <input type="hidden" name="sort"        th:value="${sort}"        />
-        <input type="hidden" name="size"        th:value="${pageLaptops.size}" />
+    <!-- Hero Banner -->
+    <section class="hero-section position-relative overflow-hidden mb-5">
+      <!-- Background với pattern và gradient -->
+      <div
+        class="hero-bg position-absolute w-100 h-100"
+        style="
+          background: linear-gradient(
+            135deg,
+            rgba(var(--primary-color-rgb), 0.05),
+            rgba(var(--primary-dark-rgb), 0.1)
+          );
+          z-index: 0;
+        "
+      ></div>
 
-        <div class="mb-3">
-          <label class="form-label">Giá</label>
-          <select class="form-select" name="priceRange">
-            <option value=""                   th:selected="${priceRange==null or priceRange==''}">Tất cả</option>
-            <option value="0-10000000"         th:selected="${priceRange=='0-10000000'}">Dưới 10 triệu</option>
-            <option value="10000000-30000000"  th:selected="${priceRange=='10000000-30000000'}">10–30 triệu</option>
-            <option value="30000000-"          th:selected="${priceRange=='30000000-'}">Trên 30 triệu</option>
-          </select>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label">RAM</label>
-          <select class="form-select" name="ram">
-            <option value=""  th:selected="${ram==null or ram==''}">Tất cả</option>
-            <option value="4" th:selected="${ram=='4'}">4 GB</option>
-            <option value="8" th:selected="${ram=='8'}">8 GB</option>
-            <option value="16" th:selected="${ram=='16'}">16 GB</option>
-            <option value="32" th:selected="${ram=='32'}">32 GB</option>
-          </select>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label">CPU</label>
-          <select class="form-select" name="cpu">
-            <option value=""      th:selected="${cpu==null or cpu==''}">Tất cả</option>
-            <option value="Intel" th:selected="${cpu=='Intel'}">Intel</option>
-            <option value="AMD"   th:selected="${cpu=='AMD'}">AMD</option>
-          </select>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label">Hãng</label>
-          <select class="form-select" name="brandFilter">
-            <option value=""       th:selected="${brandFilter==null or brandFilter==''}">Tất cả</option>
-            <option value="HP"     th:selected="${brandFilter=='HP'}">HP</option>
-            <option value="Dell"   th:selected="${brandFilter=='Dell'}">Dell</option>
-            <option value="Asus"   th:selected="${brandFilter=='Asus'}">Asus</option>
-            <option value="Acer"   th:selected="${brandFilter=='Acer'}">Acer</option>
-            <option value="Lenovo" th:selected="${brandFilter=='Lenovo'}">Lenovo</option>
-          </select>
-        </div>
-
-        <button type="submit" class="btn btn-primary">Áp dụng</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- 2. Lưới sản phẩm -->
-  <div class="container py-5">
-    <h2 class="text-center mb-5 display-6">
-      <span th:if="${selectedCategoryId == null}" th:switch="${category}">
-        <span th:case="'all'">Gợi ý cho bạn</span>
-        <span th:case="'office'">Laptop văn phòng</span>
-        <span th:case="'gaming'">Sản phẩm Gaming</span>
-        <span th:case="'study'">Laptop sinh viên</span>
-        <span th:case="*">Sản phẩm nổi bật</span>
-      </span>
-      <span th:if="${selectedCategoryId != null}" th:switch="${selectedCategoryId}">
-        <span th:case="1">Laptop văn phòng</span>
-        <span th:case="2">Laptop sinh viên</span>
-        <span th:case="3">Sản phẩm Gaming</span>
-        <span th:case="*">Gợi ý cho bạn</span>
-      </span>
-    </h2>
-
-    <div class="row g-4">
-      <div class="col-6 col-md-4 col-lg-3" th:each="lap : ${products}">
-        <div class="card card-product h-100 shadow-sm">
-          <img th:src="@{${lap.imageUrl}}" th:alt="${lap.name}" class="card-img-top">
-          <div class="card-body d-flex flex-column">
-            <h5 class="card-title" th:text="${lap.name}">Tên Laptop</h5>
-            <p class="text-muted mb-2" th:text="${lap.brand}">Thương hiệu</p>
-
-            <!-- Giá -->
-            <h5 class="text-primary fw-bold mt-auto"
-                th:text="|${T(java.lang.String).format('%,.0f', lap.price)} ₫|">0 ₫</h5>
-
-            <!-- ⭐ Đánh giá: sao + điểm + (số review) + % -->
-            <div class="d-flex align-items-center gap-2 mt-1"
-                 th:with="agg=${ratingAgg[lap.id]},
-                          avgVal=${agg != null and agg.avg != null ? agg.avg : 0},
-                          cntVal=${agg != null ? agg.count : 0},
-                          pctVal=${ratingPct[lap.id] != null ? ratingPct[lap.id] : 0}">
-              <span class="stars" aria-label="Đánh giá">
-                <span class="fill" th:style="|width:${pctVal}%;|"></span>
-              </span>
-              <small class="text-muted" th:text="|${#numbers.formatDecimal(avgVal,1,1)}/5|">0.0/5</small>
-              <small class="text-muted" th:text="|(${cntVal})|">(0)</small>
-              <small class="ms-1 text-secondary" th:text="|${pctVal}%|">0%</small>
+      <div class="container py-5">
+        <div class="row align-items-center g-5">
+          <!-- Text Content -->
+          <div class="col-lg-6 position-relative" style="z-index: 1">
+            <span class="badge bg-primary px-3 py-2 mb-3">🔥 Ưu đãi hot</span>
+            <h1 class="display-4 fw-bold mb-4">
+              Laptop Gaming & Văn Phòng
+              <span class="text-primary d-block">Chính Hãng</span>
+            </h1>
+            <p class="lead mb-4">
+              Khám phá bộ sưu tập laptop đẳng cấp với giá tốt nhất thị trường.
+              Từ gaming tới văn phòng, chúng tôi có tất cả!
+            </p>
+            <div class="d-flex gap-3 flex-wrap">
+              <a href="#featured-products" class="btn btn-primary btn-lg px-4">
+                <i class="bi bi-laptop me-2"></i>Xem sản phẩm
+              </a>
+              <a href="#contact-home" class="btn btn-outline-dark btn-lg px-4">
+                <i class="bi bi-headset me-2"></i>Tư vấn ngay
+              </a>
             </div>
 
-            <a th:href="@{/product/{id}(id=${lap.id})}" class="btn btn-outline-primary mt-3">Xem chi tiết</a>
+            <!-- Feature badges -->
+            <div class="mt-5 d-flex gap-4 flex-wrap">
+              <div class="d-flex align-items-center">
+                <i class="bi bi-shield-check text-primary fs-3 me-2"></i>
+                <div>
+                  <h6 class="mb-0">Bảo hành chính hãng</h6>
+                  <small class="text-muted">12-24 tháng</small>
+                </div>
+              </div>
+              <div class="d-flex align-items-center">
+                <i class="bi bi-truck text-primary fs-3 me-2"></i>
+                <div>
+                  <h6 class="mb-0">Giao hàng miễn phí</h6>
+                  <small class="text-muted">Toàn quốc</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hero Images -->
+          <div
+            class="col-lg-6 position-relative d-none d-lg-block"
+            style="z-index: 1"
+          >
+            <div class="hero-images position-relative">
+              <!-- Main laptop image -->
+              <img
+                th:src="@{/images/banner-center.jpg}"
+                class="img-fluid main-image"
+                alt="Gaming Laptop"
+                style="
+                  border-radius: 20px;
+                  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+                  transform: perspective(1000px) rotateY(-15deg);
+                  transition: transform 0.5s ease;
+                "
+                onmouseover="this.style.transform='perspective(1000px) rotateY(0deg)'"
+                onmouseout="this.style.transform='perspective(1000px) rotateY(-15deg)'"
+              />
+
+              <!-- Decorative elements -->
+              <div
+                class="position-absolute"
+                style="top: -40px; right: -20px; z-index: -1"
+              >
+                <img
+                  th:src="@{/images/banner-right.jpg}"
+                  class="img-fluid w-75"
+                  alt=""
+                  style="border-radius: 15px; transform: rotate(15deg)"
+                />
+              </div>
+              <div
+                class="position-absolute"
+                style="bottom: -30px; left: -30px; z-index: -1"
+              >
+                <img
+                  th:src="@{/images/banner-left.jpg}"
+                  class="img-fluid w-50"
+                  alt=""
+                  style="border-radius: 15px; transform: rotate(-10deg)"
+                />
+              </div>
+
+              <!-- Floating badges -->
+              <div
+                class="position-absolute bg-white p-3 rounded-3 shadow-lg d-flex align-items-center"
+                style="
+                  top: 20px;
+                  right: 0;
+                  animation: float 3s ease-in-out infinite;
+                "
+              >
+                <i class="bi bi-stars text-warning me-2 fs-4"></i>
+                <div>
+                  <h6 class="mb-0">Sản phẩm mới</h6>
+                  <small class="text-muted">Cập nhật hàng ngày</small>
+                </div>
+              </div>
+
+              <div
+                class="position-absolute bg-white p-3 rounded-3 shadow-lg"
+                style="
+                  bottom: 40px;
+                  right: 30px;
+                  animation: float 3s ease-in-out infinite;
+                "
+              >
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-percent text-primary me-2 fs-4"></i>
+                  <div>
+                    <h6 class="mb-0">Giảm giá sốc</h6>
+                    <small class="text-muted">Đến 20%</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <style>
+      .hero-section {
+        padding: 60px 0;
+        background: white;
+      }
+
+      @keyframes float {
+        0% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+        100% {
+          transform: translateY(0px);
+        }
+      }
+
+      @media (max-width: 991.98px) {
+        .hero-section {
+          padding: 40px 0;
+          text-align: center;
+        }
+        .hero-section .badge {
+          display: inline-block;
+          margin: 0 auto;
+        }
+        .hero-section .d-flex {
+          justify-content: center;
+        }
+      }
+    </style>
+
+    <!-- 1. Classification Tabs + Controls -->
+    <div class="container py-4">
+      <div class="row g-4">
+        <!-- Category Tabs -->
+        <div class="col-12">
+          <div class="category-tabs">
+            <ul class="nav nav-pills nav-fill">
+              <li class="nav-item">
+                <a
+                  class="nav-link category-tab"
+                  th:classappend="${(selectedCategoryId==null and (category=='all' or category==null))}?'active':''"
+                  th:href="@{/laptops(brand=${brand}, sort=${sort}, priceRange=${priceRange}, ram=${ram}, cpu=${cpu}, brandFilter=${brandFilter}, size=${pageLaptops.size})}"
+                >
+                  <i class="bi bi-grid-3x3-gap me-2"></i>
+                  <span>Tất cả</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link category-tab"
+                  th:classappend="${selectedCategoryId==1 or category=='office'}?'active':''"
+                  th:href="@{/laptops(categoryId=1, brand=${brand}, sort=${sort}, priceRange=${priceRange}, ram=${ram}, cpu=${cpu}, brandFilter=${brandFilter}, size=${pageLaptops.size})}"
+                >
+                  <i class="bi bi-briefcase me-2"></i>
+                  <span>Laptop văn phòng</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link category-tab"
+                  th:classappend="${selectedCategoryId==3 or category=='gaming'}?'active':''"
+                  th:href="@{/laptops(categoryId=3, brand=${brand}, sort=${sort}, priceRange=${priceRange}, ram=${ram}, cpu=${cpu}, brandFilter=${brandFilter}, size=${pageLaptops.size})}"
+                >
+                  <i class="bi bi-controller me-2"></i>
+                  <span>Laptop gaming</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link category-tab"
+                  th:classappend="${selectedCategoryId==2 or category=='study'}?'active':''"
+                  th:href="@{/laptops(categoryId=2, brand=${brand}, sort=${sort}, priceRange=${priceRange}, ram=${ram}, cpu=${cpu}, brandFilter=${brandFilter}, size=${pageLaptops.size})}"
+                >
+                  <i class="bi bi-mortarboard me-2"></i>
+                  <span>Laptop sinh viên</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="col-12">
+          <div class="d-flex gap-3 justify-content-end">
+            <button
+              class="btn btn-control"
+              type="button"
+              data-bs-toggle="offcanvas"
+              data-bs-target="#filterOffcanvas"
+            >
+              <i class="bi bi-funnel-fill me-2"></i>
+              <span>Bộ lọc</span>
+            </button>
+            <div class="dropdown">
+              <button
+                class="btn btn-control dropdown-toggle"
+                type="button"
+                id="sortDropdown"
+                data-bs-toggle="dropdown"
+              >
+                <i class="bi bi-arrow-down-up me-2"></i>
+                <span>Sắp xếp</span>
+              </button>
+              <ul
+                class="dropdown-menu dropdown-menu-end"
+                aria-labelledby="sortDropdown"
+              >
+                <li>
+                  <a
+                    class="dropdown-item"
+                    th:href="@{/laptops(sort='new', category=${category}, categoryId=${selectedCategoryId}, brand=${brand}, priceRange=${priceRange}, ram=${ram}, cpu=${cpu}, brandFilter=${brandFilter}, size=${pageLaptops.size})}"
+                  >
+                    <i class="bi bi-clock-history me-2"></i>Mới nhất
+                  </a>
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    th:href="@{/laptops(sort='priceAsc', category=${category}, categoryId=${selectedCategoryId}, brand=${brand}, priceRange=${priceRange}, ram=${ram}, cpu=${cpu}, brandFilter=${brandFilter}, size=${pageLaptops.size})}"
+                  >
+                    <i class="bi bi-arrow-up me-2"></i>Giá thấp → cao
+                  </a>
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    th:href="@{/laptops(sort='priceDesc', category=${category}, categoryId=${selectedCategoryId}, brand=${brand}, priceRange=${priceRange}, ram=${ram}, cpu=${cpu}, brandFilter=${brandFilter}, size=${pageLaptops.size})}"
+                  >
+                    <i class="bi bi-arrow-down me-2"></i>Giá cao → thấp
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <style>
+        /* Category Tabs Styling */
+        .category-tabs {
+          background: #fff;
+          border-radius: 1rem;
+          padding: 0.5rem;
+          box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .category-tab {
+          color: #6c757d;
+          border-radius: 0.75rem !important;
+          padding: 1rem !important;
+          transition: all 0.3s ease;
+          font-weight: 500;
+        }
+
+        .category-tab:hover {
+          color: var(--bs-primary);
+          background-color: rgba(var(--bs-primary-rgb), 0.05);
+        }
+
+        .category-tab.active {
+          background-color: var(--bs-primary) !important;
+          color: white !important;
+          box-shadow: 0 4px 15px rgba(var(--bs-primary-rgb), 0.2);
+        }
+
+        /* Control Buttons Styling */
+        .btn-control {
+          background-color: #fff;
+          border: 1px solid #e9ecef;
+          color: #495057;
+          padding: 0.75rem 1.5rem;
+          border-radius: 0.75rem;
+          font-weight: 500;
+          transition: all 0.3s ease;
+        }
+
+        .btn-control:hover {
+          background-color: #f8f9fa;
+          border-color: #dee2e6;
+          color: var(--bs-primary);
+        }
+
+        .btn-control:focus {
+          box-shadow: none;
+          border-color: var(--bs-primary);
+        }
+
+        /* Dropdown Styling */
+        .dropdown-menu {
+          border: none;
+          border-radius: 1rem;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+          padding: 0.5rem;
+        }
+
+        .dropdown-item {
+          padding: 0.75rem 1rem;
+          border-radius: 0.5rem;
+          transition: all 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+          background-color: rgba(var(--bs-primary-rgb), 0.05);
+          color: var(--bs-primary);
+        }
+      </style>
+    </div>
+
+    <!-- 1.1 Offcanvas Filter Sidebar -->
+    <div
+      class="offcanvas offcanvas-end filter-sidebar"
+      tabindex="-1"
+      id="filterOffcanvas"
+    >
+      <div class="offcanvas-header border-bottom">
+        <h5 class="offcanvas-title">
+          <i class="bi bi-funnel-fill me-2"></i>Bộ lọc tìm kiếm
+        </h5>
+        <button
+          type="button"
+          class="btn-close text-reset"
+          data-bs-dismiss="offcanvas"
+        ></button>
+      </div>
+      <div class="offcanvas-body">
+        <form th:action="@{/laptops}" method="get" class="filter-form">
+          <!-- Hidden inputs -->
+          <input type="hidden" name="category" th:value="${category}" />
+          <input
+            type="hidden"
+            name="categoryId"
+            th:value="${selectedCategoryId}"
+          />
+          <input type="hidden" name="brand" th:value="${brand}" />
+          <input type="hidden" name="sort" th:value="${sort}" />
+          <input type="hidden" name="size" th:value="${pageLaptops.size}" />
+
+          <!-- Price Range Filter -->
+          <div class="filter-section">
+            <div class="filter-header">
+              <i class="bi bi-currency-dollar me-2"></i>
+              <label class="form-label mb-0">Khoảng giá</label>
+            </div>
+            <select class="form-select custom-select" name="priceRange">
+              <option
+                value=""
+                th:selected="${priceRange==null or priceRange==''}"
+              >
+                Tất cả mức giá
+              </option>
+              <option
+                value="0-10000000"
+                th:selected="${priceRange=='0-10000000'}"
+              >
+                Dưới 10 triệu
+              </option>
+              <option
+                value="10000000-30000000"
+                th:selected="${priceRange=='10000000-30000000'}"
+              >
+                10 triệu - 30 triệu
+              </option>
+              <option
+                value="30000000-"
+                th:selected="${priceRange=='30000000-'}"
+              >
+                Trên 30 triệu
+              </option>
+            </select>
+          </div>
+
+          <!-- RAM Filter -->
+          <div class="filter-section">
+            <div class="filter-header">
+              <i class="bi bi-memory me-2"></i>
+              <label class="form-label mb-0">Dung lượng RAM</label>
+            </div>
+            <select class="form-select custom-select" name="ram">
+              <option value="" th:selected="${ram==null or ram==''}">
+                Tất cả RAM
+              </option>
+              <option value="4" th:selected="${ram=='4'}">4 GB</option>
+              <option value="8" th:selected="${ram=='8'}">8 GB</option>
+              <option value="16" th:selected="${ram=='16'}">16 GB</option>
+              <option value="32" th:selected="${ram=='32'}">32 GB</option>
+            </select>
+          </div>
+
+          <!-- CPU Filter -->
+          <div class="filter-section">
+            <div class="filter-header">
+              <i class="bi bi-cpu me-2"></i>
+              <label class="form-label mb-0">Bộ vi xử lý</label>
+            </div>
+            <select class="form-select custom-select" name="cpu">
+              <option value="" th:selected="${cpu==null or cpu==''}">
+                Tất cả CPU
+              </option>
+              <option value="Intel" th:selected="${cpu=='Intel'}">
+                <i class="bi bi-intel me-2"></i>Intel
+              </option>
+              <option value="AMD" th:selected="${cpu=='AMD'}">
+                <i class="bi bi-amd me-2"></i>AMD
+              </option>
+            </select>
+          </div>
+
+          <!-- Brand Filter -->
+          <div class="filter-section">
+            <div class="filter-header">
+              <i class="bi bi-laptop me-2"></i>
+              <label class="form-label mb-0">Thương hiệu</label>
+            </div>
+            <select class="form-select custom-select" name="brandFilter">
+              <option
+                value=""
+                th:selected="${brandFilter==null or brandFilter==''}"
+              >
+                Tất cả thương hiệu
+              </option>
+              <option value="HP" th:selected="${brandFilter=='HP'}">HP</option>
+              <option value="Dell" th:selected="${brandFilter=='Dell'}">
+                Dell
+              </option>
+              <option value="Asus" th:selected="${brandFilter=='Asus'}">
+                Asus
+              </option>
+              <option value="Acer" th:selected="${brandFilter=='Acer'}">
+                Acer
+              </option>
+              <option value="Lenovo" th:selected="${brandFilter=='Lenovo'}">
+                Lenovo
+              </option>
+            </select>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="filter-actions">
+            <button type="reset" class="btn btn-outline-secondary">
+              <i class="bi bi-arrow-counterclockwise me-2"></i>Đặt lại
+            </button>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check2-circle me-2"></i>Áp dụng
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <style>
+        /* Filter Sidebar Styling */
+        .filter-sidebar {
+          max-width: 400px;
+          background-color: #f8f9fa;
+        }
+
+        .filter-sidebar .offcanvas-header {
+          background-color: #fff;
+          padding: 1rem 1.5rem;
+        }
+
+        .filter-sidebar .offcanvas-title {
+          font-size: 1.25rem;
+          color: var(--bs-primary);
+        }
+
+        .filter-form {
+          padding: 1rem;
+        }
+
+        .filter-section {
+          background: #fff;
+          padding: 1.25rem;
+          border-radius: 1rem;
+          margin-bottom: 1rem;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .filter-header {
+          display: flex;
+          align-items: center;
+          margin-bottom: 1rem;
+          color: #495057;
+          font-weight: 500;
+        }
+
+        .filter-header i {
+          font-size: 1.1rem;
+          color: var(--bs-primary);
+        }
+
+        .custom-select {
+          border: 1px solid #e9ecef;
+          border-radius: 0.75rem;
+          padding: 0.75rem 1rem;
+          font-size: 0.95rem;
+          transition: all 0.2s ease;
+        }
+
+        .custom-select:hover {
+          border-color: var(--bs-primary);
+        }
+
+        .custom-select:focus {
+          border-color: var(--bs-primary);
+          box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.1);
+        }
+
+        .filter-actions {
+          display: flex;
+          gap: 1rem;
+          margin-top: 2rem;
+        }
+
+        .filter-actions .btn {
+          flex: 1;
+          padding: 0.75rem 1.5rem;
+          border-radius: 0.75rem;
+          font-weight: 500;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .filter-actions .btn-outline-secondary {
+          background-color: #fff;
+        }
+
+        .filter-actions .btn-outline-secondary:hover {
+          background-color: #f8f9fa;
+          border-color: #dee2e6;
+        }
+
+        .filter-actions .btn-primary {
+          box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.2);
+        }
+      </style>
+    </div>
+
+    <!-- 2. Lưới sản phẩm -->
+    <div class="container py-5">
+      <!-- Section Header -->
+      <div class="section-header text-center mb-5">
+        <h2 class="display-6 fw-bold">
+          <span th:if="${selectedCategoryId == null}" th:switch="${category}">
+            <span th:case="'all'">
+              <i class="bi bi-stars text-warning me-2"></i>Gợi ý cho bạn
+            </span>
+            <span th:case="'office'">
+              <i class="bi bi-briefcase text-primary me-2"></i>Laptop văn phòng
+            </span>
+            <span th:case="'gaming'">
+              <i class="bi bi-controller text-danger me-2"></i>Sản phẩm Gaming
+            </span>
+            <span th:case="'study'">
+              <i class="bi bi-mortarboard text-success me-2"></i>Laptop sinh
+              viên
+            </span>
+            <span th:case="*">
+              <i class="bi bi-stars text-warning me-2"></i>Sản phẩm nổi bật
+            </span>
+          </span>
+          <span
+            th:if="${selectedCategoryId != null}"
+            th:switch="${selectedCategoryId}"
+          >
+            <span th:case="1">
+              <i class="bi bi-briefcase text-primary me-2"></i>Laptop văn phòng
+            </span>
+            <span th:case="2">
+              <i class="bi bi-mortarboard text-success me-2"></i>Laptop sinh
+              viên
+            </span>
+            <span th:case="3">
+              <i class="bi bi-controller text-danger me-2"></i>Sản phẩm Gaming
+            </span>
+            <span th:case="*">
+              <i class="bi bi-stars text-warning me-2"></i>Gợi ý cho bạn
+            </span>
+          </span>
+        </h2>
+      </div>
+
+      <!-- Product Grid -->
+      <div class="row g-4">
+        <div class="col-6 col-md-4 col-lg-3" th:each="lap : ${products}">
+          <div class="product-card">
+            <!-- Product Image -->
+            <div class="product-image">
+              <img th:src="@{${lap.imageUrl}}" th:alt="${lap.name}" />
+              <div class="product-overlay">
+                <a th:href="@{/product/{id}(id=${lap.id})}" class="btn-view">
+                  <i class="bi bi-eye me-2"></i>Xem chi tiết
+                </a>
+              </div>
+            </div>
+
+            <!-- Product Info -->
+            <div class="product-info">
+              <!-- Brand Badge -->
+              <span class="brand-badge" th:text="${lap.brand}"
+                >Thương hiệu</span
+              >
+
+              <!-- Product Name -->
+              <h3 class="product-name" th:text="${lap.name}">Tên Laptop</h3>
+
+              <!-- Rating -->
+              <div
+                class="rating-wrap"
+                th:with="agg=${ratingAgg[lap.id]},
+                           avgVal=${agg != null and agg.avg != null ? agg.avg : 0},
+                           cntVal=${agg != null ? agg.count : 0},
+                           pctVal=${ratingPct[lap.id] != null ? ratingPct[lap.id] : 0}"
+              >
+                <div class="rating">
+                  <span class="stars" aria-label="Đánh giá">
+                    <span class="fill" th:style="|width:${pctVal}%;|"></span>
+                  </span>
+                  <span class="rating-text">
+                    <small th:text="|${#numbers.formatDecimal(avgVal,1,1)}/5|"
+                      >0.0/5</small
+                    >
+                    <small class="text-muted" th:text="|(${cntVal} đánh giá)|"
+                      >(0 đánh giá)</small
+                    >
+                  </span>
+                </div>
+              </div>
+
+              <!-- Price -->
+              <div class="price-wrap">
+                <span
+                  class="price"
+                  th:text="|${T(java.lang.String).format('%,.0f', lap.price)} ₫|"
+                  >0 ₫</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <nav th:if="${pageLaptops.totalPages > 1}" class="mt-5">
+        <ul class="pagination justify-content-center">
+          <li
+            class="page-item"
+            th:classappend="${currentPage == 0}?'disabled':''"
+          >
+            <a
+              class="page-link"
+              th:href="@{/laptops(page=${currentPage-1},size=${pageLaptops.size},brand=${brand},category=${category},categoryId=${selectedCategoryId},sort=${sort},priceRange=${priceRange},ram=${ram},cpu=${cpu},brandFilter=${brandFilter})}"
+            >
+              <i class="bi bi-chevron-left"></i>
+            </a>
+          </li>
+
+          <li
+            class="page-item"
+            th:each="i : ${#numbers.sequence(0, pageLaptops.totalPages-1)}"
+            th:classappend="${i == currentPage}?'active':''"
+          >
+            <a
+              class="page-link"
+              th:text="${i+1}"
+              th:href="@{/laptops(page=${i},size=${pageLaptops.size},brand=${brand},category=${category},categoryId=${selectedCategoryId},sort=${sort},priceRange=${priceRange},ram=${ram},cpu=${cpu},brandFilter=${brandFilter})}"
+              >1</a
+            >
+          </li>
+
+          <li
+            class="page-item"
+            th:classappend="${currentPage == pageLaptops.totalPages-1}?'disabled':''"
+          >
+            <a
+              class="page-link"
+              th:href="@{/laptops(page=${currentPage+1},size=${pageLaptops.size},brand=${brand},category=${category},categoryId=${selectedCategoryId},sort=${sort},priceRange=${priceRange},ram=${ram},cpu=${cpu},brandFilter=${brandFilter})}"
+            >
+              <i class="bi bi-chevron-right"></i>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <style>
+        /* Section Header */
+        .section-header {
+          position: relative;
+          margin-bottom: 3rem;
+        }
+
+        .section-header::after {
+          content: "";
+          display: block;
+          width: 80px;
+          height: 4px;
+          background: var(--bs-primary);
+          margin: 1rem auto 0;
+          border-radius: 2px;
+        }
+
+        /* Product Card */
+        .product-card {
+          background: white;
+          border-radius: 1rem;
+          overflow: hidden;
+          transition: all 0.3s ease;
+          height: 100%;
+          box-shadow: 0 3px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .product-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Product Image */
+        .product-image {
+          position: relative;
+          padding-top: 75%;
+          background: #f8f9fa;
+          overflow: hidden;
+        }
+
+        .product-image img {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transition: transform 0.5s ease;
+        }
+
+        .product-card:hover .product-image img {
+          transform: scale(1.05);
+        }
+
+        .product-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.2);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          opacity: 0;
+          transition: all 0.3s ease;
+        }
+
+        .product-card:hover .product-overlay {
+          opacity: 1;
+        }
+
+        .btn-view {
+          background: white;
+          color: var(--bs-primary);
+          padding: 0.75rem 1.5rem;
+          border-radius: 2rem;
+          text-decoration: none;
+          font-weight: 500;
+          transform: translateY(20px);
+          transition: all 0.3s ease;
+        }
+
+        .product-card:hover .btn-view {
+          transform: translateY(0);
+        }
+
+        /* Product Info */
+        .product-info {
+          padding: 1.5rem;
+        }
+
+        .brand-badge {
+          display: inline-block;
+          padding: 0.35rem 0.75rem;
+          background: rgba(var(--bs-primary-rgb), 0.1);
+          color: var(--bs-primary);
+          border-radius: 1rem;
+          font-size: 0.875rem;
+          font-weight: 500;
+          margin-bottom: 0.75rem;
+        }
+
+        .product-name {
+          font-size: 1.1rem;
+          font-weight: 600;
+          margin-bottom: 0.75rem;
+          color: #2d3436;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+
+        /* Rating */
+        .rating-wrap {
+          margin-bottom: 1rem;
+        }
+
+        .rating {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
+        .rating-text {
+          color: #6c757d;
+          font-size: 0.875rem;
+        }
+
+        /* Price */
+        .price-wrap {
+          margin-top: auto;
+        }
+
+        .price {
+          font-size: 1.25rem;
+          font-weight: 700;
+          color: var(--bs-primary);
+        }
+
+        /* Pagination */
+        .pagination {
+          gap: 0.5rem;
+        }
+
+        .page-link {
+          width: 40px;
+          height: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 0.5rem !important;
+          border: none;
+          color: #495057;
+          font-weight: 500;
+          transition: all 0.2s ease;
+        }
+
+        .page-link:hover {
+          background-color: var(--bs-primary);
+          color: white;
+        }
+
+        .page-item.active .page-link {
+          background-color: var(--bs-primary);
+          color: white;
+          box-shadow: 0 2px 10px rgba(var(--bs-primary-rgb), 0.3);
+        }
+
+        .page-item.disabled .page-link {
+          background-color: #e9ecef;
+          color: #6c757d;
+          opacity: 0.7;
+        }
+      </style>
+    </div>
+
+    <!-- store info modal & contact section -->
+    <div
+      class="modal fade"
+      id="infoModal"
+      tabindex="-1"
+      aria-labelledby="infoModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header border-0 pb-0">
+            <h4 class="modal-title fw-bold" id="infoModalLabel">
+              <i class="bi bi-shop me-2 text-primary"></i>Thông tin cửa hàng
+            </h4>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body pt-2">
+            <div class="row g-4">
+              <!-- Thông tin liên hệ -->
+              <div class="col-md-5">
+                <div class="p-4 bg-light rounded-3">
+                  <h5 class="fw-bold mb-4">Thông tin liên hệ</h5>
+
+                  <div class="d-flex align-items-start mb-3">
+                    <i
+                      class="bi bi-geo-alt-fill text-primary fs-5 me-3 mt-1"
+                    ></i>
+                    <div>
+                      <h6 class="fw-bold mb-1">Địa chỉ</h6>
+                      <p class="mb-0">123 Đường QL1A, Quận 12, TP. HCM</p>
+                    </div>
+                  </div>
+
+                  <div class="d-flex align-items-start mb-3">
+                    <i
+                      class="bi bi-telephone-fill text-primary fs-5 me-3 mt-1"
+                    ></i>
+                    <div>
+                      <h6 class="fw-bold mb-1">Điện thoại</h6>
+                      <p class="mb-0">0394166913</p>
+                    </div>
+                  </div>
+
+                  <div class="d-flex align-items-start">
+                    <i
+                      class="bi bi-envelope-fill text-primary fs-5 me-3 mt-1"
+                    ></i>
+                    <div>
+                      <h6 class="fw-bold mb-1">Email</h6>
+                      <p class="mb-0">khoas1612@gmail.com</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="p-4">
+                  <h5 class="fw-bold mb-3">Giờ làm việc</h5>
+                  <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-clock-fill text-primary me-2"></i>
+                    <span>Thứ 2 - Thứ 6: 8:00 - 21:00</span>
+                  </div>
+                  <div class="d-flex align-items-center">
+                    <i class="bi bi-clock text-primary me-2"></i>
+                    <span>Thứ 7, Chủ nhật: 8:30 - 20:00</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bản đồ -->
+              <div class="col-md-7">
+                <div
+                  style="
+                    width: 100%;
+                    height: 400px;
+                    border-radius: 1rem;
+                    overflow: hidden;
+                  "
+                >
+                  <iframe
+                    width="100%"
+                    height="100%"
+                    frameborder="0"
+                    style="border: 0"
+                    src="https://maps.google.com/maps?q=10.861633,106.657286&z=16&output=embed"
+                    allowfullscreen
+                  >
+                  </iframe>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer border-0">
+            <a th:href="@{/contact}" class="btn btn-primary px-4">
+              <i class="bi bi-chat-text me-2"></i>Liên hệ ngay
+            </a>
+            <button
+              type="button"
+              class="btn btn-secondary px-4"
+              data-bs-dismiss="modal"
+            >
+              <i class="bi bi-x-lg me-2"></i>Đóng
+            </button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Hiện phân trang khi có hơn 1 trang -->
-<nav th:if="${pageLaptops.totalPages > 1}">
-  <ul class="pagination justify-content-center mt-4">
-
-    <!-- Prev -->
-    <li class="page-item" th:classappend="${currentPage == 0}?'disabled':''">
-      <a class="page-link"
-         th:href="@{/laptops(
-            page=${currentPage-1},
-            size=${pageLaptops.size},
-            brand=${brand},
-            category=${category},
-            categoryId=${selectedCategoryId},
-            sort=${sort},
-            priceRange=${priceRange},
-            ram=${ram},
-            cpu=${cpu},
-            brandFilter=${brandFilter}
-         )}">« Prev</a>
-    </li>
-
-    <!-- Pages -->
-    <li class="page-item"
-        th:each="i : ${#numbers.sequence(0, pageLaptops.totalPages-1)}"
-        th:classappend="${i == currentPage}?'active':''">
-      <a class="page-link"
-         th:text="${i+1}"
-         th:href="@{/laptops(
-            page=${i},
-            size=${pageLaptops.size},
-            brand=${brand},
-            category=${category},
-            categoryId=${selectedCategoryId},
-            sort=${sort},
-            priceRange=${priceRange},
-            ram=${ram},
-            cpu=${cpu},
-            brandFilter=${brandFilter}
-         )}">1</a>
-    </li>
-
-    <!-- Next -->
-    <li class="page-item" th:classappend="${currentPage == pageLaptops.totalPages-1}?'disabled':''">
-      <a class="page-link"
-         th:href="@{/laptops(
-            page=${currentPage+1},
-            size=${pageLaptops.size},
-            brand=${brand},
-            category=${category},
-            categoryId=${selectedCategoryId},
-            sort=${sort},
-            priceRange=${priceRange},
-            ram=${ram},
-            cpu=${cpu},
-            brandFilter=${brandFilter}
-         )}">Next »</a>
-    </li>
-
-  </ul>
-</nav>
-
-  </div>
-
-  <!-- store info modal & contact section -->
-  <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
-    <div class="modal-dialog"><div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="infoModalLabel">Thông tin cửa hàng</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <section id="contact-home">
+      <div class="container text-center">
+        <h2>Liên hệ với chúng tôi</h2>
+        <div class="row justify-content-center mt-4">
+          <div class="col-md-4 contact-item">
+            <i class="bi bi-geo-fill"></i>
+            <p>123 Đường QL1A, Quận 12, TP. HCM</p>
+          </div>
+          <div class="col-md-4 contact-item">
+            <i class="bi bi-telephone-fill"></i>
+            <p>0394166913</p>
+          </div>
+          <div class="col-md-4 contact-item">
+            <i class="bi bi-envelope-fill"></i>
+            <p>khoas1612@gmail.com</p>
+          </div>
+        </div>
+        <div class="row justify-content-center mt-4">
+          <div class="col-12">
+            <div
+              style="
+                width: 100%;
+                height: 300px;
+                overflow: hidden;
+                border-radius: 1rem;
+              "
+            >
+              <iframe
+                width="100%"
+                height="100%"
+                frameborder="0"
+                style="border: 0"
+                src="https://maps.google.com/maps?q=10.861633,106.657286&z=19&output=embed"
+                allowfullscreen
+                loading="lazy"
+              ></iframe>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="modal-body">
-        <p><i class="bi bi-geo-fill me-2"></i>123 Đường QL1A, Quận 12, TP. HCM</p>
-        <p><i class="bi bi-telephone-fill me-2"></i>0394166913</p>
-        <p><i class="bi bi-envelope-fill me-2"></i>khoas1612@gmail.com</p>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-      </div>
-    </div></div>
-  </div>
+    </section>
 
-  <section id="contact-home">
-    <div class="container text-center">
-      <h2>Liên hệ với chúng tôi</h2>
-      <div class="row justify-content-center mt-4">
-        <div class="col-md-4 contact-item"><i class="bi bi-geo-fill"></i><p>123 Đường QL1A, Quận 12, TP. HCM</p></div>
-        <div class="col-md-4 contact-item"><i class="bi bi-telephone-fill"></i><p>0394166913</p></div>
-        <div class="col-md-4 contact-item"><i class="bi bi-envelope-fill"></i><p>khoas1612@gmail.com</p></div>
+    <!-- Floating Cart CTA -->
+    <a
+      th:href="@{/cart}"
+      class="btn btn-primary position-fixed"
+      style="
+        bottom: 20px;
+        right: 20px;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.3);
+      "
+    >
+      <i class="bi bi-cart2" style="font-size: 1.5rem"></i>
+      <span
+        class="badge bg-danger position-absolute top-0 start-100 translate-middle"
+      >
+        [[${cartItemCount}]]
+      </span>
+    </a>
+
+    <!-- ✅ Chat FAB: chuyển trang -->
+    <a
+      id="chat-toggle"
+      class="d-inline-flex"
+      sec:authorize="isAuthenticated()"
+      th:href="@{/chat}"
+      title="Chat với Admin"
+    >
+      <i class="bi bi-chat-dots-fill" style="font-size: 1.5rem"></i>
+    </a>
+    <a
+      id="chat-toggle"
+      class="d-inline-flex"
+      sec:authorize="!isAuthenticated()"
+      th:href="@{/login(continue='/chat')}"
+      title="Đăng nhập để chat"
+    >
+      <i class="bi bi-chat-dots-fill" style="font-size: 1.5rem"></i>
+    </a>
+
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+    <!-- Chat panel markup giữ nguyên (luôn ẩn, để đủ file) -->
+    <div id="chat-box" aria-hidden="true">
+      <div id="chat-header">
+        Chat với chúng tôi
+        <button id="chat-close" type="button" aria-label="Đóng">&times;</button>
       </div>
-      <div class="row justify-content-center mt-4">
-        <div class="col-12"><div style="width:100%;height:300px;overflow:hidden;border-radius:1rem;">
-          <iframe width="100%" height="100%" frameborder="0" style="border:0"
-                  src="https://maps.google.com/maps?q=10.861633,106.657286&z=19&output=embed"
-                  allowfullscreen loading="lazy"></iframe>
-        </div></div>
+      <div id="messageArea"></div>
+      <div id="inputArea">
+        <input
+          type="text"
+          id="chatInput"
+          placeholder="Nhập tin nhắn..."
+          autocomplete="off"
+        />
+        <button id="sendBtn" type="button">Gửi</button>
       </div>
     </div>
-  </section>
 
-  <!-- Floating Cart CTA -->
-  <a th:href="@{/cart}"
-     class="btn btn-primary position-fixed"
-     style="bottom:20px; right:20px; border-radius:50%; width:60px; height:60px;
-            display:flex; align-items:center; justify-content:center;
-            box-shadow:0 0 .5rem rgba(0,0,0,.3);">
-    <i class="bi bi-cart2" style="font-size:1.5rem;"></i>
-    <span class="badge bg-danger position-absolute top-0 start-100 translate-middle">
-      [[${cartItemCount}]]
-    </span>
-  </a>
+    <!-- Announcement helper -->
+    <script>
+      function hideAnn() {
+        const bar = document.getElementById("site-announcement");
+        const sp = document.getElementById("site-annc-spacer");
+        if (bar) bar.style.display = "none";
+        if (sp) sp.style.display = "none";
+      }
+      function adjustSpacer() {
+        const bar = document.getElementById("site-announcement");
+        const sp = document.getElementById("site-annc-spacer");
+        if (bar && sp) sp.style.height = bar.offsetHeight + "px";
+      }
+      window.addEventListener("load", adjustSpacer);
+      window.addEventListener("resize", adjustSpacer);
 
-  <!-- ✅ Chat FAB: chuyển trang -->
-  <a id="chat-toggle" class="d-inline-flex"
-     sec:authorize="isAuthenticated()"
-     th:href="@{/chat}"
-     title="Chat với Admin">
-    <i class="bi bi-chat-dots-fill" style="font-size:1.5rem;"></i>
-  </a>
-  <a id="chat-toggle" class="d-inline-flex"
-     sec:authorize="!isAuthenticated()"
-     th:href="@{/login(continue='/chat')}"
-     title="Đăng nhập để chat">
-    <i class="bi bi-chat-dots-fill" style="font-size:1.5rem;"></i>
-  </a>
-
-  <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
-
-  <!-- Chat panel markup giữ nguyên (luôn ẩn, để đủ file) -->
-  <div id="chat-box" aria-hidden="true">
-    <div id="chat-header">
-      Chat với chúng tôi
-      <button id="chat-close" type="button" aria-label="Đóng">&times;</button>
-    </div>
-    <div id="messageArea"></div>
-    <div id="inputArea">
-      <input type="text" id="chatInput" placeholder="Nhập tin nhắn..." autocomplete="off"/>
-      <button id="sendBtn" type="button">Gửi</button>
-    </div>
-  </div>
-
-  <!-- Announcement helper -->
-  <script>
-    function hideAnn(){
-      const bar = document.getElementById('site-announcement');
-      const sp  = document.getElementById('site-annc-spacer');
-      if (bar) bar.style.display = 'none';
-      if (sp)  sp.style.display  = 'none';
-    }
-    function adjustSpacer(){
-      const bar = document.getElementById('site-announcement');
-      const sp  = document.getElementById('site-annc-spacer');
-      if (bar && sp) sp.style.height = bar.offsetHeight + 'px';
-    }
-    window.addEventListener('load', adjustSpacer);
-    window.addEventListener('resize', adjustSpacer);
-  </script>
-</body>
+      // Xử lý hiệu ứng navbar khi cuộn
+      window.addEventListener("scroll", function () {
+        const navbar = document.querySelector(".navbar");
+        if (window.scrollY > 50) {
+          navbar.classList.add("scrolled");
+        } else {
+          navbar.classList.remove("scrolled");
+        }
+      });
+    </script>
+  </body>
 </html>

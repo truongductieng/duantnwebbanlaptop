@@ -12,229 +12,6 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
     />
     <link rel="stylesheet" th:href="@{/css/trangchu.css}" />
-    <style>
-      #hero {
-        width: 100%;
-      }
-      #hero .row {
-        display: flex;
-        margin: 0;
-      }
-      #hero .col-12 {
-        flex: 1;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      #hero img {
-        max-width: 100%;
-        width: auto;
-        height: auto;
-        max-height: 340px;
-        object-fit: contain;
-        display: block;
-        margin: 0 auto;
-      }
-
-      .card-product {
-        border: none;
-        border-radius: 1rem;
-        overflow: hidden;
-        transition: transform 0.3s, box-shadow 0.3s;
-      }
-      .card-product:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.2);
-      }
-      .card-product .card-img-top {
-        object-fit: cover;
-        height: 180px;
-      }
-
-      #contact-home {
-        background: #5865f2;
-        color: #fff;
-        padding: 4rem 0;
-      }
-      #contact-home .contact-item {
-        text-align: center;
-        margin-bottom: 1.5rem;
-      }
-      #contact-home .contact-item i {
-        font-size: 2rem;
-        margin-bottom: 0.5rem;
-        display: block;
-      }
-      #contact-home .contact-item p {
-        margin: 0;
-        font-size: 1.1rem;
-      }
-
-      .offcanvas-end {
-        width: 300px;
-      }
-
-      #chat-toggle {
-        position: fixed;
-        bottom: 90px;
-        right: 20px;
-        width: 50px;
-        height: 50px;
-        background: #5865f2;
-        color: #fff;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        z-index: 1200;
-        box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.3);
-        text-decoration: none;
-      }
-
-      #chat-box {
-        position: fixed;
-        bottom: 80px;
-        right: 20px;
-        width: 300px;
-        max-height: 400px;
-        background: #fff;
-        border: 1px solid #ccc;
-        border-radius: 0.5rem;
-        box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.3);
-        display: none;
-        flex-direction: column;
-        z-index: 1200;
-      }
-      #chat-box.open {
-        display: flex;
-      }
-      #chat-header {
-        padding: 8px;
-        background: #5865f2;
-        color: #fff;
-        font-weight: bold;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-      #chat-header button {
-        background: transparent;
-        border: none;
-        color: #fff;
-        font-size: 1.2rem;
-        cursor: pointer;
-      }
-      #chat-box #messageArea {
-        flex: 1;
-        padding: 10px;
-        overflow-y: auto;
-      }
-      #chat-box #inputArea {
-        display: flex;
-        padding: 8px;
-        border-top: 1px solid #eee;
-      }
-      #chat-box #inputArea input {
-        flex: 1;
-        padding: 5px;
-        border: 1px solid #ccc;
-        border-radius: 0.25rem;
-      }
-      #chat-box #inputArea button {
-        margin-left: 5px;
-        padding: 5px 10px;
-      }
-
-      .site-annc--hero {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 240px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0 16px;
-        background-size: contain;
-        background-repeat: no-repeat;
-        background-position: center center;
-        background-color: #000;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-        z-index: 1300;
-      }
-      @media (max-width: 991.98px) {
-        .site-annc--hero {
-          height: 200px;
-        }
-      }
-      .site-annc__inner {
-        max-width: 1200px;
-        width: 100%;
-        position: relative;
-      }
-      .site-annc__content {
-        text-align: center;
-      }
-      .site-annc__text {
-        font-size: clamp(22px, 3.6vw, 40px);
-        font-weight: 800;
-        color: #fff;
-        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
-        line-height: 1.2;
-      }
-      .site-annc__close {
-        position: absolute;
-        right: 14px;
-        top: 14px;
-        font-size: 32px;
-        line-height: 1;
-        border: none;
-        background: transparent;
-        color: #fff;
-        opacity: 0.95;
-        cursor: pointer;
-      }
-
-      .site-annc--info {
-        background-color: #5aa0ff;
-      }
-      .site-annc--success {
-        background-color: #2e7d32;
-      }
-      .site-annc--warning {
-        background-color: #ff9800;
-      }
-      .site-annc--danger {
-        background-color: #c81e1e;
-      }
-
-      /* ⭐ Rating stars */
-      .stars {
-        position: relative;
-        display: inline-block;
-        font-size: 14px;
-        line-height: 1;
-      }
-      .stars::before {
-        content: "★★★★★";
-        letter-spacing: 2px;
-        color: #e5e7eb;
-      }
-      .stars .fill {
-        position: absolute;
-        inset: 0;
-        width: 0;
-        overflow: hidden;
-        white-space: nowrap;
-      }
-      .stars .fill::before {
-        content: "★★★★★";
-        letter-spacing: 2px;
-        color: #f59e0b;
-      }
-    </style>
   </head>
   <body>
     <!-- Navbar -->
@@ -525,39 +302,6 @@
       </div>
     </section>
 
-    <style>
-      .hero-section {
-        padding: 60px 0;
-        background: white;
-      }
-
-      @keyframes float {
-        0% {
-          transform: translateY(0px);
-        }
-        50% {
-          transform: translateY(-10px);
-        }
-        100% {
-          transform: translateY(0px);
-        }
-      }
-
-      @media (max-width: 991.98px) {
-        .hero-section {
-          padding: 40px 0;
-          text-align: center;
-        }
-        .hero-section .badge {
-          display: inline-block;
-          margin: 0 auto;
-        }
-        .hero-section .d-flex {
-          justify-content: center;
-        }
-      }
-    </style>
-
     <!-- 1. Classification Tabs + Controls -->
     <div class="container py-4">
       <div class="row g-4">
@@ -665,75 +409,7 @@
         </div>
       </div>
 
-      <style>
-        /* Category Tabs Styling */
-        .category-tabs {
-          background: #fff;
-          border-radius: 1rem;
-          padding: 0.5rem;
-          box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
-        }
 
-        .category-tab {
-          color: #6c757d;
-          border-radius: 0.75rem !important;
-          padding: 1rem !important;
-          transition: all 0.3s ease;
-          font-weight: 500;
-        }
-
-        .category-tab:hover {
-          color: var(--bs-primary);
-          background-color: rgba(var(--bs-primary-rgb), 0.05);
-        }
-
-        .category-tab.active {
-          background-color: var(--bs-primary) !important;
-          color: white !important;
-          box-shadow: 0 4px 15px rgba(var(--bs-primary-rgb), 0.2);
-        }
-
-        /* Control Buttons Styling */
-        .btn-control {
-          background-color: #fff;
-          border: 1px solid #e9ecef;
-          color: #495057;
-          padding: 0.75rem 1.5rem;
-          border-radius: 0.75rem;
-          font-weight: 500;
-          transition: all 0.3s ease;
-        }
-
-        .btn-control:hover {
-          background-color: #f8f9fa;
-          border-color: #dee2e6;
-          color: var(--bs-primary);
-        }
-
-        .btn-control:focus {
-          box-shadow: none;
-          border-color: var(--bs-primary);
-        }
-
-        /* Dropdown Styling */
-        .dropdown-menu {
-          border: none;
-          border-radius: 1rem;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-          padding: 0.5rem;
-        }
-
-        .dropdown-item {
-          padding: 0.75rem 1rem;
-          border-radius: 0.5rem;
-          transition: all 0.2s ease;
-        }
-
-        .dropdown-item:hover {
-          background-color: rgba(var(--bs-primary-rgb), 0.05);
-          color: var(--bs-primary);
-        }
-      </style>
     </div>
 
     <!-- 1.1 Offcanvas Filter Sidebar -->
@@ -1344,7 +1020,7 @@
                     ></i>
                     <div>
                       <h6 class="fw-bold mb-1">Email</h6>
-                      <p class="mb-0">khoas1612@gmail.com</p>
+                      <p class="mb-0">Ductieng4231@gmail.com</p>
                     </div>
                   </div>
                 </div>
@@ -1415,7 +1091,7 @@
           </div>
           <div class="col-md-4 contact-item">
             <i class="bi bi-envelope-fill"></i>
-            <p>khoas1612@gmail.com</p>
+            <p>Ductieng4231@gmail.com</p>
           </div>
         </div>
         <div class="row justify-content-center mt-4">

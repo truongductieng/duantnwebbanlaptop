@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>Chi tiết đơn hàng – Laptop Shop</title>
+  <title>Chi tiết đơn hàng · Laptop Shop</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <!-- CSRF cho JS fetch + form -->
@@ -12,296 +12,310 @@
   <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
   <style>
-    body {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      margin: 0;
-      padding: 40px 15px;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
+    :root{ --brand-50:#eef2ff; --brand-100:#e0e7ff; --brand-200:#c7d2fe; --brand-600:#4f46e5; --brand-700:#4338ca; --ink-800:#1f2328; --ink-600:#495057; }
+    body.order-page{
+      background:
+        radial-gradient(1200px 800px at -10% -10%, rgba(79,70,229,.20) 0%, rgba(79,70,229,0) 45%),
+        radial-gradient(900px 700px at 110% 0%, rgba(67,56,202,.18) 0%, rgba(67,56,202,0) 40%),
+        linear-gradient(135deg, var(--brand-600) 0%, var(--brand-700) 65%);
+      min-height: 100vh; padding: 32px 16px;
     }
-    .card { width: 100%; max-width: 1100px; border-radius: 14px; box-shadow: 0 8px 20px rgba(0,0,0,0.25); overflow: hidden; background: #fff; }
-    .card-header { background-color: #5865f2; color: #fff; padding: 1rem 1.25rem; font-size: 1.25rem; font-weight: 600; }
-    .card-body { padding: 1.5rem; }
-    .table th, .table td { vertical-align: middle; }
-    .btn-back { margin-bottom: 20px; }
-    .product-img { border-radius: 8px; border: 1px solid #ddd; width: 80px; height: 80px; object-fit: cover; }
-    .badge { font-size: 0.9rem; }
-    @media (max-width: 768px) { .table-responsive { font-size: 0.95rem; } }
+    .card{ background: rgba(255,255,255,.92); border:1px solid rgba(255,255,255,.65); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.10); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+    .card-header{ background: linear-gradient(135deg, var(--brand-600), var(--brand-700)); color:#fff; font-weight:700; font-size:1.15rem; }
+    .product-img{ border-radius:8px; border:1px solid var(--brand-100); width:80px; height:80px; object-fit:cover; }
+    .badge{ border-radius:999px; }
+    .table thead th{ background: var(--brand-50); border:none; }
+    .btn-primary{ --bs-btn-bg: var(--brand-600); --bs-btn-border-color: var(--brand-600); --bs-btn-hover-bg: var(--brand-700); --bs-btn-hover-border-color: var(--brand-700); --bs-btn-focus-shadow-rgb:79,70,229; }
+    .btn-outline-secondary{ --bs-btn-color: var(--brand-700); --bs-btn-border-color: var(--brand-600); --bs-btn-hover-bg: var(--brand-600); --bs-btn-hover-border-color: var(--brand-600); --bs-btn-hover-color:#fff; }
+    .sticky-summary{ position: sticky; top: 20px; }
   </style>
 </head>
-<body>
-<div class="container">
-  <div class="btn-back">
-    <a th:href="@{/profile}" class="btn btn-light shadow-sm">
+<body class="order-page">
+
+<main class="container">
+  <!-- Top: back + steps -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <a th:href="@{/profile}" class="btn btn-outline-light">
       <i class="fas fa-arrow-left me-1"></i> Quay lại hồ sơ
     </a>
+    <div class="d-none d-md-flex align-items-center gap-2" aria-label="Tiến trình đơn hàng">
+      <span class="badge bg-light text-dark">1. Giỏ hàng</span>
+      <span class="text-white-50">›</span>
+      <span class="badge bg-light text-dark">2. Thông tin</span>
+      <span class="text-white-50">›</span>
+      <span class="badge bg-light text-dark">3. Thanh toán</span>
+      <span class="text-white-50">›</span>
+      <span class="badge bg-primary">4. Hoàn tất</span>
+    </div>
   </div>
 
-  <div class="card">
-    <div class="card-header">
-      🧾 Chi tiết đơn hàng #<span th:text="${order.id}"></span>
-    </div>
-    <div class="card-body">
-
-      <!-- Flash message -->
-      <div th:if="${success != null or error != null}" class="mb-3">
-        <div th:if="${success != null}" class="alert alert-success alert-dismissible fade show" role="alert">
-          <span th:text="${success}">Cập nhật thành công.</span>
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  <div class="row g-4">
+    <!-- Left: Details + Items -->
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header">
+          Chi tiết đơn hàng #<span th:text="${order.id}">0</span>
         </div>
-        <div th:if="${error != null}" class="alert alert-danger alert-dismissible fade show" role="alert">
-          <span th:text="${error}">Có lỗi xảy ra.</span>
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-      </div>
+        <div class="card-body">
 
-      <div class="mb-3">
-        <p><strong>📅 Ngày đặt:</strong> <span th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}"></span></p>
-        <p><strong>👤 Người nhận:</strong> <span th:text="${order.recipientName}"></span></p>
-        <p><strong>📧 Email:</strong> <span th:text="${order.recipientEmail}"></span></p>
-        <p><strong>📍 Địa chỉ:</strong> <span th:text="${order.recipientAddress}"></span></p>
-        <p><strong>📞 SĐT:</strong> <span th:text="${order.recipientPhone}"></span></p>
-
-        <!-- Trạng thái -->
-        <p><strong>🚚 Trạng thái:</strong>
-          <span th:text="${order.status}" th:class="${ 'badge ' + (
-            order.status == T(com.bigkhoa.model.OrderStatus).PENDING    ? 'bg-warning text-dark' :
-            order.status == T(com.bigkhoa.model.OrderStatus).CONFIRMED  ? 'bg-info text-dark'    :
-            order.status == T(com.bigkhoa.model.OrderStatus).SHIPPED    ? 'bg-primary text-light' :
-            order.status == T(com.bigkhoa.model.OrderStatus).DELIVERED  ? 'bg-success text-light' :
-            order.status == T(com.bigkhoa.model.OrderStatus).CANCELED   ? 'bg-danger text-light'  :
-            'bg-secondary'
-          ) }"></span>
-        </p>
-
-        <!-- Phương thức thanh toán (COD / VNPAY) -->
-        <p><strong>💳 Thanh toán:</strong>
-          <span th:switch="${order.paymentMethod}">
-            <span th:case="${T(com.bigkhoa.model.PaymentMethod).COD}">Thanh toán khi nhận hàng (COD)</span>
-            <span th:case="${T(com.bigkhoa.model.PaymentMethod).VNPAY}">VNPAY</span>
-            <span th:case="*">—</span>
-          </span>
-        </p>
-
-        <!-- Tình trạng thanh toán (chỉ dựa vào paymentMethod) -->
-        <p><strong>💡 Tình trạng thanh toán:</strong>
-          <span th:if="${order.paymentMethod == T(com.bigkhoa.model.PaymentMethod).VNPAY}" class="badge bg-success">
-            Đã thanh toán (VNPAY)
-          </span>
-          <span th:if="${order.paymentMethod == T(com.bigkhoa.model.PaymentMethod).COD}" class="badge bg-secondary">
-            Chưa thanh toán (COD)
-          </span>
-          <span th:if="${order.paymentMethod != T(com.bigkhoa.model.PaymentMethod).COD and order.paymentMethod != T(com.bigkhoa.model.PaymentMethod).VNPAY}" class="badge bg-secondary">
-            —
-          </span>
-        </p>
-
-        <!-- Ngày giao nếu có -->
-        <p th:if="${order.deliveredAt != null}">
-          <strong>✅ Ngày giao:</strong>
-          <span th:text="${#temporals.format(order.deliveredAt, 'dd/MM/yyyy HH:mm')}"></span>
-        </p>
-
-        <!-- Khi đã hủy: thời điểm + lý do -->
-        <div th:if="${order.status == T(com.bigkhoa.model.OrderStatus).CANCELED}">
-          <p>
-            <strong>🛑 Hủy lúc:</strong>
-            <span th:text="${order.canceledAt != null ? #temporals.format(order.canceledAt, 'dd/MM/yyyy HH:mm') : '-'}"></span>
-          </p>
-          <p>
-            <strong>📝 Lý do hủy:</strong>
-            <span th:text="${order.cancelReason != null ? order.cancelReason : '-'}"></span>
-          </p>
-        </div>
-
-        <!-- Mã giảm giá -->
-        <p><strong>🏷️ Mã giảm giá:</strong>
-          <span th:if="${order.discountCode != null}" th:text="${order.discountCode}"></span>
-          <span th:unless="${order.discountCode != null}">Không có</span>
-        </p>
-
-        <!-- % giảm nếu có -->
-        <p th:if="${order.discountPercent != null}">
-          <strong>📉 % Giảm:</strong>
-          <span th:text="${order.discountPercent} + '%'"></span>
-        </p>
-
-        <!-- Tiền giảm -->
-        <p><strong>💸 Tiền giảm:</strong>
-          <span th:if="${order.discountAmount != null}"
-                th:text="|${#numbers.formatDecimal(order.discountAmount, 0, 'COMMA', 0, 'POINT')}₫|"></span>
-          <span th:unless="${order.discountAmount != null}">0₫</span>
-        </p>
-
-        <!-- ========= SỬA ĐỊA CHỈ GIAO HÀNG (PENDING/CONFIRMED) ========= -->
-        <div class="mt-3"
-             th:if="${order.status == T(com.bigkhoa.model.OrderStatus).PENDING
-                     or order.status == T(com.bigkhoa.model.OrderStatus).CONFIRMED}">
-          <button class="btn btn-sm btn-outline-primary" type="button"
-                  data-bs-toggle="collapse" data-bs-target="#editShipping">
-            <i class="fa fa-pen me-1"></i> Sửa địa chỉ giao hàng
-          </button>
-
-          <div id="editShipping" class="collapse mt-3"
-               th:classappend="${shippingForm != null} ? ' show' : ''">
-
-            <!-- Trường hợp có shippingForm (sau khi validate lỗi) -->
-            <form th:if="${shippingForm != null}"
-                  th:action="@{'/my-orders/' + ${order.id} + '/shipping'}"
-                  method="post" th:object="${shippingForm}">
-              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-
-              <div class="row g-3">
-                <div class="col-md-4">
-                  <label class="form-label">Tên người nhận</label>
-                  <input class="form-control" th:field="*{recipientName}" placeholder="Nguyễn Văn A"/>
-                  <div class="text-danger small" th:if="${#fields.hasErrors('recipientName')}" th:errors="*{recipientName}"></div>
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label">Số điện thoại</label>
-                  <input class="form-control" th:field="*{recipientPhone}" placeholder="0xxxxxxxxx"/>
-                  <div class="text-danger small" th:if="${#fields.hasErrors('recipientPhone')}" th:errors="*{recipientPhone}"></div>
-                </div>
-                <div class="col-md-12">
-                  <label class="form-label">Địa chỉ đầy đủ</label>
-                  <textarea class="form-control" th:field="*{recipientAddress}" rows="2"
-                            placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành"></textarea>
-                  <div class="text-danger small" th:if="${#fields.hasErrors('recipientAddress')}" th:errors="*{recipientAddress}"></div>
-                </div>
-              </div>
-
-              <div class="mt-3 d-flex gap-2">
-                <button type="submit" class="btn btn-primary">
-                  <i class="fa fa-save me-1"></i> Lưu địa chỉ
-                </button>
-                <button type="button" class="btn btn-light" data-bs-toggle="collapse" data-bs-target="#editShipping">Hủy</button>
-              </div>
-            </form>
-
-            <!-- Trường hợp lần đầu mở form (chưa có shippingForm) -->
-            <form th:unless="${shippingForm != null}"
-                  th:action="@{'/my-orders/' + ${order.id} + '/shipping'}"
-                  method="post">
-              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-
-              <div class="row g-3">
-                <div class="col-md-4">
-                  <label class="form-label">Tên người nhận</label>
-                  <input class="form-control" name="recipientName" th:value="${order.recipientName}" placeholder="Nguyễn Văn A"/>
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label">Số điện thoại</label>
-                  <input class="form-control" name="recipientPhone" th:value="${order.recipientPhone}" placeholder="0xxxxxxxxx"/>
-                </div>
-                <div class="col-md-12">
-                  <label class="form-label">Địa chỉ đầy đủ</label>
-                  <textarea class="form-control" name="recipientAddress" rows="2"
-                            th:text="${order.recipientAddress}"
-                            placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành"></textarea>
-                </div>
-              </div>
-
-              <div class="mt-3 d-flex gap-2">
-                <button type="submit" class="btn btn-primary">
-                  <i class="fa fa-save me-1"></i> Lưu địa chỉ
-                </button>
-                <button type="button" class="btn btn-light" data-bs-toggle="collapse" data-bs-target="#editShipping">Hủy</button>
-              </div>
-            </form>
-
-            <div class="text-muted small mt-2">
-              * Chỉ chỉnh được khi đơn đang <b>Chờ xác nhận</b> hoặc <b>Đã xác nhận</b>.
+          <!-- Flash message -->
+          <div th:if="${success != null or error != null}" class="mb-3">
+            <div th:if="${success != null}" class="alert alert-success alert-dismissible fade show" role="alert">
+              <span th:text="${success}">Cập nhật thành công.</span>
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div th:if="${error != null}" class="alert alert-danger alert-dismissible fade show" role="alert">
+              <span th:text="${error}">Đã xảy ra lỗi.</span>
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
           </div>
-        </div>
-        <!-- ========= /SỬA ĐỊA CHỈ GIAO HÀNG ========= -->
 
-        <!-- Nút hành động -->
-        <div class="mt-3">
-          <!-- Mua lại + Đánh giá (khi DELIVERED) -->
-          <form th:if="${order.status == T(com.bigkhoa.model.OrderStatus).DELIVERED}"
-                th:action="@{'/my-orders/' + ${order.id} + '/buy-again'}" method="post" class="d-inline">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-            <button class="btn btn-sm btn-primary">
-              <i class="fa fa-cart-plus me-1"></i> Mua lại
+          <!-- Meta + Recipient -->
+          <div class="row g-3 mb-2">
+            <div class="col-md-6">
+              <div class="small text-muted">Ngày đặt</div>
+              <div class="fw-semibold" th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}">--/--</div>
+            </div>
+            <div class="col-md-6">
+              <div class="small text-muted">Trạng thái</div>
+              <div>
+                <span th:text="${order.status}"
+                      th:class="${ 'badge ' + (
+                        order.status == T(com.bigkhoa.model.OrderStatus).PENDING    ? 'bg-warning text-dark' :
+                        order.status == T(com.bigkhoa.model.OrderStatus).CONFIRMED  ? 'bg-info text-dark' :
+                        order.status == T(com.bigkhoa.model.OrderStatus).SHIPPED    ? 'bg-primary text-light' :
+                        order.status == T(com.bigkhoa.model.OrderStatus).DELIVERED  ? 'bg-success text-light' :
+                        order.status == T(com.bigkhoa.model.OrderStatus).CANCELED   ? 'bg-danger text-light' :
+                        'bg-secondary') }">PENDING</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <div class="small text-muted">Người nhận</div>
+              <div class="fw-semibold" th:text="${order.recipientName}">Tên</div>
+              <div class="small text-muted" th:text="${order.recipientEmail}">email@example.com</div>
+            </div>
+            <div class="col-md-6">
+              <div class="small text-muted">Số điện thoại</div>
+              <div class="fw-semibold" th:text="${order.recipientPhone}">0xxx</div>
+              <div class="small text-muted mt-2">Địa chỉ</div>
+              <div th:text="${order.recipientAddress}">Địa chỉ...</div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <div class="small text-muted">Phương thức thanh toán</div>
+            <div class="fw-semibold" th:switch="${order.paymentMethod}">
+              <span th:case="${T(com.bigkhoa.model.PaymentMethod).COD}">Thanh toán khi nhận hàng (COD)</span>
+              <span th:case="${T(com.bigkhoa.model.PaymentMethod).VNPAY}">VNPAY</span>
+              <span th:case="*">Khác</span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="d-flex flex-wrap gap-2 mb-4">
+            <form th:if="${order.status == T(com.bigkhoa.model.OrderStatus).DELIVERED}"
+                  th:action="@{'/my-orders/' + ${order.id} + '/buy-again'}" method="post" class="d-inline">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+              <button class="btn btn-primary btn-sm">
+                <i class="fa fa-cart-plus me-1"></i> Mua lại
+              </button>
+            </form>
+            <button th:if="${order.status == T(com.bigkhoa.model.OrderStatus).DELIVERED}"
+                    class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#reviewModal">
+              <i class="fa fa-star me-1"></i> Đánh giá sản phẩm
             </button>
-          </form>
-          <button th:if="${order.status == T(com.bigkhoa.model.OrderStatus).DELIVERED}"
-                  class="btn btn-sm btn-outline-success ms-2" data-bs-toggle="modal" data-bs-target="#reviewModal">
-            <i class="fa fa-star me-1"></i> Đánh giá sản phẩm
-          </button>
+            <button th:if="${order.status == T(com.bigkhoa.model.OrderStatus).PENDING
+                            or order.status == T(com.bigkhoa.model.OrderStatus).CONFIRMED}"
+                    class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#cancelModal">
+              <i class="fa fa-ban me-1"></i> Hủy đơn
+            </button>
+          </div>
 
-          <!-- HỦY ĐƠN (khi PENDING hoặc CONFIRMED) -->
-          <button th:if="${order.status == T(com.bigkhoa.model.OrderStatus).PENDING
-                          or order.status == T(com.bigkhoa.model.OrderStatus).CONFIRMED}"
-                  class="btn btn-sm btn-outline-danger ms-0 ms-md-2"
-                  data-bs-toggle="modal" data-bs-target="#cancelModal">
-            <i class="fa fa-ban me-1"></i> Hủy đơn
-          </button>
+          <!-- Items table -->
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead>
+                <tr class="text-center">
+                  <th>Sản phẩm</th>
+                  <th>Hình ảnh</th>
+                  <th>Giá</th>
+                  <th>SL</th>
+                  <th>Thành tiền</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="item : ${items}" th:with="hasProduct=${item.product != null}" class="text-center">
+                  <td th:text="${hasProduct} ? ${item.product.name} : 'Sản phẩm đã ngừng kinh doanh'"></td>
+                  <td>
+                    <img th:if="${hasProduct}" th:src="${item.product.imageUrl}" th:alt="${item.product.name}"
+                         th:title="${item.product.name}" class="product-img" />
+                    <img th:unless="${hasProduct}" th:src="@{/images/product-placeholder.png}"
+                         alt="Không có hình ảnh" title="Không có hình ảnh" class="product-img" />
+                  </td>
+                  <td th:text="|${#numbers.formatDecimal(item.unitPrice, 0, 'COMMA', 0, 'POINT')} ₫|"></td>
+                  <td th:text="${item.quantity}"></td>
+                  <td th:text="|${#numbers.formatDecimal(item.unitPrice * item.quantity, 0, 'COMMA', 0, 'POINT')} ₫|"></td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr th:if="${order.totalBeforeDiscount != null}">
+                  <td colspan="4" class="text-end fw-bold">Tổng trước giảm:</td>
+                  <td class="fw-bold" th:text="|${#numbers.formatDecimal(order.totalBeforeDiscount, 0, 'COMMA', 0, 'POINT')} ₫|"></td>
+                </tr>
+                <tr th:if="${order.discountAmount != null}">
+                  <td colspan="4" class="text-end fw-bold">Giảm giá:</td>
+                  <td class="fw-bold text-success" th:text="|-${#numbers.formatDecimal(order.discountAmount, 0, 'COMMA', 0, 'POINT')} ₫|"></td>
+                </tr>
+                <tr>
+                  <td colspan="4" class="text-end fw-bold">Tổng cộng:</td>
+                  <td class="fw-bold text-danger" th:text="|${#numbers.formatDecimal(order.total, 0, 'COMMA', 0, 'POINT')} ₫|"></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <!-- Sửa địa chỉ giao hàng (giữ nguyên binding/điều kiện) -->
+          <div class="mt-4">
+            <h6 class="fw-bold mb-2">Địa chỉ giao hàng</h6>
+            <!-- Hiển thị địa chỉ hiện tại + nút mở form -->
+            <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
+              <div class="small text-muted">
+                <div class="fw-semibold" th:text="${order.recipientName}">Tên người nhận</div>
+                <div th:text="${order.recipientPhone}">0xxx</div>
+                <div th:text="${order.recipientAddress}">Địa chỉ...</div>
+              </div>
+              <div>
+                <button
+                  class="btn btn-outline-secondary btn-sm"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#editShipping"
+                  th:disabled="${!(order.status == T(com.bigkhoa.model.OrderStatus).PENDING
+                                  or order.status == T(com.bigkhoa.model.OrderStatus).CONFIRMED)}">
+                  Chỉnh sửa
+                </button>
+              </div>
+            </div>
+            <div class="collapse" id="editShipping" th:classappend="${shippingForm != null}? ' show'">
+              <form th:if="${shippingForm != null}" th:object="${shippingForm}"
+                    th:action="@{'/my-orders/' + ${order.id} + '/shipping'}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <div class="row g-3">
+                  <div class="col-md-4">
+                    <label class="form-label">Tên người nhận</label>
+                    <input class="form-control" th:field="*{recipientName}" placeholder="Nguyễn Văn A"/>
+                    <div class="text-danger small" th:if="${#fields.hasErrors('recipientName')}" th:errors="*{recipientName}"></div>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Số điện thoại</label>
+                    <input class="form-control" th:field="*{recipientPhone}" placeholder="0xxxxxxxxx"/>
+                    <div class="text-danger small" th:if="${#fields.hasErrors('recipientPhone')}" th:errors="*{recipientPhone}"></div>
+                  </div>
+                  <div class="col-md-12">
+                    <label class="form-label">Địa chỉ đầy đủ</label>
+                    <textarea class="form-control" th:field="*{recipientAddress}" rows="2"
+                              placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành"></textarea>
+                    <div class="text-danger small" th:if="${#fields.hasErrors('recipientAddress')}" th:errors="*{recipientAddress}"></div>
+                  </div>
+                </div>
+                <div class="mt-3 d-flex gap-2">
+                  <button type="submit" class="btn btn-primary"><i class="fa fa-save me-1"></i> Lưu địa chỉ</button>
+                  <button type="button" class="btn btn-light" data-bs-toggle="collapse" data-bs-target="#editShipping">Hủy</button>
+                </div>
+              </form>
+
+              <form th:unless="${shippingForm != null}"
+                    th:action="@{'/my-orders/' + ${order.id} + '/shipping'}"
+                    method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <div class="row g-3">
+                  <div class="col-md-4">
+                    <label class="form-label">Tên người nhận</label>
+                    <input class="form-control" name="recipientName" th:value="${order.recipientName}" placeholder="Nguyễn Văn A"/>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Số điện thoại</label>
+                    <input class="form-control" name="recipientPhone" th:value="${order.recipientPhone}" placeholder="0xxxxxxxxx"/>
+                  </div>
+                  <div class="col-md-12">
+                    <label class="form-label">Địa chỉ đầy đủ</label>
+                    <textarea class="form-control" name="recipientAddress" rows="2"
+                              th:text="${order.recipientAddress}"
+                              placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành"></textarea>
+                  </div>
+                </div>
+                <div class="mt-3 d-flex gap-2">
+                  <button type="submit" class="btn btn-primary"><i class="fa fa-save me-1"></i> Lưu địa chỉ</button>
+                  <button type="button" class="btn btn-light" data-bs-toggle="collapse" data-bs-target="#editShipping">Hủy</button>
+                </div>
+              </form>
+
+              <div class="text-muted small mt-2">
+                * Chỉ chỉnh được khi đơn đang <b>Chờ xác nhận</b> hoặc <b>Đã xác nhận</b>.
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
+    </div>
 
-      <hr/>
-      <h5 class="mb-3"><i class="fas fa-laptop me-1"></i> Danh sách sản phẩm</h5>
-      <div class="table-responsive">
-        <table class="table table-bordered align-middle">
-          <thead class="table-light text-center">
-            <tr>
-              <th>Sản phẩm</th>
-              <th>Hình ảnh</th>
-              <th>Giá</th>
-              <th>Số lượng</th>
-              <th>Thành tiền</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr th:each="item : ${items}" th:with="hasProduct=${item.product != null}" class="text-center">
-              <!-- Tên sản phẩm -->
-              <td th:text="${hasProduct} ? ${item.product.name} : 'Sản phẩm đã ngừng kinh doanh'"></td>
+    <!-- Right: Summary -->
+    <div class="col-lg-4">
+      <div class="card p-4 sticky-summary">
+        <h5 class="fw-bold mb-3">Tóm tắt đơn</h5>
+        <div class="d-flex justify-content-between mb-2">
+          <span class="text-muted">Mã đơn</span>
+          <span class="fw-semibold" th:text="${order.id}">#</span>
+        </div>
+        <div class="d-flex justify-content-between mb-2">
+          <span class="text-muted">Ngày đặt</span>
+          <span class="fw-semibold" th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}">--/--</span>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span class="text-muted">Trạng thái</span>
+          <span th:text="${order.status}"
+                th:class="${'badge ' + (
+                  order.status == T(com.bigkhoa.model.OrderStatus).PENDING    ? 'bg-warning text-dark' :
+                  order.status == T(com.bigkhoa.model.OrderStatus).CONFIRMED  ? 'bg-info text-dark' :
+                  order.status == T(com.bigkhoa.model.OrderStatus).SHIPPED    ? 'bg-primary text-light' :
+                  order.status == T(com.bigkhoa.model.OrderStatus).DELIVERED  ? 'bg-success text-light' :
+                  order.status == T(com.bigkhoa.model.OrderStatus).CANCELED   ? 'bg-danger text-light' :
+                  'bg-secondary')}">PENDING</span>
+        </div>
 
-              <!-- Hình ảnh -->
-              <td>
-                <img th:if="${hasProduct}"
-                     th:src="${item.product.imageUrl}"
-                     th:alt="${item.product.name}"
-                     th:title="${item.product.name}"
-                     class="product-img" />
-                <img th:unless="${hasProduct}"
-                     th:src="@{/images/product-placeholder.png}"
-                     alt="Không có hình ảnh"
-                     title="Không có hình ảnh"
-                     class="product-img" />
-              </td>
+        <div class="border-top pt-3 mt-3">
+          <div class="d-flex justify-content-between mb-2" th:if="${order.totalBeforeDiscount != null}">
+            <span class="text-muted">Tổng trước giảm</span>
+            <span class="fw-semibold" th:text="|${#numbers.formatDecimal(order.totalBeforeDiscount, 0, 'COMMA', 0, 'POINT')} ₫|">0</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2" th:if="${order.discountAmount != null}">
+            <span class="text-muted">Giảm giá</span>
+            <span class="fw-semibold text-success" th:text="|-${#numbers.formatDecimal(order.discountAmount, 0, 'COMMA', 0, 'POINT')} ₫|">0</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center py-2 border-top mt-2">
+            <span class="fw-bold">Tổng cộng</span>
+            <span class="fw-bold text-danger" th:text="|${#numbers.formatDecimal(order.total, 0, 'COMMA', 0, 'POINT')} ₫|">0</span>
+          </div>
+        </div>
 
-              <!-- Giá, SL, Thành tiền -->
-              <td th:text="|${#numbers.formatDecimal(item.unitPrice, 0, 'COMMA', 0, 'POINT')}₫|"></td>
-              <td th:text="${item.quantity}"></td>
-              <td th:text="|${#numbers.formatDecimal(item.unitPrice * item.quantity, 0, 'COMMA', 0, 'POINT')}₫|"></td>
-            </tr>
-          </tbody>
-          <tfoot>
-            <tr th:if="${order.totalBeforeDiscount != null}">
-              <td colspan="4" class="text-end fw-bold">Tổng trước giảm:</td>
-              <td class="fw-bold" th:text="|${#numbers.formatDecimal(order.totalBeforeDiscount, 0, 'COMMA', 0, 'POINT')}₫|"></td>
-            </tr>
-            <tr th:if="${order.discountAmount != null}">
-              <td colspan="4" class="text-end fw-bold">Giảm giá:</td>
-              <td class="fw-bold text-success"
-                  th:text="|-${#numbers.formatDecimal(order.discountAmount, 0, 'COMMA', 0, 'POINT')}₫|"></td>
-            </tr>
-            <tr>
-              <td colspan="4" class="text-end fw-bold">Tổng cộng:</td>
-              <td class="fw-bold text-danger"
-                  th:text="|${#numbers.formatDecimal(order.total, 0, 'COMMA', 0, 'POINT')}₫|"></td>
-            </tr>
-          </tfoot>
-        </table>
+        <div class="border-top pt-3 mt-3">
+          <div class="small text-muted mb-1">Phương thức thanh toán</div>
+          <div class="fw-semibold" th:switch="${order.paymentMethod}">
+            <span th:case="${T(com.bigkhoa.model.PaymentMethod).COD}">Thanh toán khi nhận hàng (COD)</span>
+            <span th:case="${T(com.bigkhoa.model.PaymentMethod).VNPAY}">VNPAY</span>
+            <span th:case="*">Khác</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-</div>
+</main>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 
 <!-- Review Modal -->
 <div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
@@ -312,7 +326,6 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <!-- Lặp theo danh sách items; chỉ cho đánh giá khi còn product -->
         <div class="row g-3" th:each="it : ${items}" th:if="${it.product != null}">
           <div class="col-md-8">
             <div><b th:text="${it.product.name}"></b></div>
@@ -335,7 +348,7 @@
       </div>
     </div>
   </div>
-</div>
+  </div>
 
 <!-- Cancel Modal -->
 <div class="modal fade" id="cancelModal" tabindex="-1" aria-hidden="true">
@@ -347,7 +360,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
         </div>
         <div class="modal-body">
-          <p class="mb-2">Anh chắc chắn muốn hủy đơn này? Hành động không thể hoàn tác.</p>
+          <p class="mb-2">Bạn chắc chắn muốn hủy đơn này? Hành động không thể hoàn tác.</p>
           <div class="mb-3">
             <label class="form-label">Lý do hủy (tùy chọn)</label>
             <textarea class="form-control" name="reason" rows="3"
@@ -356,7 +369,7 @@
         </div>
         <div class="modal-footer">
           <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
           <button type="submit" class="btn btn-danger">
             <i class="fa fa-ban me-1"></i> Xác nhận hủy
           </button>
@@ -365,8 +378,6 @@
     </div>
   </div>
 </div>
-
-<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 
 <!-- JS inline: gửi đánh giá kèm CSRF -->
 <script>
@@ -401,20 +412,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
       try {
         const res = await fetch(`/reviews/orders/${orderId}/laptops/${laptopId}`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({ rating, comment })
+          method: 'POST', headers, body: JSON.stringify({ rating, comment })
         });
-        if (res.ok) {
-          ok++;
-        } else {
-          fail++;
-          console.error('Send review failed:', res.status, await res.text());
-        }
-      } catch (err) {
-        fail++;
-        console.error('Network/JS error while sending review:', err);
-      }
+        if (res.ok) ok++; else fail++;
+      } catch (err) { fail++; }
     }
 
     if (ok > 0 && fail === 0) {
@@ -422,10 +423,11 @@ document.addEventListener('DOMContentLoaded', function () {
     } else if (ok > 0 && fail > 0) {
       alert(`Một số đánh giá gửi thất bại. Thành công: ${ok}, Lỗi: ${fail}. Mở Console để xem chi tiết.`);
     } else {
-      alert('Không có đánh giá nào được gửi. Kiểm tra lại nội dung hoặc mở Console để xem lỗi.');
+      alert('Không có đánh giá nào được gửi. Kiểm tra nội dung hoặc Console để xem lỗi.');
     }
   });
 });
 </script>
+
 </body>
 </html>

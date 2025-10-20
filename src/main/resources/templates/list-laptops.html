@@ -17,7 +17,7 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow fixed-top">
       <div class="container">
-        <a class="navbar-brand fw-bold" th:href="@{/}">Laptop Shop</a>
+        <a class="navbar-brand fw-bold" th:href="@{/}">Laptop SHOP</a>
         <button
           class="navbar-toggler"
           type="button"
@@ -355,25 +355,29 @@
 
         <!-- Controls -->
         <div class="col-12">
-          <div class="d-flex gap-3 justify-content-end">
+          <div class="control-buttons d-flex gap-3 justify-content-end">
             <button
-              class="btn btn-control"
+              class="btn control-btn filter-btn"
               type="button"
               data-bs-toggle="offcanvas"
               data-bs-target="#filterOffcanvas"
             >
-              <i class="bi bi-funnel-fill me-2"></i>
-              <span>Bộ lọc</span>
+              <div class="btn-content">
+                <i class="bi bi-funnel-fill icon-animated"></i>
+                <span>Bộ lọc</span>
+              </div>
             </button>
             <div class="dropdown">
               <button
-                class="btn btn-control dropdown-toggle"
+                class="btn control-btn sort-btn dropdown-toggle"
                 type="button"
                 id="sortDropdown"
                 data-bs-toggle="dropdown"
               >
-                <i class="bi bi-arrow-down-up me-2"></i>
-                <span>Sắp xếp</span>
+                <div class="btn-content">
+                  <i class="bi bi-arrow-down-up icon-animated"></i>
+                  <span>Sắp xếp</span>
+                </div>
               </button>
               <ul
                 class="dropdown-menu dropdown-menu-end"
@@ -408,8 +412,6 @@
           </div>
         </div>
       </div>
-
-
     </div>
 
     <!-- 1.1 Offcanvas Filter Sidebar -->
@@ -553,6 +555,79 @@
       </div>
 
       <style>
+        /* Category Tabs Styling */
+        .nav-pills .nav-link {
+          color: #2b3035;
+          background-color: #ffffff;
+          border: 1px solid #e9ecef;
+          margin: 0 0.25rem;
+          padding: 1rem 1.5rem;
+          border-radius: 0.75rem;
+          font-weight: 500;
+          transition: all 0.3s ease;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .nav-pills .nav-link::before {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(
+            45deg,
+            rgba(var(--bs-primary-rgb), 0.1),
+            rgba(var(--bs-primary-rgb), 0.05)
+          );
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
+
+        .nav-pills .nav-link:hover {
+          color: var(--bs-primary);
+          border-color: rgba(var(--bs-primary-rgb), 0.3);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.1);
+        }
+
+        .nav-pills .nav-link:hover::before {
+          opacity: 1;
+        }
+
+        .nav-pills .nav-link.active {
+          color: #fff;
+          background: linear-gradient(
+            45deg,
+            var(--bs-primary),
+            rgba(var(--bs-primary-rgb), 0.9)
+          );
+          border-color: var(--bs-primary);
+          box-shadow: 0 4px 15px rgba(var(--bs-primary-rgb), 0.25);
+        }
+
+        .nav-pills .nav-link.active::before {
+          opacity: 0;
+        }
+
+        .nav-pills .nav-link i {
+          font-size: 1.1rem;
+          margin-right: 0.75rem;
+          vertical-align: -2px;
+          transition: transform 0.3s ease;
+        }
+
+        .nav-pills .nav-link:hover i {
+          transform: scale(1.1);
+        }
+
+        .nav-pills .nav-link span {
+          font-size: 0.95rem;
+          position: relative;
+          z-index: 1;
+        }
+
         /* Filter Sidebar Styling */
         .filter-sidebar {
           max-width: 400px;
@@ -639,6 +714,119 @@
         .filter-actions .btn-primary {
           box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.2);
         }
+
+        /* Control Buttons Styling */
+        .control-buttons {
+          position: relative;
+          z-index: 1;
+        }
+
+        .control-btn {
+          position: relative;
+          padding: 0.35rem 0.8rem;
+          background: #fff;
+          border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+          border-radius: 6px;
+          color: #2b3035;
+          font-weight: 500;
+          font-size: 0.85rem;
+          line-height: 1.2;
+          transition: all 0.3s ease;
+          overflow: hidden;
+        }
+
+        .control-btn::before {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(
+            45deg,
+            rgba(var(--bs-primary-rgb), 0.1),
+            rgba(var(--bs-primary-rgb), 0.05)
+          );
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
+
+        .control-btn:hover {
+          transform: translateY(-2px);
+          border-color: var(--bs-primary);
+          color: var(--bs-primary);
+          box-shadow: 0 4px 15px rgba(var(--bs-primary-rgb), 0.15);
+        }
+
+        .control-btn:hover::before {
+          opacity: 1;
+        }
+
+        .btn-content {
+          position: relative;
+          z-index: 1;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
+        .icon-animated {
+          font-size: 0.85rem;
+          transition: transform 0.3s ease;
+          vertical-align: -1px;
+        }
+
+        .control-btn:hover .icon-animated {
+          transform: scale(1.1);
+        }
+
+        /* Dropdown Menu Styling */
+        .dropdown-menu {
+          min-width: 180px;
+          padding: 0.4rem;
+          border: 1px solid rgba(var(--bs-primary-rgb), 0.1);
+          border-radius: 8px;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+          animation: dropdownFade 0.2s ease;
+        }
+
+        .dropdown-item {
+          padding: 0.35rem 0.6rem;
+          border-radius: 4px;
+          font-size: 0.85rem;
+          line-height: 1.2;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          color: #2b3035;
+          transition: all 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+          background: rgba(var(--bs-primary-rgb), 0.08);
+          color: var(--bs-primary);
+          transform: translateX(3px);
+        }
+
+        .dropdown-item i {
+          font-size: 1rem;
+          transition: transform 0.2s ease;
+        }
+
+        .dropdown-item:hover i {
+          transform: scale(1.1);
+        }
+
+        @keyframes dropdownFade {
+          from {
+            opacity: 0;
+            transform: translateY(5px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
       </style>
     </div>
 
@@ -649,20 +837,34 @@
         <h2 class="display-6 fw-bold">
           <span th:if="${selectedCategoryId == null}" th:switch="${category}">
             <span th:case="'all'">
-              <i class="bi bi-stars text-warning me-2"></i>Gợi ý cho bạn
+              <i
+                class="bi bi-stars category-icon category-icon-featured me-2"
+              ></i
+              >Gợi ý cho bạn
             </span>
             <span th:case="'office'">
-              <i class="bi bi-briefcase text-primary me-2"></i>Laptop văn phòng
+              <i
+                class="bi bi-briefcase category-icon category-icon-office me-2"
+              ></i
+              >Laptop văn phòng
             </span>
             <span th:case="'gaming'">
-              <i class="bi bi-controller text-danger me-2"></i>Sản phẩm Gaming
+              <i
+                class="bi bi-controller category-icon category-icon-gaming me-2"
+              ></i
+              >Sản phẩm Gaming
             </span>
             <span th:case="'study'">
-              <i class="bi bi-mortarboard text-success me-2"></i>Laptop sinh
-              viên
+              <i
+                class="bi bi-mortarboard category-icon category-icon-study me-2"
+              ></i
+              >Laptop sinh viên
             </span>
             <span th:case="*">
-              <i class="bi bi-stars text-warning me-2"></i>Sản phẩm nổi bật
+              <i
+                class="bi bi-stars category-icon category-icon-featured me-2"
+              ></i
+              >Sản phẩm nổi bật
             </span>
           </span>
           <span
@@ -670,17 +872,28 @@
             th:switch="${selectedCategoryId}"
           >
             <span th:case="1">
-              <i class="bi bi-briefcase text-primary me-2"></i>Laptop văn phòng
+              <i
+                class="bi bi-briefcase category-icon category-icon-office me-2"
+              ></i
+              >Laptop văn phòng
             </span>
             <span th:case="2">
-              <i class="bi bi-mortarboard text-success me-2"></i>Laptop sinh
-              viên
+              <i
+                class="bi bi-mortarboard category-icon category-icon-study me-2"
+              ></i
+              >Laptop sinh viên
             </span>
             <span th:case="3">
-              <i class="bi bi-controller text-danger me-2"></i>Sản phẩm Gaming
+              <i
+                class="bi bi-controller category-icon category-icon-gaming me-2"
+              ></i
+              >Sản phẩm Gaming
             </span>
             <span th:case="*">
-              <i class="bi bi-stars text-warning me-2"></i>Gợi ý cho bạn
+              <i
+                class="bi bi-stars category-icon category-icon-featured me-2"
+              ></i
+              >Gợi ý cho bạn
             </span>
           </span>
         </h2>
@@ -793,6 +1006,44 @@
         .section-header {
           position: relative;
           margin-bottom: 3rem;
+        }
+
+        /* Category Icons */
+        .category-icon {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 40px;
+          height: 40px;
+          border-radius: 12px;
+          font-size: 1.25rem;
+          background: rgba(var(--bs-primary-rgb), 0.1);
+          color: var(--bs-primary);
+          transition: all 0.3s ease;
+        }
+
+        .category-icon-featured {
+          background: linear-gradient(135deg, #ffd700, #ffa500);
+          color: #fff;
+          box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2);
+        }
+
+        .category-icon-office {
+          background: linear-gradient(135deg, #60a5fa, #3b82f6);
+          color: #fff;
+          box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+        }
+
+        .category-icon-gaming {
+          background: linear-gradient(135deg, #f87171, #ef4444);
+          color: #fff;
+          box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
+        }
+
+        .category-icon-study {
+          background: linear-gradient(135deg, #34d399, #10b981);
+          color: #fff;
+          box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
         }
 
         .section-header::after {
@@ -1077,46 +1328,440 @@
       </div>
     </div>
 
-    <section id="contact-home">
-      <div class="container text-center">
-        <h2>Liên hệ với chúng tôi</h2>
-        <div class="row justify-content-center mt-4">
-          <div class="col-md-4 contact-item">
-            <i class="bi bi-geo-fill"></i>
-            <p>123 Đường QL1A, Quận 12, TP. HCM</p>
+    <section id="contact-home" class="contact-section py-5">
+      <div class="container">
+        <div class="row g-5 align-items-center">
+          <!-- Contact Information -->
+          <div class="col-lg-6">
+            <div class="contact-content pe-lg-5">
+              <!-- Section Header -->
+              <div class="section-header mb-5">
+                <span class="sub-title" data-aos="fade-up"
+                  >Liên hệ với chúng tôi</span
+                >
+                <h2 class="title" data-aos="fade-up" data-aos-delay="100">
+                  Bạn cần hỗ trợ? <br />
+                  <span class="gradient-text">Chúng tôi luôn sẵn sàng</span>
+                </h2>
+                <p class="description" data-aos="fade-up" data-aos-delay="200">
+                  Đội ngũ chuyên viên giàu kinh nghiệm của chúng tôi luôn sẵn
+                  sàng hỗ trợ bạn 24/7. Hãy liên hệ ngay để được tư vấn!
+                </p>
+                <a
+                  href="#"
+                  class="btn-category"
+                  data-aos="fade-up"
+                  data-aos-delay="300"
+                >
+                  Tất cả
+                </a>
+              </div>
+
+              <!-- Contact Cards -->
+              <div class="contact-cards">
+                <!-- Location Card -->
+                <div
+                  class="contact-card"
+                  data-aos="fade-up"
+                  data-aos-delay="100"
+                >
+                  <div class="card-icon">
+                    <i class="bi bi-geo-alt-fill"></i>
+                  </div>
+                  <div class="card-content">
+                    <h5>Địa chỉ cửa hàng</h5>
+                    <p>123 Đường QL1A, Quận 12, TP. HCM</p>
+                  </div>
+                </div>
+
+                <!-- Phone Card -->
+                <div
+                  class="contact-card"
+                  data-aos="fade-up"
+                  data-aos-delay="200"
+                >
+                  <div class="card-icon">
+                    <i class="bi bi-telephone-fill"></i>
+                  </div>
+                  <div class="card-content">
+                    <h5>Hotline</h5>
+                    <p>0394166913</p>
+                  </div>
+                </div>
+
+                <!-- Email Card -->
+                <div
+                  class="contact-card"
+                  data-aos="fade-up"
+                  data-aos-delay="300"
+                >
+                  <div class="card-icon">
+                    <i class="bi bi-envelope-fill"></i>
+                  </div>
+                  <div class="card-content">
+                    <h5>Email hỗ trợ</h5>
+                    <p>Ductieng4231@gmail.com</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="col-md-4 contact-item">
-            <i class="bi bi-telephone-fill"></i>
-            <p>0394166913</p>
-          </div>
-          <div class="col-md-4 contact-item">
-            <i class="bi bi-envelope-fill"></i>
-            <p>Ductieng4231@gmail.com</p>
-          </div>
-        </div>
-        <div class="row justify-content-center mt-4">
-          <div class="col-12">
-            <div
-              style="
-                width: 100%;
-                height: 300px;
-                overflow: hidden;
-                border-radius: 1rem;
-              "
-            >
-              <iframe
-                width="100%"
-                height="100%"
-                frameborder="0"
-                style="border: 0"
-                src="https://maps.google.com/maps?q=10.861633,106.657286&z=19&output=embed"
-                allowfullscreen
-                loading="lazy"
-              ></iframe>
+
+          <!-- Map -->
+          <div class="col-lg-6">
+            <div class="contact-map" data-aos="zoom-in">
+              <div class="map-container">
+                <iframe
+                  src="https://maps.google.com/maps?q=10.861633,106.657286&z=19&output=embed"
+                  allowfullscreen
+                  loading="lazy"
+                  title="Bản đồ cửa hàng"
+                ></iframe>
+              </div>
+              <div class="map-overlay">
+                <div class="overlay-content">
+                  <h4>Ghé thăm cửa hàng</h4>
+                  <p>Trải nghiệm sản phẩm trực tiếp tại showroom</p>
+                  <a
+                    href="#"
+                    class="btn btn-light"
+                    data-bs-toggle="modal"
+                    data-bs-target="#infoModal"
+                  >
+                    <i class="bi bi-info-circle me-2"></i>Chi tiết
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      <style>
+        /* Button Style */
+        .btn-category {
+          display: inline-block;
+          padding: 0.75rem 2.5rem;
+          background: rgba(255, 255, 255, 0.1);
+          color: white;
+          border-radius: 2rem;
+          font-weight: 500;
+          text-decoration: none;
+          transition: all 0.3s ease;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          backdrop-filter: blur(10px);
+        }
+
+        .btn-category:hover {
+          background: rgba(255, 255, 255, 0.2);
+          transform: translateY(-2px);
+          border-color: rgba(255, 255, 255, 0.3);
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Contact Section Styles */
+        .contact-section {
+          background: linear-gradient(135deg, #4338ca 0%, #3730a3 100%);
+          position: relative;
+          overflow: hidden;
+          color: white;
+        }
+
+        .contact-section::before {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: radial-gradient(
+              circle at 20% 20%,
+              rgba(255, 255, 255, 0.1) 0%,
+              transparent 50%
+            ),
+            radial-gradient(
+              circle at 80% 80%,
+              rgba(255, 255, 255, 0.1) 0%,
+              transparent 50%
+            );
+          pointer-events: none;
+        }
+
+        .contact-section::after {
+          content: "";
+          position: absolute;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
+          background: radial-gradient(
+            circle at center,
+            rgba(var(--bs-primary-rgb), 0.03) 0%,
+            transparent 50%
+          );
+          animation: pulseGlow 15s ease-in-out infinite;
+          pointer-events: none;
+        }
+
+        @keyframes pulseGlow {
+          0% {
+            transform: translate(0, 0);
+          }
+          50% {
+            transform: translate(-5%, -5%);
+          }
+          100% {
+            transform: translate(0, 0);
+          }
+        }
+
+        /* Section Header */
+        .section-header .sub-title {
+          display: inline-block;
+          background: rgba(255, 255, 255, 0.1);
+          color: #93c5fd;
+          padding: 0.5rem 1rem;
+          border-radius: 2rem;
+          font-size: 0.9rem;
+          font-weight: 500;
+          margin-bottom: 1rem;
+        }
+
+        .section-header .title {
+          font-size: 2.5rem;
+          font-weight: 700;
+          margin-bottom: 1rem;
+          color: white;
+        }
+
+        .section-header .title .gradient-text {
+          background: linear-gradient(45deg, #60a5fa, #93c5fd);
+          background-clip: text;
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          display: inline-block;
+        }
+
+        .section-header .description {
+          color: rgba(255, 255, 255, 0.9);
+          font-size: 1.1rem;
+          line-height: 1.6;
+        }
+
+        /* Contact Cards */
+        .contact-cards {
+          display: grid;
+          gap: 1.5rem;
+        }
+
+        .contact-card {
+          display: flex;
+          align-items: flex-start;
+          gap: 1.5rem;
+          background: rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(10px);
+          padding: 1.5rem;
+          border-radius: 1rem;
+          transition: all 0.3s ease;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .contact-card::before {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(
+            45deg,
+            rgba(255, 255, 255, 0.1) 0%,
+            rgba(255, 255, 255, 0.05) 100%
+          );
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
+
+        .contact-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+          border-color: rgba(255, 255, 255, 0.3);
+          background: rgba(255, 255, 255, 0.15);
+        }
+
+        .contact-card:hover::before {
+          opacity: 1;
+        }
+
+        .card-icon {
+          width: 60px;
+          height: 60px;
+          background: linear-gradient(135deg, #60a5fa, #3b82f6);
+          border-radius: 1rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.5rem;
+          color: white;
+          flex-shrink: 0;
+          position: relative;
+          overflow: hidden;
+          box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+          transition: transform 0.3s ease;
+        }
+
+        .card-icon::after {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(
+            45deg,
+            rgba(255, 255, 255, 0.2) 0%,
+            rgba(255, 255, 255, 0) 100%
+          );
+          transform: translateY(100%);
+          transition: transform 0.3s ease;
+        }
+
+        .contact-card:hover .card-icon {
+          transform: scale(1.1);
+        }
+
+        .contact-card:hover .card-icon::after {
+          transform: translateY(0);
+        }
+
+        .card-content h5 {
+          font-size: 1.1rem;
+          font-weight: 600;
+          margin-bottom: 0.5rem;
+          color: white;
+        }
+
+        .card-content p {
+          color: rgba(255, 255, 255, 0.8);
+          margin-bottom: 0;
+        }
+
+        /* Map Styles */
+        .contact-map {
+          position: relative;
+          border-radius: 1.5rem;
+          overflow: hidden;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .map-container {
+          position: relative;
+          padding-top: 75%;
+          background: #e9ecef;
+        }
+
+        .map-container iframe {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          border: 0;
+        }
+
+        .map-overlay {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background: linear-gradient(
+            0deg,
+            rgba(0, 0, 0, 0.9) 0%,
+            rgba(0, 0, 0, 0) 100%
+          );
+          padding: 2.5rem;
+          color: white;
+          text-align: center;
+          transform: translateY(100%);
+          transition: transform 0.5s ease;
+          backdrop-filter: blur(5px);
+        }
+
+        .contact-map:hover .map-overlay {
+          transform: translateY(0);
+        }
+
+        .overlay-content {
+          transform: translateY(20px);
+          opacity: 0;
+          transition: all 0.5s ease 0.2s;
+        }
+
+        .contact-map:hover .overlay-content {
+          transform: translateY(0);
+          opacity: 1;
+        }
+
+        .overlay-content h4 {
+          font-size: 1.5rem;
+          font-weight: 700;
+          margin-bottom: 0.75rem;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .overlay-content p {
+          font-size: 1rem;
+          opacity: 0.95;
+          margin-bottom: 1.25rem;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .overlay-content .btn {
+          border-radius: 2rem;
+          padding: 0.75rem 1.75rem;
+          font-weight: 500;
+          transform: translateY(20px);
+          transition: all 0.3s ease;
+          background: rgba(255, 255, 255, 0.1);
+          color: white;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          backdrop-filter: blur(10px);
+        }
+
+        .overlay-content .btn:hover {
+          background: rgba(255, 255, 255, 0.2);
+          transform: translateY(20px) scale(1.05);
+          border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 991.98px) {
+          .contact-content {
+            padding-right: 0 !important;
+            margin-bottom: 2rem;
+          }
+
+          .section-header .title {
+            font-size: 2rem;
+          }
+        }
+
+        @media (max-width: 767.98px) {
+          .contact-cards {
+            grid-template-columns: 1fr;
+          }
+
+          .map-overlay {
+            padding: 1.5rem;
+          }
+
+          .overlay-content h4 {
+            font-size: 1.25rem;
+          }
+        }
+      </style>
     </section>
 
     <!-- Floating Cart CTA -->

@@ -1,188 +1,583 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title th:text="${user.id == null ? 'Thêm người dùng' : 'Chỉnh sửa người dùng'}">Form Người dùng</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title
+      th:text="${user.id == null ? 'Thêm người dùng' : 'Chỉnh sửa người dùng'}"
+    >
+      Form Người dùng
+    </title>
 
-  <!-- Bootstrap CSS -->
-  <link href="/css/bootstrap.min.css" rel="stylesheet"/>
-  <!-- FontAwesome -->
-  <link href="/css/fontawesome.min.css" rel="stylesheet"/>
-</head>
+    <!-- Bootstrap CSS -->
+    <link href="/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- FontAwesome -->
+    <link href="/css/fontawesome.min.css" rel="stylesheet" />
+    <!-- SweetAlert2 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css"
+      rel="stylesheet"
+    />
 
-<body style="background: #f0f2f5; font-family: 'Poppins', sans-serif;">
+    <style>
+      :root {
+        --bs-primary-rgb: 13, 110, 253;
+        --bs-success-rgb: 25, 135, 84;
+      }
 
-  <div class="container mt-5">
-    <div class="card shadow-sm">
+      body {
+        background: #f8f9fa;
+        font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      }
 
-      <!-- Header + Nút quay về trang chủ admin -->
-      <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">
-          <i class="fas fa-user-plus me-2"></i>
-          <span th:text="${user.id == null ? 'Thêm người dùng mới' : 'Chỉnh sửa người dùng'}"></span>
-        </h5>
-        <a th:href="@{/admin/dashboard}" class="btn btn-light btn-sm text-primary">
-          <i class="fas fa-home me-1"></i> Quay lại trang chủ Admin
-        </a>
-      </div>
+      .card {
+        border: none;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+      }
 
-      <div class="card-body">
-        <form th:action="@{/admin/user/save}" th:object="${user}" method="post"
-              onsubmit="return confirm('Bạn có chắc chắn muốn lưu người dùng này không?');">
-          <!-- CSRF -->
-          <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      .card-header {
+        background: linear-gradient(45deg, #0d6efd, #0a58ca);
+        border-bottom: none;
+      }
 
-          <!-- ẩn id khi edit -->
-          <input type="hidden" th:if="${user.id != null}" th:field="*{id}"/>
+      .form-control:focus,
+      .form-select:focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+      }
 
-          <div class="mb-3">
-            <label class="form-label">Username</label>
-            <input type="text"
-                   class="form-control"
-                   th:field="*{username}"
-                   placeholder="Nhập username"
-                   autocomplete="username"
-                   required/>
-            <div th:if="${#fields.hasErrors('username')}" class="text-danger" th:errors="*{username}"></div>
-            <!-- Báo trùng tức thì -->
-            <div id="usernameHelp" class="form-text text-danger"></div>
-          </div>
+      .form-floating > .form-control:focus ~ label,
+      .form-floating > .form-control:not(:placeholder-shown) ~ label {
+        color: #0d6efd;
+        opacity: 0.85;
+      }
 
-          <div class="mb-3" th:if="${user.id == null}">
-            <label class="form-label">Password</label>
-            <input type="password"
-                   class="form-control"
-                   th:field="*{password}"
-                   placeholder="Nhập mật khẩu"
-                   autocomplete="new-password"
-                   required/>
-            <div th:if="${#fields.hasErrors('password')}" class="text-danger" th:errors="*{password}"></div>
-          </div>
+      .btn-primary {
+        background: linear-gradient(45deg, #0d6efd, #0a58ca);
+        border: none;
+      }
 
-          <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input type="email"
-                   class="form-control"
-                   th:field="*{email}"
-                   placeholder="Nhập email"
-                   autocomplete="email"
-                   required/>
-            <div th:if="${#fields.hasErrors('email')}" class="text-danger" th:errors="*{email}"></div>
-            <!-- Báo trùng tức thì -->
-            <div id="emailHelp" class="form-text text-danger"></div>
-          </div>
+      .btn-success {
+        background: linear-gradient(45deg, #198754, #157347);
+        border: none;
+      }
 
-          <div class="mb-3">
-            <label class="form-label">Số điện thoại</label>
-            <input type="tel"
-                   class="form-control"
-                   th:field="*{phone}"
-                   placeholder="Nhập số điện thoại"
-                   pattern="\d{10,15}"
-                   required/>
-            <div th:if="${#fields.hasErrors('phone')}" class="text-danger" th:errors="*{phone}"></div>
-          </div>
+      .input-group-text {
+        background: transparent;
+        border-right: 0;
+      }
 
-          <div class="mb-3">
-            <label class="form-label">Role</label>
-            <select class="form-select" th:field="*{role}">
-              <option th:value="ROLE_USER">ROLE_USER</option>
-              <option th:value="ROLE_ADMIN">ROLE_ADMIN</option>
-            </select>
-          </div>
+      .form-control.is-invalid:focus,
+      .was-validated .form-control:invalid:focus {
+        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+      }
 
-          <div class="d-flex justify-content-between">
-            <button type="submit"
-                    class="btn btn-success"
-                    th:text="${user.id == null ? 'Tạo mới' : 'Cập nhật'}">
-              Lưu
-            </button>
+      .form-check-input:checked {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+      }
 
-            <!-- Giữ nút Hủy và thêm nút Trang chủ Admin dưới form nếu anh muốn bấm ở đây -->
-            <div class="d-flex gap-2">
-              <a th:href="@{/admin/dashboard}"
-                 class="btn btn-secondary"
-                 onclick="return confirm('Bạn có chắc chắn muốn hủy không?');">
-                Hủy
-              </a>
-              <a th:href="@{/admin/dashboard}" class="btn btn-outline-primary">
-                <i class="fas fa-home me-1"></i> Quay Về
-              </a>
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .fade-in {
+        animation: fadeIn 0.3s ease-out;
+      }
+
+      .btn-floating {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        z-index: 1030;
+      }
+    </style>
+  </head>
+
+  <body style="background: #f0f2f5; font-family: 'Poppins', sans-serif">
+    <div class="container mt-5">
+      <div class="card shadow-sm">
+        <!-- Header + Nút quay về trang chủ admin -->
+        <div
+          class="card-header bg-primary text-white d-flex justify-content-between align-items-center"
+        >
+          <h5 class="mb-0">
+            <i class="fas fa-user-plus me-2"></i>
+            <span
+              th:text="${user.id == null ? 'Thêm người dùng mới' : 'Chỉnh sửa người dùng'}"
+            ></span>
+          </h5>
+          <a
+            th:href="@{/admin/dashboard}"
+            class="btn btn-light btn-sm text-primary"
+          >
+            <i class="fas fa-home me-1"></i> Quay lại trang chủ Admin
+          </a>
+        </div>
+
+        <div class="card-body">
+          <form
+            th:action="@{/admin/user/save}"
+            th:object="${user}"
+            method="post"
+            onsubmit="return confirm('Bạn có chắc chắn muốn lưu người dùng này không?');"
+          >
+            <!-- CSRF -->
+            <input
+              type="hidden"
+              th:if="${_csrf != null}"
+              th:name="${_csrf.parameterName}"
+              th:value="${_csrf.token}"
+            />
+
+            <!-- ẩn id khi edit -->
+            <input type="hidden" th:if="${user.id != null}" th:field="*{id}" />
+
+            <div class="row g-4">
+              <!-- Username -->
+              <div class="col-md-6">
+                <div class="form-floating mb-1">
+                  <input
+                    type="text"
+                    class="form-control"
+                    th:field="*{username}"
+                    th:classappend="${#fields.hasErrors('username')} ? 'is-invalid' : ''"
+                    placeholder="Nhập username"
+                    autocomplete="username"
+                    required
+                  />
+                  <label> <i class="fas fa-user me-2"></i>Tên đăng nhập </label>
+                </div>
+                <div class="form-text text-muted small">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Tên đăng nhập phải có ít nhất 3 ký tự, không chứa ký tự đặc
+                  biệt
+                </div>
+                <div
+                  th:if="${#fields.hasErrors('username')}"
+                  class="invalid-feedback"
+                  th:errors="*{username}"
+                ></div>
+                <div id="usernameHelp" class="form-text text-danger"></div>
+              </div>
+
+              <!-- Password -->
+              <div class="col-md-6" th:if="${user.id == null}">
+                <div class="form-floating mb-1">
+                  <input
+                    type="password"
+                    class="form-control"
+                    th:field="*{password}"
+                    th:classappend="${#fields.hasErrors('password')} ? 'is-invalid' : ''"
+                    placeholder="Nhập mật khẩu"
+                    autocomplete="new-password"
+                    required
+                  />
+                  <label> <i class="fas fa-lock me-2"></i>Mật khẩu </label>
+                </div>
+                <div class="form-text text-muted small">
+                  <i class="fas fa-shield-alt me-1"></i>
+                  Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường
+                  và số
+                </div>
+                <div
+                  th:if="${#fields.hasErrors('password')}"
+                  class="invalid-feedback"
+                  th:errors="*{password}"
+                ></div>
+              </div>
+
+              <!-- Email -->
+              <div class="col-md-6">
+                <div class="form-floating mb-1">
+                  <input
+                    type="email"
+                    class="form-control"
+                    th:field="*{email}"
+                    th:classappend="${#fields.hasErrors('email')} ? 'is-invalid' : ''"
+                    placeholder="Nhập email"
+                    autocomplete="email"
+                    required
+                  />
+                  <label> <i class="fas fa-envelope me-2"></i>Email </label>
+                </div>
+                <div class="form-text text-muted small">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Email sẽ được sử dụng để xác thực và khôi phục tài khoản
+                </div>
+                <div
+                  th:if="${#fields.hasErrors('email')}"
+                  class="invalid-feedback"
+                  th:errors="*{email}"
+                ></div>
+                <div id="emailHelp" class="form-text text-danger"></div>
+              </div>
+
+              <!-- Phone -->
+              <div class="col-md-6">
+                <div class="form-floating mb-1">
+                  <input
+                    type="tel"
+                    class="form-control"
+                    th:field="*{phone}"
+                    th:classappend="${#fields.hasErrors('phone')} ? 'is-invalid' : ''"
+                    placeholder="Nhập số điện thoại"
+                    pattern="\d{10,15}"
+                    required
+                  />
+                  <label>
+                    <i class="fas fa-phone me-2"></i>Số điện thoại
+                  </label>
+                </div>
+                <div class="form-text text-muted small">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Nhập số điện thoại 10-15 chữ số, không bao gồm các ký tự khác
+                </div>
+                <div
+                  th:if="${#fields.hasErrors('phone')}"
+                  class="invalid-feedback"
+                  th:errors="*{phone}"
+                ></div>
+              </div>
+
+              <!-- Role -->
+              <div class="col-12">
+                <div class="card bg-light">
+                  <div class="card-body">
+                    <div class="form-floating">
+                      <select
+                        class="form-select"
+                        th:field="*{role}"
+                        aria-label="Chọn vai trò người dùng"
+                      >
+                        <option th:value="ROLE_USER">
+                          <i class="fas fa-user me-2"></i>Người dùng (User)
+                        </option>
+                        <option th:value="ROLE_ADMIN">
+                          <i class="fas fa-user-shield me-2"></i>Quản trị viên
+                          (Admin)
+                        </option>
+                      </select>
+                      <label>
+                        <i class="fas fa-user-tag me-2"></i>Vai trò người dùng
+                      </label>
+                    </div>
+                    <div class="form-text text-muted small mt-2">
+                      <i class="fas fa-info-circle me-1"></i>
+                      Quản trị viên có toàn quyền quản lý hệ thống, người dùng
+                      chỉ có quyền sử dụng các tính năng cơ bản
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
+
+            <hr class="my-4" />
+
+            <div class="d-flex justify-content-between align-items-center">
+              <button
+                type="submit"
+                class="btn btn-success btn-lg px-4"
+                id="submitBtn"
+              >
+                <i class="fas fa-save me-2"></i>
+                <span th:text="${user.id == null ? 'Tạo mới' : 'Cập nhật'}"
+                  >Lưu</span
+                >
+              </button>
+
+              <div class="d-flex gap-3">
+                <a
+                  th:href="@{/admin/dashboard}"
+                  class="btn btn-light"
+                  id="cancelBtn"
+                >
+                  <i class="fas fa-times me-2"></i>Hủy
+                </a>
+                <a
+                  th:href="@{/admin/dashboard}"
+                  class="btn btn-outline-primary"
+                >
+                  <i class="fas fa-home me-2"></i>Quay Về Dashboard
+                </a>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Progress Indicator -->
+      <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050">
+        <div
+          class="toast align-items-center text-white bg-success border-0"
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
+          id="successToast"
+        >
+          <div class="d-flex">
+            <div class="toast-body">
+              <i class="fas fa-check-circle me-2"></i>
+              <span id="toastMessage">Thao tác thành công!</span>
+            </div>
+            <button
+              type="button"
+              class="btn-close btn-close-white me-2 m-auto"
+              data-bs-dismiss="toast"
+              aria-label="Close"
+            ></button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
-  </div>
 
-  <footer th:fragment="admin-footer">
-    <div class="container text-center py-4 border-top mt-5">
-      <p class="mb-1">&copy; <span th:text="${T(java.time.Year).now()}">2025</span> ADMIN MANAGER - All rights reserved.</p>
-      <p class="text-muted small">Hệ thống quản trị dành cho quản lý sản phẩm, đơn hàng và người dùng.</p>
-    </div>
+    <footer th:fragment="admin-footer">
+      <div class="container text-center py-4 border-top mt-5">
+        <p class="mb-1">
+          &copy; <span th:text="${T(java.time.Year).now()}">2025</span> ADMIN
+          MANAGER - All rights reserved.
+        </p>
+        <p class="text-muted small">
+          Hệ thống quản trị dành cho quản lý sản phẩm, đơn hàng và người dùng.
+        </p>
+      </div>
 
-    <!-- Optional scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Admin-only scripts here if needed -->
-  </footer>
+      <!-- Optional scripts -->
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+      <!-- Admin-only scripts here if needed -->
+    </footer>
 
-  <!-- Bootstrap JS -->
-  <script src="/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="/js/bootstrap.bundle.min.js"></script>
 
-  <!-- AJAX check trùng username/email -->
-  <script>
-    (function () {
-      const idInput = document.querySelector('input[name="id"]');
-      const usernameInput = document.querySelector('input[name="username"]');
-      const emailInput = document.querySelector('input[name="email"]');
-      const submitBtn = document.querySelector('button[type="submit"]');
-      const usernameHelp = document.getElementById('usernameHelp');
-      const emailHelp = document.getElementById('emailHelp');
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-      let debounceTimer;
-      function debounce(fn, delay) {
-        return function() {
-          clearTimeout(debounceTimer);
-          const ctx = this, args = arguments;
-          debounceTimer = setTimeout(() => fn.apply(ctx, args), delay);
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Form elements
+        const form = document.querySelector("form");
+        const idInput = document.querySelector('input[name="id"]');
+        const usernameInput = document.querySelector('input[name="username"]');
+        const emailInput = document.querySelector('input[name="email"]');
+        const phoneInput = document.querySelector('input[name="phone"]');
+        const submitBtn = document.getElementById("submitBtn");
+        const cancelBtn = document.getElementById("cancelBtn");
+
+        // Toast elements
+        const successToast = document.getElementById("successToast");
+        const toast = new bootstrap.Toast(successToast, { delay: 3000 });
+
+        // Form validation patterns
+        const patterns = {
+          username: /^[a-zA-Z0-9_]{3,20}$/,
+          password: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/,
+          phone: /^\d{10,15}$/,
+        };
+
+        // Validation messages
+        const messages = {
+          username:
+            "Tên đăng nhập phải từ 3-20 ký tự, chỉ bao gồm chữ cái, số và dấu gạch dưới",
+          password:
+            "Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số",
+          phone: "Số điện thoại phải có 10-15 chữ số",
+        };
+
+        // Debounce function
+        function debounce(fn, delay) {
+          let timer;
+          return function (...args) {
+            clearTimeout(timer);
+            timer = setTimeout(() => fn.apply(this, args), delay);
+          };
         }
-      }
 
-      async function checkUnique() {
-        const params = new URLSearchParams();
-        if (usernameInput && usernameInput.value) params.append('username', usernameInput.value.trim());
-        if (emailInput && emailInput.value) params.append('email', emailInput.value.trim());
-        if (idInput && idInput.value) params.append('id', idInput.value);
+        // Check for unique username/email
+        async function checkUnique() {
+          const params = new URLSearchParams();
+          if (usernameInput?.value)
+            params.append("username", usernameInput.value.trim());
+          if (emailInput?.value)
+            params.append("email", emailInput.value.trim());
+          if (idInput?.value) params.append("id", idInput.value);
 
-        // Không gọi nếu cả 2 đều trống
-        if (![...params.keys()].length) return;
+          if (![...params.keys()].length) return;
 
-        try {
-          const res = await fetch(`/admin/user/check-unique?${params.toString()}`, { method: 'GET' });
-          if (!res.ok) return; // im lặng nếu server lỗi
-          const data = await res.json();
+          try {
+            const res = await fetch(
+              `/admin/user/check-unique?${params.toString()}`,
+              { method: "GET" }
+            );
+            if (!res.ok) throw new Error("Network error");
 
-          usernameHelp.textContent = data.usernameTaken ? 'Tên đăng nhập đã tồn tại, vui lòng chọn tên khác.' : '';
-          emailHelp.textContent = data.emailTaken ? 'Email đã tồn tại, vui lòng nhập email khác.' : '';
+            const data = await res.json();
 
-          if (submitBtn) submitBtn.disabled = !!(data.usernameTaken || data.emailTaken);
-        } catch (e) {
-          // im lặng nếu lỗi mạng
+            if (data.usernameTaken) {
+              showFieldError(usernameInput, "Tên đăng nhập đã tồn tại");
+              return false;
+            }
+
+            if (data.emailTaken) {
+              showFieldError(emailInput, "Email đã tồn tại");
+              return false;
+            }
+
+            return true;
+          } catch (e) {
+            console.error("Error checking unique:", e);
+            return false;
+          }
         }
-      }
 
-      const onBlurOrInput = debounce(checkUnique, 250);
+        // Show field error
+        function showFieldError(input, message) {
+          input.classList.add("is-invalid");
+          const feedback =
+            input.parentElement.querySelector(".invalid-feedback") ||
+            document.createElement("div");
+          feedback.className = "invalid-feedback";
+          feedback.textContent = message;
+          input.parentElement.appendChild(feedback);
+        }
 
-      if (usernameInput) {
-        usernameInput.addEventListener('blur', checkUnique);
-        usernameInput.addEventListener('input', onBlurOrInput);
-      }
-      if (emailInput) {
-        emailInput.addEventListener('blur', checkUnique);
-        emailInput.addEventListener('input', onBlurOrInput);
-      }
-    })();
-  </script>
-</body>
+        // Clear field error
+        function clearFieldError(input) {
+          input.classList.remove("is-invalid");
+          const feedback =
+            input.parentElement.querySelector(".invalid-feedback");
+          if (feedback) feedback.remove();
+        }
+
+        // Validate single field
+        function validateField(input) {
+          if (!input) return true;
+
+          const pattern = patterns[input.name];
+          if (!pattern) return true;
+
+          const isValid = pattern.test(input.value);
+          if (!isValid) {
+            showFieldError(input, messages[input.name]);
+          } else {
+            clearFieldError(input);
+          }
+
+          return isValid;
+        }
+
+        // Form submission
+        form.addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          // Validate all fields
+          const isUsernameValid = validateField(usernameInput);
+          const isPhoneValid = validateField(phoneInput);
+
+          if (!isUsernameValid || !isPhoneValid) {
+            Swal.fire({
+              icon: "error",
+              title: "Lỗi nhập liệu",
+              text: "Vui lòng kiểm tra lại các thông tin đã nhập",
+              confirmButtonColor: "#0d6efd",
+            });
+            return;
+          }
+
+          // Check unique constraints
+          const isUnique = await checkUnique();
+          if (!isUnique) return;
+
+          // Confirm submission
+          const result = await Swal.fire({
+            title: "Xác nhận lưu",
+            text: "Bạn có chắc chắn muốn lưu thông tin người dùng này?",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonColor: "#198754",
+            cancelButtonColor: "#6c757d",
+            confirmButtonText: "Xác nhận",
+            cancelButtonText: "Hủy",
+          });
+
+          if (result.isConfirmed) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML =
+              '<span class="spinner-border spinner-border-sm me-2"></span>Đang xử lý...';
+
+            try {
+              await form.submit();
+              toast.show();
+            } catch (error) {
+              console.error("Submit error:", error);
+              Swal.fire({
+                icon: "error",
+                title: "Lỗi",
+                text: "Có lỗi xảy ra, vui lòng thử lại sau",
+                confirmButtonColor: "#0d6efd",
+              });
+            } finally {
+              submitBtn.disabled = false;
+              submitBtn.innerHTML =
+                '<i class="fas fa-save me-2"></i>' +
+                (idInput?.value ? "Cập nhật" : "Tạo mới");
+            }
+          }
+        });
+
+        // Cancel confirmation
+        cancelBtn.addEventListener("click", async function (e) {
+          e.preventDefault();
+
+          const result = await Swal.fire({
+            title: "Xác nhận hủy",
+            text: "Các thay đổi sẽ không được lưu. Bạn có chắc chắn muốn hủy?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#dc3545",
+            cancelButtonColor: "#6c757d",
+            confirmButtonText: "Xác nhận",
+            cancelButtonText: "Quay lại",
+          });
+
+          if (result.isConfirmed) {
+            window.location.href = this.href;
+          }
+        });
+
+        // Real-time validation
+        const debouncedValidate = debounce(validateField, 300);
+
+        if (usernameInput) {
+          usernameInput.addEventListener("input", () =>
+            debouncedValidate(usernameInput)
+          );
+          usernameInput.addEventListener("blur", () =>
+            validateField(usernameInput)
+          );
+        }
+
+        if (phoneInput) {
+          phoneInput.addEventListener("input", () =>
+            debouncedValidate(phoneInput)
+          );
+          phoneInput.addEventListener("blur", () => validateField(phoneInput));
+        }
+
+        // Format phone number as user types
+        if (phoneInput) {
+          phoneInput.addEventListener("input", function () {
+            this.value = this.value.replace(/\D/g, "").substring(0, 15);
+          });
+        }
+      });
+    </script>
+  </body>
 </html>

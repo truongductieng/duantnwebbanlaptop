@@ -1,90 +1,435 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="vi">
-<head>
-  <meta charset="UTF-8" />
-  <title>Quản lý mã giảm giá</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
-  <style>
-    body { background:#fafbfe; }
-    .table td, .table th { vertical-align: middle; }
-    .nowrap { white-space: nowrap; }
-  </style>
-</head>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Quản lý mã giảm giá</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
+    <!-- FontAwesome -->
+    <link href="/css/fontawesome.min.css" rel="stylesheet" />
+    <!-- SweetAlert2 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css"
+      rel="stylesheet"
+    />
 
-<body class="container py-4">
-  <h2 class="mb-3">Mã giảm giá</h2>
+    <style>
+      :root {
+        --bs-primary-rgb: 13, 110, 253;
+        --bs-success-rgb: 25, 135, 84;
+        --bs-font-sans-serif: "Segoe UI", system-ui, -apple-system, sans-serif;
+      }
 
-  <div class="mb-3 d-flex gap-2 flex-wrap">
-    <a class="btn btn-primary" th:href="@{/admin/discounts/new}">+ Thêm mã</a>
-    <a class="btn btn-secondary" th:href="@{/admin/dashboard}">← Trang chủ Admin</a>
-  </div>
+      body {
+        background: #f8f9fa;
+        font-family: var(--bs-font-sans-serif);
+        min-height: 100vh;
+      }
 
-  <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-  <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
-  <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+      .card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+      }
 
-  <div class="table-responsive">
-    <table class="table table-striped align-middle">
-      <thead class="table-light">
-      <tr>
-        <th>#</th>
-        <th>Code</th>
-        <th class="nowrap">%</th>
-        <th>Bắt đầu</th>
-        <th>Kết thúc</th>
-        <th>Đã dùng</th>
-        <th>Trạng thái</th>
-        <th style="width:320px" class="text-end">Hành động</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr th:each="d : ${list}">
-        <td th:text="${d.id}">1</td>
-        <td th:text="${d.code}">CODE10</td>
-        <td th:text="${d.percent}">10</td>
-        <td th:text="${d.startDate != null ? #temporals.format(d.startDate,'dd/MM/yyyy') : '-'}">-</td>
-        <td th:text="${d.endDate   != null ? #temporals.format(d.endDate,'dd/MM/yyyy')   : '-'}">-</td>
+      .card-header {
+        background: linear-gradient(45deg, #0d6efd, #0a58ca);
+        border-radius: 1rem 1rem 0 0 !important;
+        border-bottom: 0;
+      }
 
-        <!-- ĐÃ DÙNG -->
-        <td><span class="badge bg-dark" th:text="${usage[d.id]}">0</span></td>
+      .table {
+        margin-bottom: 0;
+      }
 
-        <!-- TRẠNG THÁI -->
-        <td>
-          <span th:classappend="${d.active} ? 'badge bg-success' : 'badge bg-secondary'"
-                th:text="${d.active} ? 'Bật' : 'Tắt'">Tắt</span>
-        </td>
+      .table th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.025em;
+        background: #f8f9fa;
+        border-bottom-width: 1px;
+      }
 
-        <!-- ACTIONS -->
-        <td class="text-end d-flex gap-2 justify-content-end flex-wrap">
+      .table td {
+        vertical-align: middle;
+        font-size: 0.95rem;
+        color: #495057;
+      }
 
-          <!-- BẬT/TẮT nhanh -->
-          <form th:action="@{|/admin/discounts/${d.id}/toggle|}" method="post" class="d-inline">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-            <button type="submit" class="btn btn-sm"
-                    th:classappend="${d.active} ? 'btn-warning' : 'btn-success'">
-              <span th:text="${d.active} ? 'Tắt' : 'Bật'">Bật</span>
-            </button>
-          </form>
+      .table-hover tbody tr:hover {
+        background-color: rgba(var(--bs-primary-rgb), 0.05);
+      }
 
-          <!-- SỬA -->
-          <a class="btn btn-sm btn-outline-primary"
-             th:href="@{'/admin/discounts/' + ${d.id} + '/edit'}">Sửa</a>
+      .nowrap {
+        white-space: nowrap;
+      }
 
-          <!-- XÓA -->
-          <form th:action="@{'/admin/discounts/' + ${d.id} + '/delete'}" method="post"
-                onsubmit="return confirm('Xoá mã này?');" class="d-inline">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-            <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
-          </form>
-        </td>
-      </tr>
+      .badge {
+        padding: 0.5em 0.75em;
+        font-weight: 500;
+      }
 
-      <tr th:if="${#lists.isEmpty(list)}">
-        <td colspan="8" class="text-center text-muted py-4">Chưa có mã giảm giá.</td>
-      </tr>
-      </tbody>
-    </table>
-  </div>
-</body>
+      .badge.bg-success {
+        background: linear-gradient(45deg, #198754, #157347) !important;
+      }
+
+      .badge.bg-secondary {
+        background: linear-gradient(45deg, #6c757d, #5c636a) !important;
+      }
+
+      .btn-primary {
+        background: linear-gradient(45deg, #0d6efd, #0a58ca);
+        border: none;
+      }
+
+      .btn-success {
+        background: linear-gradient(45deg, #198754, #157347);
+        border: none;
+      }
+
+      .btn-outline-primary:hover {
+        background: linear-gradient(45deg, #0d6efd, #0a58ca);
+      }
+
+      .alert {
+        border: none;
+        border-radius: 0.5rem;
+      }
+
+      .alert-success {
+        background: linear-gradient(45deg, #198754, #157347);
+        color: white;
+      }
+
+      .alert-danger {
+        background: linear-gradient(45deg, #dc3545, #c82333);
+        color: white;
+      }
+
+      .discount-code {
+        font-family: "Consolas", monospace;
+        font-weight: 600;
+        background: #e9ecef;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+      }
+
+      .actions-column {
+        min-width: 200px;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .fade-in {
+        animation: fadeIn 0.3s ease-out;
+      }
+
+      .table-responsive {
+        border-radius: 0.5rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        background: white;
+      }
+
+      .status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 0.5rem;
+      }
+
+      .status-active {
+        background-color: #198754;
+        box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.2);
+      }
+
+      .status-inactive {
+        background-color: #6c757d;
+        box-shadow: 0 0 0 3px rgba(108, 117, 125, 0.2);
+      }
+    </style>
+  </head>
+
+  <body class="min-vh-100 py-5">
+    <div class="container">
+      <div class="card shadow-sm fade-in mb-4">
+        <div class="card-header bg-primary text-white p-4">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h4 class="mb-1">
+                <i class="fas fa-tags me-2"></i>
+                Quản lý mã giảm giá
+              </h4>
+              <p class="mb-0 text-white-50">
+                <i class="fas fa-info-circle me-1"></i>
+                Quản lý các mã giảm giá và theo dõi trạng thái sử dụng
+              </p>
+            </div>
+            <div class="d-flex gap-2">
+              <a class="btn btn-light" th:href="@{/admin/dashboard}">
+                <i class="fas fa-home me-2"></i>
+                Dashboard
+              </a>
+              <a class="btn btn-success" th:href="@{/admin/discounts/new}">
+                <i class="fas fa-plus-circle me-2"></i>
+                Thêm mã mới
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body p-0">
+          <!-- Alerts -->
+          <div class="p-4">
+            <div
+              th:if="${success}"
+              class="alert alert-success d-flex align-items-center fade-in mb-0"
+            >
+              <i class="fas fa-check-circle flex-shrink-0 me-2"></i>
+              <div th:text="${success}"></div>
+            </div>
+            <div
+              th:if="${message}"
+              class="alert alert-success d-flex align-items-center fade-in mb-0"
+            >
+              <i class="fas fa-check-circle flex-shrink-0 me-2"></i>
+              <div th:text="${message}"></div>
+            </div>
+            <div
+              th:if="${error}"
+              class="alert alert-danger d-flex align-items-center fade-in mb-0"
+            >
+              <i class="fas fa-exclamation-circle flex-shrink-0 me-2"></i>
+              <div th:text="${error}"></div>
+            </div>
+          </div>
+
+          <!-- Table -->
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead>
+                <tr>
+                  <th class="ps-4">#</th>
+                  <th><i class="fas fa-ticket-alt me-2"></i>Mã giảm giá</th>
+                  <th class="nowrap text-center">
+                    <i class="fas fa-percent me-2"></i>Giảm
+                  </th>
+                  <th><i class="fas fa-calendar-alt me-2"></i>Thời gian</th>
+                  <th class="text-center">
+                    <i class="fas fa-shopping-cart me-2"></i>Đã dùng
+                  </th>
+                  <th class="text-center">
+                    <i class="fas fa-toggle-on me-2"></i>Trạng thái
+                  </th>
+                  <th class="text-end pe-4">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="d : ${list}" class="fade-in">
+                  <td class="ps-4" th:text="${d.id}">1</td>
+                  <td>
+                    <span class="discount-code" th:text="${d.code}"
+                      >CODE10</span
+                    >
+                  </td>
+                  <td class="text-center">
+                    <span class="badge bg-primary" th:text="${d.percent + '%'}"
+                      >10%</span
+                    >
+                  </td>
+                  <td>
+                    <div class="d-flex flex-column">
+                      <div class="small">
+                        <i class="fas fa-hourglass-start me-1 text-success"></i>
+                        <span
+                          th:text="${d.startDate != null ? #temporals.format(d.startDate,'dd/MM/yyyy') : 'Không giới hạn'}"
+                          >-</span
+                        >
+                      </div>
+                      <div class="small">
+                        <i class="fas fa-hourglass-end me-1 text-danger"></i>
+                        <span
+                          th:text="${d.endDate != null ? #temporals.format(d.endDate,'dd/MM/yyyy') : 'Không giới hạn'}"
+                          >-</span
+                        >
+                      </div>
+                    </div>
+                  </td>
+
+                  <!-- Số lần đã sử dụng -->
+                  <td class="text-center">
+                    <span class="badge bg-dark" th:text="${usage[d.id]}"
+                      >0</span
+                    >
+                  </td>
+
+                  <!-- Trạng thái -->
+                  <td class="text-center">
+                    <div
+                      class="d-flex align-items-center justify-content-center"
+                    >
+                      <span
+                        class="status-indicator"
+                        th:classappend="${d.active ? 'status-active' : 'status-inactive'}"
+                      ></span>
+                      <span
+                        class="badge"
+                        th:classappend="${d.active ? 'bg-success' : 'bg-secondary'}"
+                        th:text="${d.active ? 'Đang hoạt động' : 'Đã tắt'}"
+                        >Tắt</span
+                      >
+                    </div>
+                  </td>
+
+                  <!-- Thao tác -->
+                  <td class="text-end pe-4">
+                    <div class="d-flex gap-2 justify-content-end">
+                      <!-- Bật/Tắt -->
+                      <form
+                        th:action="@{|/admin/discounts/${d.id}/toggle|}"
+                        method="post"
+                        style="display: inline-block"
+                      >
+                        <input
+                          type="hidden"
+                          th:name="${_csrf.parameterName}"
+                          th:value="${_csrf.token}"
+                        />
+                        <button
+                          type="submit"
+                          class="btn btn-sm"
+                          th:classappend="${d.active ? 'btn-warning' : 'btn-success'}"
+                          data-bs-toggle="tooltip"
+                          style="min-width: 70px"
+                          th:title="${d.active ? 'Tắt mã giảm giá' : 'Kích hoạt mã giảm giá'}"
+                        >
+                          <i
+                            class="fas"
+                            th:classappend="${d.active ? 'fa-toggle-off' : 'fa-toggle-on'}"
+                            style="margin-right: 4px"
+                          ></i>
+                          <span th:text="${d.active ? 'Tắt' : 'Bật'}">Bật</span>
+                        </button>
+                      </form>
+
+                      <!-- Sửa -->
+                      <a
+                        class="btn btn-sm btn-outline-primary"
+                        style="min-width: 70px"
+                        th:href="@{'/admin/discounts/' + ${d.id} + '/edit'}"
+                        data-bs-toggle="tooltip"
+                        title="Chỉnh sửa mã giảm giá"
+                      >
+                        <i class="fas fa-edit" style="margin-right: 4px"></i>
+                        <span>Sửa</span>
+                      </a>
+
+                      <!-- Xóa -->
+                      <form
+                        th:action="@{'/admin/discounts/' + ${d.id} + '/delete'}"
+                        method="post"
+                        onsubmit="return confirmDelete(event);"
+                        style="display: inline-block"
+                      >
+                        <input
+                          type="hidden"
+                          th:name="${_csrf.parameterName}"
+                          th:value="${_csrf.token}"
+                        />
+                        <button
+                          type="submit"
+                          class="btn btn-sm btn-outline-danger"
+                          style="min-width: 70px"
+                          data-bs-toggle="tooltip"
+                          title="Xóa mã giảm giá"
+                        >
+                          <i
+                            class="fas fa-trash-alt"
+                            style="margin-right: 4px"
+                          ></i>
+                          <span>Xóa</span>
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+
+                <tr th:if="${#lists.isEmpty(list)}">
+                  <td colspan="8" class="text-center p-5">
+                    <div class="text-muted">
+                      <i class="fas fa-ticket-alt fa-3x mb-3"></i>
+                      <h6>Chưa có mã giảm giá nào</h6>
+                      <p class="small mb-0">
+                        Nhấn nút "Thêm mã mới" để tạo mã giảm giá đầu tiên
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+      // Initialize tooltips
+      var tooltipTriggerList = [].slice.call(
+        document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      );
+      var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+      });
+
+      // Confirm delete with SweetAlert2
+      function confirmDelete(event) {
+        event.preventDefault();
+        const form = event.target;
+
+        Swal.fire({
+          title: "Xác nhận xóa?",
+          text: "Bạn có chắc chắn muốn xóa mã giảm giá này không?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#dc3545",
+          cancelButtonColor: "#6c757d",
+          confirmButtonText: "Xác nhận xóa",
+          cancelButtonText: "Hủy",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            form.submit();
+          }
+        });
+
+        return false;
+      }
+
+      // Auto-hide alerts after 5 seconds
+      document.addEventListener("DOMContentLoaded", function () {
+        const alerts = document.querySelectorAll(".alert");
+        alerts.forEach((alert) => {
+          setTimeout(() => {
+            alert.classList.add("fade");
+            setTimeout(() => alert.remove(), 150);
+          }, 5000);
+        });
+      });
+    </script>
+  </body>
 </html>

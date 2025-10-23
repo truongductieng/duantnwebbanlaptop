@@ -1218,6 +1218,35 @@
     </div>
 
     <!-- store info modal & contact section -->
+    <style>
+      /* Modal styles */
+      .modal-dialog {
+        display: flex;
+        align-items: center;
+        min-height: calc(100% - 1rem);
+      }
+
+      .modal-content {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.15);
+      }
+
+      .modal.fade .modal-dialog {
+        transform: scale(0.95);
+        transition: transform 0.3s ease-out;
+      }
+
+      .modal.show .modal-dialog {
+        transform: scale(1);
+      }
+
+      @media (min-width: 576px) {
+        .modal-dialog {
+          margin: 1.75rem auto;
+        }
+      }
+    </style>
     <div
       class="modal fade"
       id="infoModal"

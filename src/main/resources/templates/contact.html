@@ -166,6 +166,21 @@
               ></button>
             </div>
 
+            <!-- Error Message -->
+            <div
+              th:if="${error}"
+              class="alert alert-danger alert-dismissible fade show"
+              role="alert"
+            >
+              <i class="bi bi-exclamation-triangle-fill me-2"></i>
+              <span th:text="${error}"></span>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+              ></button>
+            </div>
+
             <div class="contact-form">
               <form th:action="@{/contact}" method="post" novalidate>
                 <div class="row g-4">

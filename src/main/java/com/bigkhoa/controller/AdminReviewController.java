@@ -14,7 +14,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/admin/reviews")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
 public class AdminReviewController {
 
     private final ReviewRepository reviewRepo;
@@ -24,13 +24,14 @@ public class AdminReviewController {
     }
 
     /**
-     * Danh sách review có phân trang + tìm kiếm (giữ "q" để HTML cũ fill lại ô search nếu có).
+     * Danh sách review có phân trang + tìm kiếm (giữ "q" để HTML cũ fill lại ô
+     * search nếu có).
      */
     @GetMapping
     public String page(@RequestParam(defaultValue = "0") int page,
-                       @RequestParam(defaultValue = "12") int size,
-                       @RequestParam(value = "q", required = false) String q,
-                       Model model) {
+            @RequestParam(defaultValue = "12") int size,
+            @RequestParam(value = "q", required = false) String q,
+            Model model) {
 
         page = Math.max(page, 0);
         size = Math.max(size, 1);
@@ -40,8 +41,8 @@ public class AdminReviewController {
         boolean hasKw = (kw != null && !kw.isEmpty());
 
         Page<Review> p = hasKw
-                ? reviewRepo.search(kw, pr)   // <-- dùng search khi có q
-                : reviewRepo.findAll(pr);     // fallback: không có q thì lấy tất cả
+                ? reviewRepo.search(kw, pr) // <-- dùng search khi có q
+                : reviewRepo.findAll(pr); // fallback: không có q thì lấy tất cả
 
         model.addAttribute("q", q);
         model.addAttribute("page", p);
@@ -54,8 +55,8 @@ public class AdminReviewController {
      */
     @PostMapping("/{rid}/comments")
     public String addCommentStub(@PathVariable Long rid,
-                                 @RequestParam String content,
-                                 RedirectAttributes ra) {
+            @RequestParam String content,
+            RedirectAttributes ra) {
         ra.addFlashAttribute("error", "Tính năng bình luận cho đánh giá đã được gỡ bỏ.");
         return "redirect:/admin/reviews";
     }
@@ -65,7 +66,7 @@ public class AdminReviewController {
      */
     @PostMapping("/comments/{id}/delete")
     public String deleteCommentStub(@PathVariable Long id,
-                                    RedirectAttributes ra) {
+            RedirectAttributes ra) {
         ra.addFlashAttribute("error", "Tính năng bình luận cho đánh giá đã được gỡ bỏ.");
         return "redirect:/admin/reviews";
     }

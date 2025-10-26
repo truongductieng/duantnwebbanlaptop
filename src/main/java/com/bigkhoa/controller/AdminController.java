@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/admin")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('ADMIN','STAFF')")
 public class AdminController {
 
     private final ProductService productService;
@@ -56,13 +56,13 @@ public class AdminController {
 
     @Autowired
     public AdminController(ProductService productService,
-                           UserService userService,
-                           OrderService orderService,
-                           LaptopService laptopService,
-                           DiscountRepository discountRepo,
-                           CategoryRepository categoryRepo,
-                           OrderRepository orderRepository,
-                           UserRepository userRepository) {
+            UserService userService,
+            OrderService orderService,
+            LaptopService laptopService,
+            DiscountRepository discountRepo,
+            CategoryRepository categoryRepo,
+            OrderRepository orderRepository,
+            UserRepository userRepository) {
         this.productService = productService;
         this.userService = userService;
         this.orderService = orderService;
@@ -92,11 +92,10 @@ public class AdminController {
     public String dashboard(
             @RequestParam(value = "type", defaultValue = "daily") String type,
             @RequestParam(value = "start", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-            @RequestParam(value = "end", required = false)   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
+            @RequestParam(value = "end", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
             @RequestParam(value = "startMonth", required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth startMonth,
-            @RequestParam(value = "endMonth", required = false)   @DateTimeFormat(pattern = "yyyy-MM") YearMonth endMonth,
-            Model model
-    ) {
+            @RequestParam(value = "endMonth", required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth endMonth,
+            Model model) {
         // Dữ liệu list
         List<Product> products = productService.findAll();
         List<User> users = userService.findAll();
@@ -124,8 +123,7 @@ public class AdminController {
         List<OrderStatus> revenueStatuses = List.of(
                 OrderStatus.CONFIRMED,
                 OrderStatus.SHIPPED,
-                OrderStatus.DELIVERED
-        );
+                OrderStatus.DELIVERED);
 
         // Doanh thu hôm nay
         BigDecimal todayRevenue = orderRepository.sumTotalBetween(startToday, endToday, revenueStatuses);
@@ -159,13 +157,17 @@ public class AdminController {
         model.addAttribute("seriesJson", seriesJson);
 
         // KPI khác
-        long ordersToday = orderRepository.countOrdersBetween(startToday, endToday, Arrays.asList(OrderStatus.values()));
+        long ordersToday = orderRepository.countOrdersBetween(startToday, endToday,
+                Arrays.asList(OrderStatus.values()));
 
         long itemsSoldToday = orderRepository.sumItemsSoldBetween(startToday, endToday, revenueStatuses);
         long cancelledToday = orderRepository.countOrdersBetween(startToday, endToday, List.of(OrderStatus.CANCELED));
 
         long newUsersToday = 0L;
-        try { newUsersToday = userRepository.countNewUsersBetween(startToday, endToday); } catch (Exception ignore) {}
+        try {
+            newUsersToday = userRepository.countNewUsersBetween(startToday, endToday);
+        } catch (Exception ignore) {
+        }
 
         model.addAttribute("ordersToday", ordersToday);
         model.addAttribute("itemsSoldToday", itemsSoldToday);
@@ -191,8 +193,7 @@ public class AdminController {
             YearMonth sm = (startMonth != null ? startMonth : thisMonth.minusMonths(5));
             YearMonth em = (endMonth != null ? endMonth : thisMonth);
             List<RevenueDataDto> data = orderService.getMonthlyRevenue(
-                    sm.atDay(1), em.atEndOfMonth()
-            );
+                    sm.atDay(1), em.atEndOfMonth());
             model.addAttribute("startMonth", sm);
             model.addAttribute("endMonth", em);
             model.addAttribute("revenueData", data);
@@ -206,32 +207,34 @@ public class AdminController {
 
         return "admin/dashboard";
     }
- // ===== AJAX: Dashboard metrics theo ngày =====
+
+    // ===== AJAX: Dashboard metrics theo ngày =====
     @GetMapping("/api/dashboard/metrics")
     @ResponseBody
     public Metrics metricsByDate(
-            @RequestParam("date")
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
 
         LocalDateTime start = date.atStartOfDay();
-        LocalDateTime end   = start.plusDays(1);
+        LocalDateTime end = start.plusDays(1);
 
         // Trạng thái được tính doanh thu / SP bán ra (ĐÃ LOẠI COMPLETED)
         List<OrderStatus> SOLD_OK = List.of(
                 OrderStatus.CONFIRMED,
                 OrderStatus.SHIPPED,
-                OrderStatus.DELIVERED
-        );
+                OrderStatus.DELIVERED);
 
         // Số đơn: tính tất cả trạng thái (để thấy PENDING)
         List<OrderStatus> ALL = Arrays.asList(OrderStatus.values());
 
-        BigDecimal revenue   = orderRepository.sumTotalBetween(start, end, SOLD_OK);
-        long ordersCount     = orderRepository.countOrdersBetween(start, end, ALL);
-        long soldItems       = orderRepository.sumItemsSoldBetween(start, end, SOLD_OK);
-        long canceledOrders  = orderRepository.countOrdersBetween(start, end, List.of(OrderStatus.CANCELED));
-        long newCustomers    = 0L;
-        try { newCustomers = userRepository.countNewUsersBetween(start, end); } catch (Exception ignore) {}
+        BigDecimal revenue = orderRepository.sumTotalBetween(start, end, SOLD_OK);
+        long ordersCount = orderRepository.countOrdersBetween(start, end, ALL);
+        long soldItems = orderRepository.sumItemsSoldBetween(start, end, SOLD_OK);
+        long canceledOrders = orderRepository.countOrdersBetween(start, end, List.of(OrderStatus.CANCELED));
+        long newCustomers = 0L;
+        try {
+            newCustomers = userRepository.countNewUsersBetween(start, end);
+        } catch (Exception ignore) {
+        }
 
         String label = date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
         return new Metrics(label, revenue, ordersCount, soldItems, canceledOrders, newCustomers);
@@ -244,16 +247,15 @@ public class AdminController {
             long ordersCount,
             long soldItems,
             long canceledOrders,
-            long newCustomers
-    ) {}
-
+            long newCustomers) {
+    }
 
     // ================== ORDERS ==================
     @GetMapping("/orders/{id}")
     public String viewOrderDetail(@PathVariable("id") Long id,
-                                  HttpServletRequest request,
-                                  Model model,
-                                  RedirectAttributes ra) {
+            HttpServletRequest request,
+            Model model,
+            RedirectAttributes ra) {
         Order order = orderService.getById(id);
         if (order == null) {
             ra.addFlashAttribute("error", "Không tìm thấy đơn hàng #" + id);
@@ -269,9 +271,9 @@ public class AdminController {
 
     @GetMapping("/orders")
     public String listOrders(@RequestParam(value = "status", required = false) OrderStatus status,
-                             @RequestParam(value = "orderId", required = false) Long orderId,
-                             HttpServletRequest request,
-                             Model model) {
+            @RequestParam(value = "orderId", required = false) Long orderId,
+            HttpServletRequest request,
+            Model model) {
 
         // LOẠI COMPLETED khỏi dropdown/filter UI
         List<OrderStatus> adminStatuses = Arrays.stream(OrderStatus.values())
@@ -284,13 +286,14 @@ public class AdminController {
             Order found = null;
             try {
                 found = orderRepository.findById(orderId).orElse(null);
-            } catch (Exception ignore) { /* tránh 500 */ }
+            } catch (Exception ignore) {
+                /* tránh 500 */ }
 
             List<Order> orders = (found != null) ? java.util.List.of(found) : java.util.List.of();
             model.addAttribute("orders", orders);
             model.addAttribute("selectedStatus", (status != null ? status : OrderStatus.PENDING)); // giữ UI
-            model.addAttribute("searchOrderId", orderId);     // bind lại input
-            model.addAttribute("notFound", found == null);    // hiện alert
+            model.addAttribute("searchOrderId", orderId); // bind lại input
+            model.addAttribute("notFound", found == null); // hiện alert
 
             String referer = request.getHeader("Referer");
             model.addAttribute("backUrl", (referer != null && !referer.isBlank()) ? referer : "/admin/dashboard");
@@ -309,12 +312,10 @@ public class AdminController {
         return "admin/orders";
     }
 
-
-
     @PostMapping("/orders/{id}/status")
     public String changeOrderStatus(@PathVariable("id") Long id,
-                                    @RequestParam("status") OrderStatus newStatus,
-                                    RedirectAttributes ra) {
+            @RequestParam("status") OrderStatus newStatus,
+            RedirectAttributes ra) {
         try {
             // CHẶN cập nhật sang COMPLETED
             if (newStatus == OrderStatus.COMPLETED) {
@@ -332,8 +333,8 @@ public class AdminController {
 
     @PostMapping("/orders/{id}/cancel")
     public String cancelOrderByAdmin(@PathVariable("id") Long id,
-                                     @RequestParam(value = "reason", required = false) String reason,
-                                     RedirectAttributes ra) {
+            @RequestParam(value = "reason", required = false) String reason,
+            RedirectAttributes ra) {
         try {
             orderService.cancelOrderByAdmin(id, reason);
             ra.addFlashAttribute("success", "Đã hủy đơn #" + id + " (ADMIN).");
@@ -358,7 +359,7 @@ public class AdminController {
     @PostMapping("/api/orders/{id}/status")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> apiChangeOrderStatus(@PathVariable("id") Long id,
-                                                                    @RequestParam("status") OrderStatus newStatus) {
+            @RequestParam("status") OrderStatus newStatus) {
         Map<String, Object> out = new HashMap<>();
         try {
             if (newStatus == OrderStatus.COMPLETED) {
@@ -388,7 +389,7 @@ public class AdminController {
     @PostMapping("/api/orders/{id}/cancel")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> apiCancelOrder(@PathVariable("id") Long id,
-                                                              @RequestParam(value = "reason", required = false) String reason) {
+            @RequestParam(value = "reason", required = false) String reason) {
         Map<String, Object> out = new HashMap<>();
         try {
             orderService.cancelOrderByAdmin(id, reason);
@@ -404,7 +405,7 @@ public class AdminController {
     }
     // ================== /ORDERS ==================
 
- // ================== PRODUCT ==================
+    // ================== PRODUCT ==================
     @GetMapping("/product/new")
     public String createProductForm(Model model) {
         Product p = new Product();
@@ -414,10 +415,10 @@ public class AdminController {
     }
 
     // >>> THÊM MỚI: FORM SỬA <<<
-    @GetMapping({"/product/{id}/edit", "/products/{id}/edit"})
+    @GetMapping({ "/product/{id}/edit", "/products/{id}/edit" })
     public String editProductForm(@PathVariable Long id,
-                                  Model model,
-                                  RedirectAttributes ra) {
+            Model model,
+            RedirectAttributes ra) {
         Product p = productService.findById(id);
         if (p == null) {
             ra.addFlashAttribute("error", "Không tìm thấy sản phẩm #" + id);
@@ -446,13 +447,17 @@ public class AdminController {
             Product existing = (product.getId() != null) ? productService.findById(product.getId()) : null;
 
             List<MultipartFile> files = (imageFiles != null) ? new ArrayList<>(imageFiles) : new ArrayList<>();
-            while (files.size() < 5) files.add(null);
+            while (files.size() < 5)
+                files.add(null);
 
             for (int idx = 0; idx < 5; idx++) {
                 MultipartFile file = files.get(idx);
                 byte[] data = null;
                 if (file != null && !file.isEmpty()) {
-                    try { data = file.getBytes(); } catch (IOException ignore) {}
+                    try {
+                        data = file.getBytes();
+                    } catch (IOException ignore) {
+                    }
                 }
                 int slot = idx + 1;
                 if (data != null && data.length > 0) {
@@ -525,14 +530,13 @@ public class AdminController {
                         if (d != null && d.length > 0) {
                             lap.getImages().add(
                                     new com.bigkhoa.model.LaptopImage(
-                                            lap, "/product/" + saved.getId() + "/image/" + idx
-                                    )
-                            );
+                                            lap, "/product/" + saved.getId() + "/image/" + idx));
                         }
                     }
                     laptopService.save(lap);
                 }
-            } catch (Exception ignore) { }
+            } catch (Exception ignore) {
+            }
 
             ra.addFlashAttribute("success", "Sản phẩm đã được lưu thành công");
 
@@ -552,7 +556,6 @@ public class AdminController {
         }
     }
 
-
     private boolean hasImageAt(Product p, int idx) {
         byte[] data = switch (idx) {
             case 1 -> p.getImage1();
@@ -567,7 +570,8 @@ public class AdminController {
 
     private Integer firstAvailableImageIndex(Product p) {
         for (int i = 1; i <= 5; i++) {
-            if (hasImageAt(p, i)) return i;
+            if (hasImageAt(p, i))
+                return i;
         }
         return null;
     }
@@ -579,10 +583,11 @@ public class AdminController {
         model.addAttribute("user", new User());
         return "admin/user-form";
     }
+
     @PostMapping("/user/save")
     public String saveUser(@Valid @ModelAttribute("user") User user,
-                           BindingResult result,
-                           RedirectAttributes ra) {
+            BindingResult result,
+            RedirectAttributes ra) {
         if (result.hasErrors()) {
             return "admin/user-form";
         }
@@ -601,9 +606,7 @@ public class AdminController {
             result.reject("saveError", "Lưu người dùng thất bại: " + ex.getMessage());
             return "admin/user-form";
         }
-    
 
-        
     }
 
     @GetMapping("/user/{id}/edit")
@@ -627,8 +630,9 @@ public class AdminController {
             ra.addFlashAttribute("error", "Xóa người dùng thất bại: " + e.getMessage());
         }
         return "redirect:/admin/dashboard";
-        
+
     }
+
     @GetMapping("/user/check-unique")
     public ResponseEntity<Map<String, Boolean>> checkUnique(
             @RequestParam(required = false) String username,
@@ -654,8 +658,7 @@ public class AdminController {
 
         return ResponseEntity.ok(Map.of(
                 "usernameTaken", usernameTaken,
-                "emailTaken", emailTaken
-        ));
+                "emailTaken", emailTaken));
     }
 
 }

@@ -23,7 +23,10 @@ public class ChatRestController {
     private final ChatMessageRepository repo;
     private final SimpMessagingTemplate template;
 
-    /** CSV: phần tử đầu là tên chuẩn hoá (để lưu DB), các phần sau là alias (vd username thật "khoa") */
+    /**
+     * CSV: phần tử đầu là tên chuẩn hoá (để lưu DB), các phần sau là alias (vd
+     * username thật "khoa")
+     */
     @Value("${app.admin.username:admin}")
     private String adminConfigCsv;
 
@@ -36,14 +39,16 @@ public class ChatRestController {
     private boolean isAdmin(Principal principal) {
         if (principal instanceof Authentication auth) {
             for (GrantedAuthority ga : auth.getAuthorities()) {
-                if ("ROLE_ADMIN".equals(ga.getAuthority())) return true;
+                if ("ROLE_ADMIN".equals(ga.getAuthority()))
+                    return true;
             }
         }
         return false;
     }
 
     private List<String> adminCandidates() {
-        if (adminConfigCsv == null) return List.of("admin");
+        if (adminConfigCsv == null)
+            return List.of("admin");
         return Arrays.stream(adminConfigCsv.split(","))
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
@@ -66,9 +71,14 @@ public class ChatRestController {
     }
 
     // ===== DTOs =====
-    private record NewMessageDto(String to, String content) {}
-    public  record PartnerDto(String username, String lastMessage, String lastTime) {}
-    private record Ok(int updated) {}
+    private record NewMessageDto(String to, String content) {
+    }
+
+    public record PartnerDto(String username, String lastMessage, String lastTime) {
+    }
+
+    private record Ok(int updated) {
+    }
 
     // ===== APIs =====
 
@@ -76,12 +86,13 @@ public class ChatRestController {
     @GetMapping("/history")
     @Transactional
     public List<ChatMessage> history(@RequestParam(value = "with", required = false) String with,
-                                     Principal principal) {
-        String meCanonical = canonicalMe(principal);   // admin -> "admin", user -> username
+            Principal principal) {
+        String meCanonical = canonicalMe(principal); // admin -> "admin", user -> username
         boolean admin = isAdmin(principal);
 
         String other = admin ? (with == null ? "" : with.trim()) : adminCanonical();
-        if (other.isBlank()) return List.of();
+        if (other.isBlank())
+            return List.of();
 
         // mark-read tất cả tin gửi tới "me" từ "other"
         repo.markReadForThread(meCanonical, other, LocalDateTime.now());
@@ -104,7 +115,7 @@ public class ChatRestController {
             String key = (e.getId() != null)
                     ? "id:" + e.getId()
                     : (e.getSender() + "|" + e.getRecipient() + "|" + e.getContent() + "|" +
-                       (e.getSentAt() != null ? e.getSentAt().toString() : "null"));
+                            (e.getSentAt() != null ? e.getSentAt().toString() : "null"));
             uniq.putIfAbsent(key, e);
         }
         List<ChatMessageEntity> merged = new ArrayList<>(uniq.values());
@@ -114,10 +125,12 @@ public class ChatRestController {
 
         return merged.stream().map(e -> {
             String from = e.getSender();
-            String to   = e.getRecipient();
+            String to = e.getRecipient();
             if (admin) {
-                if (from.equalsIgnoreCase(adminCanonical())) from = myDisplay;
-                if (to.equalsIgnoreCase(adminCanonical()))   to   = myDisplay;
+                if (from.equalsIgnoreCase(adminCanonical()))
+                    from = myDisplay;
+                if (to.equalsIgnoreCase(adminCanonical()))
+                    to = myDisplay;
             }
             return new ChatMessage(from, to, e.getContent(),
                     e.getSentAt() != null ? e.getSentAt().toString() : null);
@@ -132,7 +145,8 @@ public class ChatRestController {
 
         String to = admin ? (dto.to() == null ? "" : dto.to().trim()) : adminCanonical();
         String content = dto.content() == null ? "" : dto.content().trim();
-        if (content.isEmpty()) throw new IllegalArgumentException("Thiếu nội dung");
+        if (content.isEmpty())
+            throw new IllegalArgumentException("Thiếu nội dung");
         if (admin && (to.isBlank() || to.equalsIgnoreCase(meReal))) {
             throw new IllegalArgumentException("Admin phải chọn người nhận hợp lệ");
         }
@@ -141,8 +155,7 @@ public class ChatRestController {
         String dbFrom = admin ? adminCanonical() : meReal;
 
         ChatMessageEntity saved = repo.save(new ChatMessageEntity(
-                dbFrom, to, content, LocalDateTime.now(), admin ? "ADMIN" : "USER"
-        ));
+                dbFrom, to, content, LocalDateTime.now(), admin ? "ADMIN" : "USER"));
 
         // Realtime: from dùng tên thật đang đăng nhập để FE so sánh === myUsername
         ChatMessage out = new ChatMessage(meReal, to, content, saved.getSentAt().toString());
@@ -153,9 +166,9 @@ public class ChatRestController {
 
     // Danh sách thread gần nhất — chỉ Admin cần
     @GetMapping("/partners")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public List<PartnerDto> partners(Principal principal) {
-        String meCanonical = canonicalMe(principal);  // "admin"
+        String meCanonical = canonicalMe(principal); // "admin"
         String meReal = principal != null ? principal.getName() : meCanonical;
 
         Map<String, ChatMessageEntity> latest = new HashMap<>();
@@ -186,8 +199,7 @@ public class ChatRestController {
                 .map(en -> new PartnerDto(
                         en.getKey(),
                         en.getValue().getContent(),
-                        en.getValue().getSentAt() != null ? en.getValue().getSentAt().toString() : null
-                ))
+                        en.getValue().getSentAt() != null ? en.getValue().getSentAt().toString() : null))
                 .toList();
     }
 
@@ -206,7 +218,8 @@ public class ChatRestController {
     public Ok markRead(@RequestParam("with") String other, Principal principal) {
         String me = canonicalMe(principal); // "admin" cho admin
         boolean admin = isAdmin(principal);
-        if (!admin) other = adminCanonical(); // user chỉ được mark-read với admin
+        if (!admin)
+            other = adminCanonical(); // user chỉ được mark-read với admin
         int updated = repo.markReadForThread(me, other, LocalDateTime.now());
         return new Ok(updated);
     }

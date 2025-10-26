@@ -17,20 +17,20 @@ import java.util.List;
 @Service
 public class UserServiceImpl implements UserService {
 
-    private final UserRepository               userRepo;
-    private final PasswordEncoder              passwordEncoder;
+    private final UserRepository userRepo;
+    private final PasswordEncoder passwordEncoder;
     private final PasswordResetTokenRepository tokenRepo;
-    private final OrderRepository              orderRepo;
+    private final OrderRepository orderRepo;
 
     @Autowired
     public UserServiceImpl(UserRepository userRepo,
-                           PasswordEncoder passwordEncoder,
-                           PasswordResetTokenRepository tokenRepo,
-                           OrderRepository orderRepo) {
-        this.userRepo        = userRepo;
+            PasswordEncoder passwordEncoder,
+            PasswordResetTokenRepository tokenRepo,
+            OrderRepository orderRepo) {
+        this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
-        this.tokenRepo       = tokenRepo;
-        this.orderRepo       = orderRepo;
+        this.tokenRepo = tokenRepo;
+        this.orderRepo = orderRepo;
     }
 
     @Override
@@ -51,15 +51,18 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findByEmail(String email) {
-        if (email == null) return null;
+        if (email == null)
+            return null;
         return userRepo.findByEmailIgnoreCase(email.trim()).orElse(null);
     }
 
     @Override
     public User save(User u) {
         // Chuẩn hoá chuỗi
-        if (u.getUsername() != null) u.setUsername(u.getUsername().trim());
-        if (u.getEmail() != null)    u.setEmail(u.getEmail().trim().toLowerCase());
+        if (u.getUsername() != null)
+            u.setUsername(u.getUsername().trim());
+        if (u.getEmail() != null)
+            u.setEmail(u.getEmail().trim().toLowerCase());
 
         // --- KIỂM TRA TRÙNG USERNAME/EMAIL ---
         if (u.getId() == null) {
@@ -85,9 +88,12 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        // Gán role mặc định nếu chưa có
-        if (u.getRole() == null) {
+        // Xử lý role
+        if (u.getRole() == null || u.getRole().trim().isEmpty()) {
             u.setRole("ROLE_USER");
+        } else if (!u.getRole().startsWith("ROLE_")) {
+            // Thêm prefix ROLE_ nếu chưa có
+            u.setRole("ROLE_" + u.getRole());
         }
 
         // Xử lý mật khẩu

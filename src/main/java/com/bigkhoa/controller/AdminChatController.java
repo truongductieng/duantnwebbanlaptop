@@ -7,11 +7,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequestMapping("/admin/chat")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
 public class AdminChatController {
 
     @GetMapping
-    public String page(){
+    public String page() {
         return "admin/chat";
     }
 }

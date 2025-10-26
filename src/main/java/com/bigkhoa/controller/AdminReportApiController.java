@@ -5,6 +5,7 @@ import com.bigkhoa.dto.report.ItemDetailDTO;
 import com.bigkhoa.dto.report.OrderDetailDTO;
 import com.bigkhoa.model.Order;
 import com.bigkhoa.model.OrderStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import com.bigkhoa.repository.OrderRepository;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/admin/api/reports")
+@PreAuthorize("hasAnyRole('ADMIN','STAFF')")
 public class AdminReportApiController {
 
     private final OrderRepository orderRepo;
@@ -35,33 +37,39 @@ public class AdminReportApiController {
 
     /** Trạng thái tính vào doanh thu (điều chỉnh theo enum của anh). */
     private static final Set<OrderStatus> REVENUE_STATUSES = EnumSet.of(
-            OrderStatus.CONFIRMED, OrderStatus.SHIPPED, OrderStatus.DELIVERED, OrderStatus.COMPLETED
-    );
+            OrderStatus.CONFIRMED, OrderStatus.SHIPPED, OrderStatus.DELIVERED, OrderStatus.COMPLETED);
 
     // ---------------------- Helpers dùng phản chiếu an toàn ----------------------
 
     private static String tryGetString(Object obj, String... getters) {
-        if (obj == null) return null;
+        if (obj == null)
+            return null;
         for (String g : getters) {
             try {
                 var m = obj.getClass().getMethod(g);
                 Object v = m.invoke(obj);
                 return (v == null) ? null : v.toString();
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
         }
         return null;
     }
 
     private static BigDecimal tryGetDecimal(Object obj, String... getters) {
-        if (obj == null) return null;
+        if (obj == null)
+            return null;
         for (String g : getters) {
             try {
                 var m = obj.getClass().getMethod(g);
                 Object v = m.invoke(obj);
-                if (v == null) return null;
-                if (v instanceof BigDecimal bd) return bd;
-                if (v instanceof Number n) return BigDecimal.valueOf(n.doubleValue());
-            } catch (Exception ignored) {}
+                if (v == null)
+                    return null;
+                if (v instanceof BigDecimal bd)
+                    return bd;
+                if (v instanceof Number n)
+                    return BigDecimal.valueOf(n.doubleValue());
+            } catch (Exception ignored) {
+            }
         }
         return null;
     }
@@ -76,17 +84,21 @@ public class AdminReportApiController {
     }
 
     private static String buildAddressFromParts(Object obj) {
-        if (obj == null) return null;
-        String street   = tryGetString(obj, "getStreet", "getAddressLine", "getAddressLine1", "getLine1");
-        String ward     = tryGetString(obj, "getWard", "getCommune");
+        if (obj == null)
+            return null;
+        String street = tryGetString(obj, "getStreet", "getAddressLine", "getAddressLine1", "getLine1");
+        String ward = tryGetString(obj, "getWard", "getCommune");
         String district = tryGetString(obj, "getDistrict");
-        String city     = tryGetString(obj, "getCity", "getTown");
+        String city = tryGetString(obj, "getCity", "getTown");
         String province = tryGetString(obj, "getProvince", "getState");
-        String zip      = tryGetString(obj, "getZip", "getPostcode", "getPostalCode");
+        String zip = tryGetString(obj, "getZip", "getPostcode", "getPostalCode");
         return joinParts(street, ward, district, city, province, zip);
     }
 
-    /** ƯU TIÊN tên ở ĐƠN (receiver/shipping/customer name) → rồi mới tới User → cuối cùng rớt về "Khách/User#ID". */
+    /**
+     * ƯU TIÊN tên ở ĐƠN (receiver/shipping/customer name) → rồi mới tới User → cuối
+     * cùng rớt về "Khách/User#ID".
+     */
     private static String customerName(Order o) {
         // 1) Tên lưu trong Order
         String name = tryGetString(o,
@@ -98,15 +110,19 @@ public class AdminReportApiController {
             var u = o.getCustomer();
             name = tryGetString(u, "getFullName", "getName", "getUsername", "getEmail");
             if (name == null || name.isBlank()) {
-                try { name = "User#" + u.getId(); }
-                catch (Exception ignored) { name = "Khách"; }
+                try {
+                    name = "User#" + u.getId();
+                } catch (Exception ignored) {
+                    name = "Khách";
+                }
             }
         }
 
         // 3) Fallback nữa nếu hệ thống lưu String customer trong Order
         if (name == null || name.isBlank()) {
             name = tryGetString(o, "getCustomer");
-            if (name == null || name.isBlank()) name = "Khách";
+            if (name == null || name.isBlank())
+                name = "Khách";
         }
         return name;
     }
@@ -124,18 +140,24 @@ public class AdminReportApiController {
         return (phone != null && !phone.isBlank()) ? phone : null;
     }
 
-    /** Địa chỉ giao hàng: ưu tiên field trên Order; nếu trống thì ghép từ các phần hoặc lấy từ User. */
+    /**
+     * Địa chỉ giao hàng: ưu tiên field trên Order; nếu trống thì ghép từ các phần
+     * hoặc lấy từ User.
+     */
     private static String shippingAddress(Order o) {
         // 1) Một field nguyên vẹn trên Order
-        String addr = tryGetString(o, "getShippingAddress", "getAddress", "getReceiverAddress", "getDeliveryAddress", "getShipAddress");
-        if (addr == null || addr.isBlank()) addr = buildAddressFromParts(o);
+        String addr = tryGetString(o, "getShippingAddress", "getAddress", "getReceiverAddress", "getDeliveryAddress",
+                "getShipAddress");
+        if (addr == null || addr.isBlank())
+            addr = buildAddressFromParts(o);
 
         // 2) Fallback: lấy từ User
         if (addr == null || addr.isBlank()) {
             var u = o.getCustomer();
             if (u != null) {
                 addr = tryGetString(u, "getAddress", "getFullAddress", "getLocation");
-                if (addr == null || addr.isBlank()) addr = buildAddressFromParts(u);
+                if (addr == null || addr.isBlank())
+                    addr = buildAddressFromParts(u);
             }
         }
         return (addr != null && !addr.isBlank()) ? addr : null;
@@ -148,7 +170,7 @@ public class AdminReportApiController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
 
         LocalDateTime start = date.atStartOfDay();
-        LocalDateTime end   = date.plusDays(1).atStartOfDay();
+        LocalDateTime end = date.plusDays(1).atStartOfDay();
 
         // Nên để findWithItemsInDay FETCH JOIN customer + items + product
         List<Order> orders = orderRepo.findWithItemsInDay(start, end, List.copyOf(REVENUE_STATUSES));
@@ -160,12 +182,12 @@ public class AdminReportApiController {
 
         List<OrderDetailDTO> orderDtos = orders.stream().map(o -> {
             String customer = customerName(o);
-            String phone    = customerPhone(o);
-            String address  = shippingAddress(o);
-            String code     = "DH-" + o.getId();
+            String phone = customerPhone(o);
+            String address = shippingAddress(o);
+            String code = "DH-" + o.getId();
 
             // Mã giảm + số tiền giảm (nếu có)
-            String     discountCode   = tryGetString(o, "getDiscountCode", "getCouponCode", "getVoucherCode");
+            String discountCode = tryGetString(o, "getDiscountCode", "getCouponCode", "getVoucherCode");
             BigDecimal discountAmount = tryGetDecimal(o, "getDiscountAmount", "getDiscountValue", "getVoucherAmount");
 
             // Tổng tiền hàng theo item (để suy ngược % nếu hệ thống không lưu sẵn)
@@ -177,8 +199,10 @@ public class AdminReportApiController {
                     })
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-            // % giảm: lấy từ Order nếu có; nếu không có thì suy ngược từ discountAmount/itemsTotal
-            BigDecimal discountPercent = tryGetDecimal(o, "getDiscountPercent", "getDiscountPercentage", "getVoucherPercent", "getDiscountRate");
+            // % giảm: lấy từ Order nếu có; nếu không có thì suy ngược từ
+            // discountAmount/itemsTotal
+            BigDecimal discountPercent = tryGetDecimal(o, "getDiscountPercent", "getDiscountPercentage",
+                    "getVoucherPercent", "getDiscountRate");
             if (discountPercent == null && discountAmount != null && itemsTotal.compareTo(BigDecimal.ZERO) > 0) {
                 discountPercent = discountAmount
                         .divide(itemsTotal, 4, RoundingMode.HALF_UP)
@@ -208,8 +232,7 @@ public class AdminReportApiController {
                     discountCode,
                     discountAmount,
                     discountPercent,
-                    items
-            );
+                    items);
         }).collect(Collectors.toList());
 
         return new DayDetailResponse(date, revenue, orderDtos);

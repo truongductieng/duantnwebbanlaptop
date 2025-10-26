@@ -17,7 +17,7 @@ import java.util.Map;
 
 @Controller
 @RequestMapping("/admin/discounts")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
 public class AdminDiscountController {
 
     private final DiscountRepository repo;
@@ -64,9 +64,9 @@ public class AdminDiscountController {
 
     @PostMapping("/save")
     public String save(@Valid @ModelAttribute("discount") Discount discount,
-                       BindingResult result,
-                       RedirectAttributes ra,
-                       Model model) {
+            BindingResult result,
+            RedirectAttributes ra,
+            Model model) {
         // Chuẩn hoá CODE để so sánh/đếm đồng nhất
         if (discount.getCode() != null) {
             discount.setCode(discount.getCode().trim().toUpperCase());

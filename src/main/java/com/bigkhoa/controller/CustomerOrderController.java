@@ -25,7 +25,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/my-orders")
-@PreAuthorize("hasRole('USER')")
+@PreAuthorize("hasAnyRole('USER', 'CUSTOMER', 'ADMIN')")
 public class CustomerOrderController {
 
     @Autowired
@@ -54,12 +54,29 @@ public class CustomerOrderController {
         private String recipientAddress;
 
         // getters/setters
-        public String getRecipientName() { return recipientName; }
-        public void setRecipientName(String recipientName) { this.recipientName = recipientName; }
-        public String getRecipientPhone() { return recipientPhone; }
-        public void setRecipientPhone(String recipientPhone) { this.recipientPhone = recipientPhone; }
-        public String getRecipientAddress() { return recipientAddress; }
-        public void setRecipientAddress(String recipientAddress) { this.recipientAddress = recipientAddress; }
+        public String getRecipientName() {
+            return recipientName;
+        }
+
+        public void setRecipientName(String recipientName) {
+            this.recipientName = recipientName;
+        }
+
+        public String getRecipientPhone() {
+            return recipientPhone;
+        }
+
+        public void setRecipientPhone(String recipientPhone) {
+            this.recipientPhone = recipientPhone;
+        }
+
+        public String getRecipientAddress() {
+            return recipientAddress;
+        }
+
+        public void setRecipientAddress(String recipientAddress) {
+            this.recipientAddress = recipientAddress;
+        }
     }
 
     // ===== Danh sách đơn của user =====
@@ -73,11 +90,12 @@ public class CustomerOrderController {
         return "customer/orders";
     }
 
-    // ===== Chi tiết đơn: redirect sang /profile/order/{id} (vì đã xoá view customer/order_detail) =====
+    // ===== Chi tiết đơn: redirect sang /profile/order/{id} (vì đã xoá view
+    // customer/order_detail) =====
     @GetMapping("/{id}")
     public String viewOrderDetail(@PathVariable("id") Integer id,
-                                  Principal principal,
-                                  RedirectAttributes ra) {
+            Principal principal,
+            RedirectAttributes ra) {
         try {
             User u = userService.findByUsername(principal.getName());
             Order order = orderService.getById(id); // overload Integer đã có
@@ -95,10 +113,10 @@ public class CustomerOrderController {
     // ===== Cập nhật địa chỉ giao hàng (chỉ PENDING / CONFIRMED) =====
     @PostMapping("/{id}/shipping")
     public String updateShipping(@PathVariable("id") Integer id,
-                                 @Valid @ModelAttribute("shippingForm") UpdateShippingRequest form,
-                                 BindingResult result,
-                                 Principal principal,
-                                 RedirectAttributes ra) {
+            @Valid @ModelAttribute("shippingForm") UpdateShippingRequest form,
+            BindingResult result,
+            Principal principal,
+            RedirectAttributes ra) {
         User u = userService.findByUsername(principal.getName());
 
         // Lấy đơn và kiểm tra quyền sở hữu
@@ -140,9 +158,9 @@ public class CustomerOrderController {
     // ===== Mua lại (chỉ khi đã DELIVERED) =====
     @PostMapping("/{id}/buy-again")
     public String buyAgain(@PathVariable("id") Integer id,
-                           Authentication auth,
-                           Principal principal,
-                           RedirectAttributes ra) {
+            Authentication auth,
+            Principal principal,
+            RedirectAttributes ra) {
         User u = userService.findByUsername(principal.getName());
         Order order;
         try {
@@ -173,9 +191,9 @@ public class CustomerOrderController {
     // ===== HỦY ĐƠN (USER) — PENDING/CONFIRMED =====
     @PostMapping("/{id}/cancel")
     public String cancelMyOrder(@PathVariable("id") Integer id,
-                                @RequestParam(value = "reason", required = false) String reason,
-                                Principal principal,
-                                RedirectAttributes ra) {
+            @RequestParam(value = "reason", required = false) String reason,
+            Principal principal,
+            RedirectAttributes ra) {
         User u = userService.findByUsername(principal.getName());
         try {
             orderService.cancelOrder(id.longValue(), u, reason);

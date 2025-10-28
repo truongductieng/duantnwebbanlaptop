@@ -229,7 +229,7 @@
                     th:field="*{phone}"
                     th:classappend="${#fields.hasErrors('phone')} ? 'is-invalid' : ''"
                     placeholder="Nhập số điện thoại"
-                    pattern="\d{10,15}"
+                    pattern="^[0-9+()\\-\\\s]{9,30}$"
                     required
                   />
                   <label>
@@ -256,13 +256,20 @@
                         class="form-select"
                         th:field="*{role}"
                         aria-label="Chọn vai trò người dùng"
+                        required
                       >
-                        <option th:value="ROLE_USER">
-                          <i class="fas fa-user me-2"></i>Người dùng (User)
+                        <option value="" disabled>-- Chọn vai trò --</option>
+                        <option
+                          th:value="'ROLE_USER'"
+                          th:selected="${user.role == null || user.role == 'ROLE_USER'}"
+                        >
+                          Người dùng (User)
                         </option>
-                        <option th:value="ROLE_ADMIN">
-                          <i class="fas fa-user-shield me-2"></i>Quản trị viên
-                          (Admin)
+                        <option
+                          th:value="'ROLE_ADMIN'"
+                          th:selected="${user.role == 'ROLE_ADMIN'}"
+                        >
+                          Quản trị viên (Admin)
                         </option>
                       </select>
                       <label>
@@ -409,7 +416,7 @@
             params.append("email", emailInput.value.trim());
           if (idInput?.value) params.append("id", idInput.value);
 
-          if (![...params.keys()].length) return;
+          if (![...params.keys()].length) return true;
 
           try {
             const res = await fetch(
@@ -432,8 +439,12 @@
 
             return true;
           } catch (e) {
-            console.error("Error checking unique:", e);
-            return false;
+            console.warn(
+              "Unique check failed, fallback to server-side validation only:",
+              e
+            );
+            // Cho phép submit tiếp, vì server vẫn có kiểm tra trùng và ràng buộc unique
+            return true;
           }
         }
 
@@ -574,7 +585,10 @@
         // Format phone number as user types
         if (phoneInput) {
           phoneInput.addEventListener("input", function () {
-            this.value = this.value.replace(/\D/g, "").substring(0, 15);
+            // Chỉ cho phép các ký tự hợp lệ giống backend và giới hạn 30 ký tự
+            this.value = this.value
+              .replace(/[^0-9+()\-\s]/g, "")
+              .substring(0, 30);
           });
         }
       });

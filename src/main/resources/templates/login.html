@@ -153,17 +153,6 @@
         </div>
 
         <div class="card-body">
-          <!-- Theme mini controls -->
-          <div class="themer-mini">
-            <span class="chip" data-preset="indigo" data-active="true">Indigo</span>
-            <span class="chip" data-preset="teal">Teal</span>
-            <span class="chip" data-preset="rose">Rose</span>
-            <label class="switch ms-1">
-              <input id="darkToggle" class="form-check-input" type="checkbox" />
-              <span>Dark</span>
-            </label>
-          </div>
-
           <div th:if="${param.error}" class="alert alert-warning mb-3">
             <i class="fa-solid fa-triangle-exclamation me-1"></i> Sai tên đăng nhập hoặc mật khẩu.
           </div>
@@ -243,29 +232,6 @@
         if (e.key === 'Enter') { e.preventDefault(); document.getElementById('password').focus(); }
       });
 
-      // Mini themer (3 preset + dark)
-      const chips = document.querySelectorAll('.chip');
-      const darkToggle = document.getElementById('darkToggle');
-      const html = document.documentElement;
-      const LS = 'loginModerateTheme:v1';
-
-      function apply(preset = 'indigo', dark = false) {
-        chips.forEach(c => c.dataset.active = (c.dataset.preset === preset));
-        html.setAttribute('data-preset', preset);
-        html.setAttribute('data-theme', dark ? 'dark' : 'light');
-        localStorage.setItem(LS, JSON.stringify({ preset, dark }));
-      }
-
-      // Load saved
-      try {
-        const saved = JSON.parse(localStorage.getItem(LS) || '{}');
-        if (saved.preset) apply(saved.preset, !!saved.dark);
-        darkToggle.checked = !!saved.dark;
-        chips.forEach(c => c.dataset.active = (c.dataset.preset === (saved.preset || 'indigo')));
-      } catch {}
-
-      chips.forEach(c => c.addEventListener('click', () => apply(c.dataset.preset, darkToggle.checked)));
-      darkToggle.addEventListener('change', (e) => apply((document.querySelector('.chip[data-active="true"]').dataset.preset || 'indigo'), e.target.checked));
     </script>
   </body>
 </html>

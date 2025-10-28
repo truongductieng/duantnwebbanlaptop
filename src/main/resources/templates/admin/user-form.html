@@ -229,7 +229,7 @@
                     th:field="*{phone}"
                     th:classappend="${#fields.hasErrors('phone')} ? 'is-invalid' : ''"
                     placeholder="Nhập số điện thoại"
-                    pattern="^[0-9+()\\-\\\s]{9,30}$"
+                    pattern="^[0-9+()\-\s]{9,30}$"
                     required
                   />
                   <label>
@@ -384,19 +384,28 @@
 
         // Form validation patterns
         const patterns = {
-          username: /^[a-zA-Z0-9_]{3,20}$/,
+          // Đồng bộ với backend: ^[a-zA-Z0-9._-]{3,50}$
+          username: /^[a-zA-Z0-9._-]{3,50}$/,
           password: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/,
-          phone: /^\d{10,15}$/,
+          // Đồng bộ với backend: cho phép số, khoảng trắng, +, -, (, ) và độ dài 9-30
+          phone: /^[0-9+()\-\s]{9,30}$/,
         };
 
         // Validation messages
         const messages = {
           username:
-            "Tên đăng nhập phải từ 3-20 ký tự, chỉ bao gồm chữ cái, số và dấu gạch dưới",
+            "Tên đăng nhập 3-50 ký tự, chỉ gồm chữ, số, dấu chấm (.), gạch dưới (_) hoặc gạch nối (-)",
           password:
             "Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số",
-          phone: "Số điện thoại phải có 10-15 chữ số",
+          phone:
+            "Số điện thoại 9-30 ký tự, cho phép số, khoảng trắng, +, -, ( )",
         };
+
+        // Hiển thị lỗi tổng quát từ server (nếu có)
+        const globalErrorsContainer = document.createElement("div");
+        globalErrorsContainer.className = "alert alert-danger";
+        globalErrorsContainer.style.display = "none";
+        form.parentElement.insertBefore(globalErrorsContainer, form);
 
         // Debounce function
         function debounce(fn, delay) {

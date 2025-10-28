@@ -32,7 +32,8 @@ public class User {
   private String email;
 
   @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-  @NotBlank(message = "Mật khẩu không được để trống")
+  // Không dùng @NotBlank ở đây để tránh lỗi khi chỉnh sửa (form không gửi password).
+  // Luồng kiểm tra bắt buộc mật khẩu khi tạo mới đã được xử lý ở UserServiceImpl.save()
   @Column(nullable = false, length = 100) // >= 60 cho bcrypt
   private String password;
 

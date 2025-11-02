@@ -166,8 +166,29 @@
               ></button>
             </div>
 
+            <!-- Error Message -->
+            <div
+              th:if="${error}"
+              class="alert alert-danger alert-dismissible fade show"
+              role="alert"
+            >
+              <i class="bi bi-exclamation-triangle-fill me-2"></i>
+              <span th:text="${error}"></span>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+              ></button>
+            </div>
+
             <div class="contact-form">
               <form th:action="@{/contact}" method="post" novalidate>
+                <input
+                  type="hidden"
+                  th:if="${_csrf != null}"
+                  th:name="${_csrf.parameterName}"
+                  th:value="${_csrf.token}"
+                />
                 <div class="row g-4">
                   <div class="col-md-6">
                     <label for="name" class="form-label fw-500">Họ tên</label>

@@ -4,11 +4,18 @@ import com.bigkhoa.service.EmailService;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 
 @Service
 public class EmailServiceImpl implements EmailService {
     private final JavaMailSender mailSender;
-    public EmailServiceImpl(JavaMailSender mailSender) { this.mailSender = mailSender; }
+
+    @Value("${spring.mail.username}")
+    private String fromEmail;
+
+    public EmailServiceImpl(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
 
     @Override
     public void sendSimpleMessage(String to, String subject, String text) {
@@ -16,7 +23,7 @@ public class EmailServiceImpl implements EmailService {
             throw new IllegalArgumentException("Địa chỉ email người nhận không hợp lệ: " + to);
         }
         SimpleMailMessage msg = new SimpleMailMessage();
-        // msg.setFrom("no-reply@your-domain.com"); // nếu cần
+        msg.setFrom(fromEmail);
         msg.setTo(to);
         msg.setSubject(subject);
         msg.setText(text);

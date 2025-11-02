@@ -15,16 +15,20 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Controller
 public class ForgotPasswordController {
+    private static final Logger logger = LoggerFactory.getLogger(ForgotPasswordController.class);
+
     private final UserService userService;
     private final PasswordResetTokenRepository tokenRepo;
     private final EmailService emailService;
 
     public ForgotPasswordController(UserService userService,
-                                    PasswordResetTokenRepository tokenRepo,
-                                    EmailService emailService) {
+            PasswordResetTokenRepository tokenRepo,
+            EmailService emailService) {
         this.userService = userService;
         this.tokenRepo = tokenRepo;
         this.emailService = emailService;
@@ -37,7 +41,7 @@ public class ForgotPasswordController {
 
     @PostMapping("/forgot-password")
     public String processForgot(@RequestParam("identifier") String identifier,
-                                Model model, HttpServletRequest request) {
+            Model model, HttpServletRequest request) {
         String input = identifier == null ? "" : identifier.trim();
 
         // Cho phép nhập email hoặc username
@@ -46,9 +50,12 @@ public class ForgotPasswordController {
                 : userService.findByUsername(input);
 
         if (user == null || user.getEmail() == null || user.getEmail().isBlank()) {
+            logger.warn("Không tìm thấy tài khoản với identifier: {}", input);
             model.addAttribute("error", "Không tìm thấy tài khoản hoặc tài khoản chưa có email.");
             return "forgot-password";
         }
+
+        logger.info("Tìm thấy user: {} với email: {}", user.getUsername(), user.getEmail());
 
         // Xoá mọi token cũ của user
         tokenRepo.deleteByUserId(user.getId());
@@ -67,19 +74,22 @@ public class ForgotPasswordController {
                 .queryParam("token", token)
                 .toUriString();
 
+        logger.info("Link reset password: {}", resetLink);
+
         try {
             emailService.sendSimpleMessage(
                     user.getEmail(),
                     "Đặt lại mật khẩu - Laptop Shop",
                     "Chào " + (user.getFullName() != null ? user.getFullName() : user.getUsername()) + ",\n\n"
-                    + "Bạn đã yêu cầu đặt lại mật khẩu.\n"
-                    + "Nhấp vào liên kết sau để đặt lại mật khẩu (hết hạn sau 1 giờ):\n"
-                    + resetLink + "\n\n"
-                    + "Nếu bạn không yêu cầu, vui lòng bỏ qua email này."
-            );
+                            + "Bạn đã yêu cầu đặt lại mật khẩu.\n"
+                            + "Nhấp vào liên kết sau để đặt lại mật khẩu (hết hạn sau 1 giờ):\n"
+                            + resetLink + "\n\n"
+                            + "Nếu bạn không yêu cầu, vui lòng bỏ qua email này.");
+            logger.info("Email đã được gửi thành công đến: {}", mask(user.getEmail()));
             model.addAttribute("message", "Đã gửi email hướng dẫn đến " + mask(user.getEmail()));
         } catch (MailException | IllegalArgumentException ex) {
-            model.addAttribute("error", "Không gửi được email. Vui lòng thử lại sau.");
+            logger.error("Lỗi khi gửi email: {}", ex.getMessage(), ex);
+            model.addAttribute("error", "Không gửi được email: " + ex.getMessage() + ". Vui lòng thử lại sau.");
         }
         return "forgot-password";
     }
@@ -88,7 +98,7 @@ public class ForgotPasswordController {
     public String showResetForm(@RequestParam String token, Model model) {
         Optional<PasswordResetToken> optionalPr = tokenRepo.findByToken(token);
         if (optionalPr.isEmpty() ||
-            optionalPr.get().getExpiryDate().isBefore(LocalDateTime.now())) {
+                optionalPr.get().getExpiryDate().isBefore(LocalDateTime.now())) {
             model.addAttribute("error", "Liên kết không hợp lệ hoặc đã hết hạn.");
             return "forgot-password";
         }
@@ -98,11 +108,11 @@ public class ForgotPasswordController {
 
     @PostMapping("/reset-password")
     public String processReset(@RequestParam String token,
-                               @RequestParam String password,
-                               Model model) {
+            @RequestParam String password,
+            Model model) {
         Optional<PasswordResetToken> optionalPr = tokenRepo.findByToken(token);
         if (optionalPr.isEmpty() ||
-            optionalPr.get().getExpiryDate().isBefore(LocalDateTime.now())) {
+                optionalPr.get().getExpiryDate().isBefore(LocalDateTime.now())) {
             model.addAttribute("error", "Liên kết không hợp lệ hoặc đã hết hạn.");
             return "forgot-password";
         }
@@ -119,7 +129,8 @@ public class ForgotPasswordController {
     // Ẩn bớt email trong thông báo
     private static String mask(String email) {
         int at = email.indexOf('@');
-        if (at <= 1) return "***" + email.substring(at);
+        if (at <= 1)
+            return "***" + email.substring(at);
         return email.charAt(0) + "***" + email.substring(at - 1);
     }
 }

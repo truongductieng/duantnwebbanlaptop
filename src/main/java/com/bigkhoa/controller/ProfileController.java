@@ -31,37 +31,42 @@ public class ProfileController {
     private final PasswordEncoder passwordEncoder;
 
     public ProfileController(UserService userService,
-                             OrderService orderService,
-                             PasswordEncoder passwordEncoder) {
-        this.userService     = userService;
-        this.orderService    = orderService;
+            OrderService orderService,
+            PasswordEncoder passwordEncoder) {
+        this.userService = userService;
+        this.orderService = orderService;
         this.passwordEncoder = passwordEncoder;
     }
 
     // ========================= Helpers =========================
     private boolean isOAuth2(Authentication auth) {
-        if (auth == null) return false;
+        if (auth == null)
+            return false;
         Object p = auth.getPrincipal();
         return (p instanceof OidcUser) || (p instanceof OAuth2User);
     }
 
     /**
      * Trả về "key" để tìm User trong DB:
-     * - Với Google (OIDC/OAuth2): ưu tiên email; nếu không có, fallback auth.getName().
+     * - Với Google (OIDC/OAuth2): ưu tiên email; nếu không có, fallback
+     * auth.getName().
      * - Với local: username.
      */
     private String extractUsernameOrEmail(Authentication auth) {
-        if (auth == null) return null;
+        if (auth == null)
+            return null;
         Object p = auth.getPrincipal();
 
         if (p instanceof OidcUser oidc) {
             String email = oidc.getEmail();
-            if (email != null && !email.isBlank()) return email;
+            if (email != null && !email.isBlank())
+                return email;
             return auth.getName(); // fallback
         }
         if (p instanceof OAuth2User ou) {
             Object email = ou.getAttribute("email");
-            if (email != null) return email.toString();
+            if (email != null)
+                return email.toString();
             return auth.getName(); // fallback (vd: github login)
         }
         if (p instanceof UserDetails ud) {
@@ -72,17 +77,21 @@ public class ProfileController {
 
     private User loadUserFromAuth(Authentication authentication) {
         String key = extractUsernameOrEmail(authentication);
-        if (key == null) return null;
+        if (key == null)
+            return null;
 
         // Thử tìm theo username trước
         User user = userService.findByUsername(key);
-        if (user != null) return user;
+        if (user != null)
+            return user;
 
         // Fallback theo email (cần có hàm trong UserService)
         try {
             User byEmail = userService.findByEmail(key);
-            if (byEmail != null) return byEmail;
-        } catch (Exception ignored) {}
+            if (byEmail != null)
+                return byEmail;
+        } catch (Exception ignored) {
+        }
         return null;
     }
 
@@ -105,8 +114,8 @@ public class ProfileController {
 
     @GetMapping("/order/{id}")
     public String viewOrderDetail(@PathVariable("id") Long id,
-                                  Model model,
-                                  Authentication authentication) {
+            Model model,
+            Authentication authentication) {
         User user = loadUserFromAuth(authentication);
         if (user == null) {
             model.addAttribute("error", "Tài khoản không hợp lệ.");
@@ -127,10 +136,10 @@ public class ProfileController {
     // ==== UPDATE THÔNG TIN CƠ BẢN (username + email + phone) ====
     @PostMapping("/update")
     public String updateProfile(@RequestParam(required = false) String username,
-                                @RequestParam String email,
-                                @RequestParam String phone,
-                                Authentication authentication,
-                                Model model) {
+            @RequestParam String email,
+            @RequestParam String phone,
+            Authentication authentication,
+            Model model) {
         User user = loadUserFromAuth(authentication);
         if (user == null) {
             model.addAttribute("error", "Không tìm thấy tài khoản.");
@@ -157,8 +166,8 @@ public class ProfileController {
     // ==== UPLOAD ẢNH ĐẠI DIỆN ====
     @PostMapping("/avatar")
     public String uploadAvatar(@RequestParam("file") MultipartFile file,
-                               Authentication authentication,
-                               Model model) {
+            Authentication authentication,
+            Model model) {
         User user = loadUserFromAuth(authentication);
         if (user == null) {
             model.addAttribute("error", "Tài khoản không hợp lệ.");
@@ -205,9 +214,9 @@ public class ProfileController {
 
     @PostMapping("/change-password")
     public String changePassword(@RequestParam String oldPassword,
-                                 @RequestParam String newPassword,
-                                 Model model,
-                                 Authentication authentication) {
+            @RequestParam String newPassword,
+            Model model,
+            Authentication authentication) {
         if (isOAuth2(authentication)) {
             model.addAttribute("error", "Tài khoản Google không hỗ trợ đổi mật khẩu tại đây.");
             return "change-password";
@@ -224,8 +233,9 @@ public class ProfileController {
             return "change-password";
         }
 
-        user.setPassword(passwordEncoder.encode(newPassword));
-        userService.save(user);
+        // Tránh double-encode: sử dụng service chuyên trách cập nhật mật khẩu
+        // vì UserService.save() sẽ tự encode lại password nếu không cẩn thận
+        userService.updatePassword(user.getUsername(), newPassword);
 
         model.addAttribute("message", "Đổi mật khẩu thành công.");
         return "change-password";

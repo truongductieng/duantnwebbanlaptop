@@ -1,4 +1,4 @@
-</html>
+﻿</html>
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -90,11 +90,11 @@
         <!-- Trạng thái -->
         <p><strong>🚚 Trạng thái:</strong>
           <span th:text="${order.status}" th:class="${ 'badge ' + (
-            order.status == T(com.bigkhoa.model.OrderStatus).PENDING    ? 'bg-warning text-dark' :
-            order.status == T(com.bigkhoa.model.OrderStatus).CONFIRMED  ? 'bg-info text-dark'    :
-            order.status == T(com.bigkhoa.model.OrderStatus).SHIPPED    ? 'bg-primary text-light' :
-            order.status == T(com.bigkhoa.model.OrderStatus).DELIVERED  ? 'bg-success text-light' :
-            order.status == T(com.bigkhoa.model.OrderStatus).CANCELED   ? 'bg-danger text-light'  :
+            order.status == T(com.ductieng.model.OrderStatus).PENDING    ? 'bg-warning text-dark' :
+            order.status == T(com.ductieng.model.OrderStatus).CONFIRMED  ? 'bg-info text-dark'    :
+            order.status == T(com.ductieng.model.OrderStatus).SHIPPED    ? 'bg-primary text-light' :
+            order.status == T(com.ductieng.model.OrderStatus).DELIVERED  ? 'bg-success text-light' :
+            order.status == T(com.ductieng.model.OrderStatus).CANCELED   ? 'bg-danger text-light'  :
             'bg-secondary'
           ) }"></span>
         </p>
@@ -102,21 +102,21 @@
         <!-- Phương thức thanh toán (COD / VNPAY) -->
         <p><strong>💳 Thanh toán:</strong>
           <span th:switch="${order.paymentMethod}">
-            <span th:case="${T(com.bigkhoa.model.PaymentMethod).COD}">Thanh toán khi nhận hàng (COD)</span>
-            <span th:case="${T(com.bigkhoa.model.PaymentMethod).VNPAY}">VNPAY</span>
+            <span th:case="${T(com.ductieng.model.PaymentMethod).COD}">Thanh toán khi nhận hàng (COD)</span>
+            <span th:case="${T(com.ductieng.model.PaymentMethod).VNPAY}">VNPAY</span>
             <span th:case="*">—</span>
           </span>
         </p>
 
         <!-- Tình trạng thanh toán (chỉ dựa vào paymentMethod) -->
         <p><strong>💡 Tình trạng thanh toán:</strong>
-          <span th:if="${order.paymentMethod == T(com.bigkhoa.model.PaymentMethod).VNPAY}" class="badge bg-success">
+          <span th:if="${order.paymentMethod == T(com.ductieng.model.PaymentMethod).VNPAY}" class="badge bg-success">
             Đã thanh toán (VNPAY)
           </span>
-          <span th:if="${order.paymentMethod == T(com.bigkhoa.model.PaymentMethod).COD}" class="badge bg-secondary">
+          <span th:if="${order.paymentMethod == T(com.ductieng.model.PaymentMethod).COD}" class="badge bg-secondary">
             Chưa thanh toán (COD)
           </span>
-          <span th:if="${order.paymentMethod != T(com.bigkhoa.model.PaymentMethod).COD and order.paymentMethod != T(com.bigkhoa.model.PaymentMethod).VNPAY}" class="badge bg-secondary">
+          <span th:if="${order.paymentMethod != T(com.ductieng.model.PaymentMethod).COD and order.paymentMethod != T(com.ductieng.model.PaymentMethod).VNPAY}" class="badge bg-secondary">
             —
           </span>
         </p>
@@ -128,7 +128,7 @@
         </p>
 
         <!-- Khi đã hủy: thời điểm + lý do -->
-        <div th:if="${order.status == T(com.bigkhoa.model.OrderStatus).CANCELED}">
+        <div th:if="${order.status == T(com.ductieng.model.OrderStatus).CANCELED}">
           <p>
             <strong>🛑 Hủy lúc:</strong>
             <span th:text="${order.canceledAt != null ? #temporals.format(order.canceledAt, 'dd/MM/yyyy HH:mm') : '-'}"></span>
@@ -160,8 +160,8 @@
 
         <!-- ========= SỬA ĐỊA CHỈ GIAO HÀNG (PENDING/CONFIRMED) ========= -->
         <div class="mt-3"
-             th:if="${order.status == T(com.bigkhoa.model.OrderStatus).PENDING
-                     or order.status == T(com.bigkhoa.model.OrderStatus).CONFIRMED}">
+             th:if="${order.status == T(com.ductieng.model.OrderStatus).PENDING
+                     or order.status == T(com.ductieng.model.OrderStatus).CONFIRMED}">
           <button class="btn btn-sm btn-outline-primary" type="button"
                   data-bs-toggle="collapse" data-bs-target="#editShipping">
             <i class="fa fa-pen me-1"></i> Sửa địa chỉ giao hàng
@@ -244,21 +244,21 @@
         <!-- Nút hành động -->
         <div class="mt-3">
           <!-- Mua lại + Đánh giá (khi DELIVERED) -->
-          <form th:if="${order.status == T(com.bigkhoa.model.OrderStatus).DELIVERED}"
+          <form th:if="${order.status == T(com.ductieng.model.OrderStatus).DELIVERED}"
                 th:action="@{'/my-orders/' + ${order.id} + '/buy-again'}" method="post" class="d-inline">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
             <button class="btn btn-sm btn-primary">
               <i class="fa fa-cart-plus me-1"></i> Mua lại
             </button>
           </form>
-          <button th:if="${order.status == T(com.bigkhoa.model.OrderStatus).DELIVERED}"
+          <button th:if="${order.status == T(com.ductieng.model.OrderStatus).DELIVERED}"
                   class="btn btn-sm btn-outline-success ms-2" data-bs-toggle="modal" data-bs-target="#reviewModal">
             <i class="fa fa-star me-1"></i> Đánh giá sản phẩm
           </button>
 
           <!-- HỦY ĐƠN (khi PENDING hoặc CONFIRMED) -->
-          <button th:if="${order.status == T(com.bigkhoa.model.OrderStatus).PENDING
-                          or order.status == T(com.bigkhoa.model.OrderStatus).CONFIRMED}"
+          <button th:if="${order.status == T(com.ductieng.model.OrderStatus).PENDING
+                          or order.status == T(com.ductieng.model.OrderStatus).CONFIRMED}"
                   class="btn btn-sm btn-outline-danger ms-0 ms-md-2"
                   data-bs-toggle="modal" data-bs-target="#cancelModal">
             <i class="fa fa-ban me-1"></i> Hủy đơn

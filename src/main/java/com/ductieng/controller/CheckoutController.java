@@ -220,14 +220,21 @@ public class CheckoutController {
 
             gmailService.sendOrderConfirmationEmail(orderService.getById(orderId));
 
+            redirectAttributes.addFlashAttribute("paymentSuccess", true);
             redirectAttributes.addFlashAttribute(
                 "message", "Thanh toán VNPay thành công cho đơn #" + orderId);
+            return "redirect:/confirmation/" + orderId;
         } else {
+            // Thanh toán thất bại hoặc bị hủy -> giữ trạng thái PENDING
             orderService.updateStatus(orderId, OrderStatus.PENDING);
-            redirectAttributes.addFlashAttribute(
-                "message", "Thanh toán thất bại. Vui lòng thử lại đơn #" + orderId);
+            log.warn("[VNPay] Thanh toán thất bại/hủy cho đơn #{}, responseCode: {}", orderId, responseCode);
+            
+            redirectAttributes.addFlashAttribute("paymentSuccess", false);
+            redirectAttributes.addFlashAttribute("error", 
+                "Thanh toán VNPay thất bại hoặc đã bị hủy. Đơn hàng #" + orderId + " vẫn được lưu với trạng thái chờ xử lý.");
+            // Redirect về trang chi tiết đơn hàng thay vì confirmation
+            return "redirect:/order/" + orderId;
         }
-        return "redirect:/confirmation/" + orderId;
     }
 
     @GetMapping("/confirmation/{orderId}")

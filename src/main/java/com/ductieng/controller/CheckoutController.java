@@ -244,8 +244,8 @@ public class CheckoutController {
             redirectAttributes.addFlashAttribute("error",
                     "Thanh toán VNPay thất bại hoặc đã bị hủy. Đơn hàng #" + orderId
                             + " vẫn được lưu với trạng thái chờ xử lý.");
-            // Redirect về trang chi tiết đơn hàng thay vì confirmation
-            return "redirect:/order/" + orderId;
+            // Redirect về trang chi tiết đơn hàng trong profile thay vì confirmation
+            return "redirect:/profile/order/" + orderId;
         }
     }
 

@@ -456,12 +456,12 @@
               <span
                 class="badge ms-2"
                 th:classappend="${selectedStatus != null ? 
-                    (selectedStatus == T(com.bigkhoa.model.OrderStatus).PENDING ? 'bg-warning text-dark' :
-                     selectedStatus == T(com.bigkhoa.model.OrderStatus).CONFIRMED ? 'bg-info' :
-                     selectedStatus == T(com.bigkhoa.model.OrderStatus).SHIPPED ? 'bg-primary' :
-                     selectedStatus == T(com.bigkhoa.model.OrderStatus).DELIVERED ? 'bg-success' :
-                     selectedStatus == T(com.bigkhoa.model.OrderStatus).COMPLETED ? 'bg-success' :
-                     selectedStatus == T(com.bigkhoa.model.OrderStatus).CANCELED ? 'bg-danger' : 'bg-secondary') : 'bg-warning text-dark'}"
+                    (selectedStatus == T(com.ductieng.model.OrderStatus).PENDING ? 'bg-warning text-dark' :
+                     selectedStatus == T(com.ductieng.model.OrderStatus).CONFIRMED ? 'bg-info' :
+                     selectedStatus == T(com.ductieng.model.OrderStatus).SHIPPED ? 'bg-primary' :
+                     selectedStatus == T(com.ductieng.model.OrderStatus).DELIVERED ? 'bg-success' :
+                     selectedStatus == T(com.ductieng.model.OrderStatus).COMPLETED ? 'bg-success' :
+                     selectedStatus == T(com.ductieng.model.OrderStatus).CANCELED ? 'bg-danger' : 'bg-secondary') : 'bg-warning text-dark'}"
                 th:text="${selectedStatus != null ? selectedStatus.label : 'PENDING'}"
                 >PENDING</span
               >
@@ -555,25 +555,25 @@
                       <span
                         class="status-badge"
                         th:data-status="${o.status}"
-                        th:class="${o.status == T(com.bigkhoa.model.OrderStatus).PENDING ? 'badge bg-warning text-dark'
-                                    : o.status == T(com.bigkhoa.model.OrderStatus).CONFIRMED ? 'badge bg-info'
-                                    : o.status == T(com.bigkhoa.model.OrderStatus).SHIPPED ? 'badge bg-primary'
-                                    : o.status == T(com.bigkhoa.model.OrderStatus).DELIVERED ? 'badge bg-success'
-                                    : o.status == T(com.bigkhoa.model.OrderStatus).COMPLETED ? 'badge bg-success'
-                                    : o.status == T(com.bigkhoa.model.OrderStatus).CANCELED ? 'badge bg-danger'
+                        th:class="${o.status == T(com.ductieng.model.OrderStatus).PENDING ? 'badge bg-warning text-dark'
+                                    : o.status == T(com.ductieng.model.OrderStatus).CONFIRMED ? 'badge bg-info'
+                                    : o.status == T(com.ductieng.model.OrderStatus).SHIPPED ? 'badge bg-primary'
+                                    : o.status == T(com.ductieng.model.OrderStatus).DELIVERED ? 'badge bg-success'
+                                    : o.status == T(com.ductieng.model.OrderStatus).COMPLETED ? 'badge bg-success'
+                                    : o.status == T(com.ductieng.model.OrderStatus).CANCELED ? 'badge bg-danger'
                                     : 'badge bg-secondary'}"
-                        th:text="${o.status == T(com.bigkhoa.model.OrderStatus).PENDING ? 'Đang chờ'
-                                    : o.status == T(com.bigkhoa.model.OrderStatus).CONFIRMED ? 'Đã xác nhận' 
-                                    : o.status == T(com.bigkhoa.model.OrderStatus).SHIPPED ? 'Đang giao hàng'
-                                    : o.status == T(com.bigkhoa.model.OrderStatus).DELIVERED ? 'Đã giao hàng'
-                                    : o.status == T(com.bigkhoa.model.OrderStatus).COMPLETED ? 'Hoàn tất'
-                                    : o.status == T(com.bigkhoa.model.OrderStatus).CANCELED ? 'Đã hủy'
+                        th:text="${o.status == T(com.ductieng.model.OrderStatus).PENDING ? 'Đang chờ'
+                                    : o.status == T(com.ductieng.model.OrderStatus).CONFIRMED ? 'Đã xác nhận' 
+                                    : o.status == T(com.ductieng.model.OrderStatus).SHIPPED ? 'Đang giao hàng'
+                                    : o.status == T(com.ductieng.model.OrderStatus).DELIVERED ? 'Đã giao hàng'
+                                    : o.status == T(com.ductieng.model.OrderStatus).COMPLETED ? 'Hoàn tất'
+                                    : o.status == T(com.ductieng.model.OrderStatus).CANCELED ? 'Đã hủy'
                                     : 'Không xác định'}"
                       >
                       </span>
 
                       <i
-                        th:if="${o.status == T(com.bigkhoa.model.OrderStatus).CANCELED}"
+                        th:if="${o.status == T(com.ductieng.model.OrderStatus).CANCELED}"
                         class="fas fa-info-circle text-muted"
                         data-bs-toggle="tooltip"
                         th:title="|Hủy lúc: ${o.canceledAt != null ? #temporals.format(o.canceledAt,'dd/MM/yyyy HH:mm') : '-'} • Lý do: ${o.cancelReason != null ? o.cancelReason : '-'}|"
@@ -595,7 +595,7 @@
                         </a>
 
                         <button
-                          th:if="${o.status == T(com.bigkhoa.model.OrderStatus).PENDING}"
+                          th:if="${o.status == T(com.ductieng.model.OrderStatus).PENDING}"
                           class="btn btn-sm btn-outline-success btn-status"
                           data-next="CONFIRMED"
                           title="Xác nhận đơn"
@@ -605,7 +605,7 @@
                         </button>
 
                         <button
-                          th:if="${o.status == T(com.bigkhoa.model.OrderStatus).CONFIRMED}"
+                          th:if="${o.status == T(com.ductieng.model.OrderStatus).CONFIRMED}"
                           class="btn btn-sm btn-outline-primary btn-status"
                           data-next="SHIPPED"
                           title="Bắt đầu giao hàng"
@@ -615,7 +615,7 @@
                         </button>
 
                         <button
-                          th:if="${o.status == T(com.bigkhoa.model.OrderStatus).SHIPPED}"
+                          th:if="${o.status == T(com.ductieng.model.OrderStatus).SHIPPED}"
                           class="btn btn-sm btn-outline-dark btn-status"
                           data-next="DELIVERED"
                           title="Xác nhận đã giao"
@@ -625,8 +625,8 @@
                         </button>
 
                         <button
-                          th:if="${o.status == T(com.bigkhoa.model.OrderStatus).PENDING
-                                      or o.status == T(com.bigkhoa.model.OrderStatus).CONFIRMED}"
+                          th:if="${o.status == T(com.ductieng.model.OrderStatus).PENDING
+                                      or o.status == T(com.ductieng.model.OrderStatus).CONFIRMED}"
                           class="btn btn-sm btn-danger"
                           data-bs-toggle="modal"
                           data-bs-target="#adminCancelModal"
@@ -638,7 +638,7 @@
                         </button>
 
                         <button
-                          th:if="${o.status == T(com.bigkhoa.model.OrderStatus).CANCELED}"
+                          th:if="${o.status == T(com.ductieng.model.OrderStatus).CANCELED}"
                           class="btn btn-sm btn-outline-danger btn-delete"
                           title="Xóa đơn"
                         >
@@ -649,8 +649,8 @@
 
                       <!-- Dropdown đổi trạng thái -->
                       <div
-                        th:if="${o.status != T(com.bigkhoa.model.OrderStatus).CANCELED
-                                 and o.status != T(com.bigkhoa.model.OrderStatus).COMPLETED}"
+                        th:if="${o.status != T(com.ductieng.model.OrderStatus).CANCELED
+                                 and o.status != T(com.ductieng.model.OrderStatus).COMPLETED}"
                         class="dropdown"
                       >
                         <button
@@ -724,7 +724,7 @@
               <div class="p-3 rounded bg-warning bg-opacity-10">
                 <div
                   class="text-warning h4 mb-0"
-                  th:with="pending=${#lists.size(orders.?[status == T(com.bigkhoa.model.OrderStatus).PENDING])}"
+                  th:with="pending=${#lists.size(orders.?[status == T(com.ductieng.model.OrderStatus).PENDING])}"
                   th:text="${pending}"
                 >
                   0
@@ -736,7 +736,7 @@
               <div class="p-3 rounded bg-info bg-opacity-10">
                 <div
                   class="text-info h4 mb-0"
-                  th:with="shipping=${#lists.size(orders.?[status == T(com.bigkhoa.model.OrderStatus).SHIPPED])}"
+                  th:with="shipping=${#lists.size(orders.?[status == T(com.ductieng.model.OrderStatus).SHIPPED])}"
                   th:text="${shipping}"
                 >
                   0
@@ -1169,3 +1169,4 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   </footer>
 </html>
+

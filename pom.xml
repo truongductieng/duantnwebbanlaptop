@@ -11,8 +11,8 @@
     <relativePath/>
   </parent>
 
-  <groupId>com.dangkhoa</groupId>
-  <artifactId>websitebanlaptop</artifactId>
+  <groupId>com.ductieng</groupId>
+  <artifactId>nhom129_websitebanlaptop</artifactId>
   <version>1.0</version>
 
   <properties>

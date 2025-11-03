@@ -180,11 +180,11 @@
                   <span
                     th:text="${order.status}"
                     th:class="${'badge ' + (
-                        order.status == T(com.bigkhoa.model.OrderStatus).PENDING    ? 'bg-warning text-dark' :
-                        order.status == T(com.bigkhoa.model.OrderStatus).CONFIRMED  ? 'bg-info text-dark' :
-                        order.status == T(com.bigkhoa.model.OrderStatus).SHIPPED    ? 'bg-primary text-light' :
-                        order.status == T(com.bigkhoa.model.OrderStatus).DELIVERED  ? 'bg-success text-light' :
-                        order.status == T(com.bigkhoa.model.OrderStatus).CANCELED   ? 'bg-danger text-light' :
+                        order.status == T(com.ductieng.model.OrderStatus).PENDING    ? 'bg-warning text-dark' :
+                        order.status == T(com.ductieng.model.OrderStatus).CONFIRMED  ? 'bg-info text-dark' :
+                        order.status == T(com.ductieng.model.OrderStatus).SHIPPED    ? 'bg-primary text-light' :
+                        order.status == T(com.ductieng.model.OrderStatus).DELIVERED  ? 'bg-success text-light' :
+                        order.status == T(com.ductieng.model.OrderStatus).CANCELED   ? 'bg-danger text-light' :
                         'bg-secondary')}"
                   ></span>
                 </td>
@@ -233,3 +233,4 @@
     <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
   </body>
 </html>
+

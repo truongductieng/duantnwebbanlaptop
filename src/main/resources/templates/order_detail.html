@@ -81,11 +81,11 @@
               <div>
                 <span th:text="${order.status}"
                       th:class="${ 'badge ' + (
-                        order.status == T(com.bigkhoa.model.OrderStatus).PENDING    ? 'bg-warning text-dark' :
-                        order.status == T(com.bigkhoa.model.OrderStatus).CONFIRMED  ? 'bg-info text-dark' :
-                        order.status == T(com.bigkhoa.model.OrderStatus).SHIPPED    ? 'bg-primary text-light' :
-                        order.status == T(com.bigkhoa.model.OrderStatus).DELIVERED  ? 'bg-success text-light' :
-                        order.status == T(com.bigkhoa.model.OrderStatus).CANCELED   ? 'bg-danger text-light' :
+                        order.status == T(com.ductieng.model.OrderStatus).PENDING    ? 'bg-warning text-dark' :
+                        order.status == T(com.ductieng.model.OrderStatus).CONFIRMED  ? 'bg-info text-dark' :
+                        order.status == T(com.ductieng.model.OrderStatus).SHIPPED    ? 'bg-primary text-light' :
+                        order.status == T(com.ductieng.model.OrderStatus).DELIVERED  ? 'bg-success text-light' :
+                        order.status == T(com.ductieng.model.OrderStatus).CANCELED   ? 'bg-danger text-light' :
                         'bg-secondary') }">PENDING</span>
               </div>
             </div>
@@ -108,27 +108,27 @@
           <div class="mb-3">
             <div class="small text-muted">Phương thức thanh toán</div>
             <div class="fw-semibold" th:switch="${order.paymentMethod}">
-              <span th:case="${T(com.bigkhoa.model.PaymentMethod).COD}">Thanh toán khi nhận hàng (COD)</span>
-              <span th:case="${T(com.bigkhoa.model.PaymentMethod).VNPAY}">VNPAY</span>
+              <span th:case="${T(com.ductieng.model.PaymentMethod).COD}">Thanh toán khi nhận hàng (COD)</span>
+              <span th:case="${T(com.ductieng.model.PaymentMethod).VNPAY}">VNPAY</span>
               <span th:case="*">Khác</span>
             </div>
           </div>
 
           <!-- Actions -->
           <div class="d-flex flex-wrap gap-2 mb-4">
-            <form th:if="${order.status == T(com.bigkhoa.model.OrderStatus).DELIVERED}"
+            <form th:if="${order.status == T(com.ductieng.model.OrderStatus).DELIVERED}"
                   th:action="@{'/my-orders/' + ${order.id} + '/buy-again'}" method="post" class="d-inline">
               <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
               <button class="btn btn-primary btn-sm">
                 <i class="fa fa-cart-plus me-1"></i> Mua lại
               </button>
             </form>
-            <button th:if="${order.status == T(com.bigkhoa.model.OrderStatus).DELIVERED}"
+            <button th:if="${order.status == T(com.ductieng.model.OrderStatus).DELIVERED}"
                     class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#reviewModal">
               <i class="fa fa-star me-1"></i> Đánh giá sản phẩm
             </button>
-            <button th:if="${order.status == T(com.bigkhoa.model.OrderStatus).PENDING
-                            or order.status == T(com.bigkhoa.model.OrderStatus).CONFIRMED}"
+            <button th:if="${order.status == T(com.ductieng.model.OrderStatus).PENDING
+                            or order.status == T(com.ductieng.model.OrderStatus).CONFIRMED}"
                     class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#cancelModal">
               <i class="fa fa-ban me-1"></i> Hủy đơn
             </button>
@@ -193,8 +193,8 @@
                   type="button"
                   data-bs-toggle="collapse"
                   data-bs-target="#editShipping"
-                  th:disabled="${!(order.status == T(com.bigkhoa.model.OrderStatus).PENDING
-                                  or order.status == T(com.bigkhoa.model.OrderStatus).CONFIRMED)}">
+                  th:disabled="${!(order.status == T(com.ductieng.model.OrderStatus).PENDING
+                                  or order.status == T(com.ductieng.model.OrderStatus).CONFIRMED)}">
                   Chỉnh sửa
                 </button>
               </div>
@@ -279,11 +279,11 @@
           <span class="text-muted">Trạng thái</span>
           <span th:text="${order.status}"
                 th:class="${'badge ' + (
-                  order.status == T(com.bigkhoa.model.OrderStatus).PENDING    ? 'bg-warning text-dark' :
-                  order.status == T(com.bigkhoa.model.OrderStatus).CONFIRMED  ? 'bg-info text-dark' :
-                  order.status == T(com.bigkhoa.model.OrderStatus).SHIPPED    ? 'bg-primary text-light' :
-                  order.status == T(com.bigkhoa.model.OrderStatus).DELIVERED  ? 'bg-success text-light' :
-                  order.status == T(com.bigkhoa.model.OrderStatus).CANCELED   ? 'bg-danger text-light' :
+                  order.status == T(com.ductieng.model.OrderStatus).PENDING    ? 'bg-warning text-dark' :
+                  order.status == T(com.ductieng.model.OrderStatus).CONFIRMED  ? 'bg-info text-dark' :
+                  order.status == T(com.ductieng.model.OrderStatus).SHIPPED    ? 'bg-primary text-light' :
+                  order.status == T(com.ductieng.model.OrderStatus).DELIVERED  ? 'bg-success text-light' :
+                  order.status == T(com.ductieng.model.OrderStatus).CANCELED   ? 'bg-danger text-light' :
                   'bg-secondary')}">PENDING</span>
         </div>
 
@@ -305,8 +305,8 @@
         <div class="border-top pt-3 mt-3">
           <div class="small text-muted mb-1">Phương thức thanh toán</div>
           <div class="fw-semibold" th:switch="${order.paymentMethod}">
-            <span th:case="${T(com.bigkhoa.model.PaymentMethod).COD}">Thanh toán khi nhận hàng (COD)</span>
-            <span th:case="${T(com.bigkhoa.model.PaymentMethod).VNPAY}">VNPAY</span>
+            <span th:case="${T(com.ductieng.model.PaymentMethod).COD}">Thanh toán khi nhận hàng (COD)</span>
+            <span th:case="${T(com.ductieng.model.PaymentMethod).VNPAY}">VNPAY</span>
             <span th:case="*">Khác</span>
           </div>
         </div>
@@ -431,3 +431,4 @@ document.addEventListener('DOMContentLoaded', function () {
 
 </body>
 </html>
+

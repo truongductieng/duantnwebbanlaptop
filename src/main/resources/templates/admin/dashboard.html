@@ -629,7 +629,7 @@
               <td>
                 <!-- SỬA endpoint confirm đúng -->
                 <form th:action="@{/admin/orders/{id}/status(id=${order.id})}" method="post" class="d-inline">
-                  <input type="hidden" name="status" th:value="${T(com.bigkhoa.model.OrderStatus).CONFIRMED}"/>
+                  <input type="hidden" name="status" th:value="${T(com.ductieng.model.OrderStatus).CONFIRMED}"/>
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                   <button type="submit" class="btn btn-sm btn-success me-1"><i class="fas fa-check-circle"></i></button>
                 </form>

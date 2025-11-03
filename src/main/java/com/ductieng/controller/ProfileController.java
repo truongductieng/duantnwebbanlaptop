@@ -8,6 +8,8 @@ import java.nio.file.StandardCopyOption;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
@@ -27,6 +29,8 @@ import com.ductieng.service.UserService;
 @Controller
 @RequestMapping("/profile")
 public class ProfileController {
+    private static final Logger log = LoggerFactory.getLogger(ProfileController.class);
+
     private final UserService userService;
     private final OrderService orderService;
     private final PasswordEncoder passwordEncoder;
@@ -258,46 +262,53 @@ public class ProfileController {
 
         try {
             Order order = orderService.getById(orderId);
-            
+            log.info("[RetryPayment] User {} attempting to retry payment for order #{}", user.getId(), orderId);
+
             // Kiểm tra quyền sở hữu đơn hàng
             if (!order.getCustomer().getId().equals(user.getId())) {
+                log.warn("[RetryPayment] User {} denied - not owner of order #{}", user.getId(), orderId);
                 redirectAttributes.addFlashAttribute("error", "Bạn không có quyền thao tác đơn hàng này.");
                 return "redirect:/profile";
             }
 
             // Chỉ cho phép thanh toán lại với đơn PENDING hoặc CANCELED
-            if (order.getStatus() != com.ductieng.model.OrderStatus.PENDING 
-                && order.getStatus() != com.ductieng.model.OrderStatus.CANCELED) {
-                redirectAttributes.addFlashAttribute("error", 
-                    "Chỉ có thể thanh toán lại đơn hàng đang chờ xử lý hoặc đã hủy.");
-                return "redirect:/order/" + orderId;
+            if (order.getStatus() != com.ductieng.model.OrderStatus.PENDING
+                    && order.getStatus() != com.ductieng.model.OrderStatus.CANCELED) {
+                log.warn("[RetryPayment] Order #{} has invalid status: {}", orderId, order.getStatus());
+                redirectAttributes.addFlashAttribute("error",
+                        "Chỉ có thể thanh toán lại đơn hàng đang chờ xử lý hoặc đã hủy.");
+                return "redirect:/profile/order/" + orderId;
             }
 
             // Chỉ hỗ trợ thanh toán lại với VNPay
             if (order.getPaymentMethod() != com.ductieng.model.PaymentMethod.VNPAY) {
-                redirectAttributes.addFlashAttribute("error", 
-                    "Chỉ hỗ trợ thanh toán lại cho đơn hàng VNPay.");
-                return "redirect:/order/" + orderId;
+                log.warn("[RetryPayment] Order #{} has invalid payment method: {}", orderId, order.getPaymentMethod());
+                redirectAttributes.addFlashAttribute("error",
+                        "Chỉ hỗ trợ thanh toán lại cho đơn hàng VNPay.");
+                return "redirect:/profile/order/" + orderId;
             }
 
             // Tạo link thanh toán VNPay mới
+            log.info("[RetryPayment] Creating VNPay payment URL for order #{}, amount: {}", orderId, order.getTotal());
             String paymentUrl = vnPayService.createPayment(
-                order.getTotal(), 
-                order.getRecipientName(), 
-                order.getId()
-            );
+                    order.getTotal(),
+                    order.getRecipientName(),
+                    order.getId());
 
             // Cập nhật lại trạng thái về PENDING nếu đang là CANCELED
             if (order.getStatus() == com.ductieng.model.OrderStatus.CANCELED) {
+                log.info("[RetryPayment] Updating order #{} from CANCELED to PENDING", orderId);
                 orderService.updateStatus(orderId, com.ductieng.model.OrderStatus.PENDING);
             }
 
+            log.info("[RetryPayment] Redirecting to VNPay payment URL for order #{}", orderId);
             return "redirect:" + paymentUrl;
 
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", 
-                "Có lỗi xảy ra khi tạo link thanh toán: " + e.getMessage());
-            return "redirect:/order/" + orderId;
+            log.error("[RetryPayment] Error creating payment for order #{}: {}", orderId, e.getMessage(), e);
+            redirectAttributes.addFlashAttribute("error",
+                    "Có lỗi xảy ra khi tạo link thanh toán: " + e.getMessage());
+            return "redirect:/profile/order/" + orderId;
         }
     }
 }

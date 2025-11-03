@@ -37,18 +37,25 @@ public class CheckoutController {
 
     private static final Logger log = LoggerFactory.getLogger(CheckoutController.class);
 
-    @Autowired private CartService cartService;
-    @Autowired private OrderService orderService;
-    @Autowired private UserService userService;
-    @Autowired private VNPayService vnpService;
-    @Autowired private GmailService gmailService;
+    @Autowired
+    private CartService cartService;
+    @Autowired
+    private OrderService orderService;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private VNPayService vnpService;
+    @Autowired
+    private GmailService gmailService;
 
     // ===== Helpers cho OAuth2/UserDetails =====
     private String extractUsernameOrEmail(Authentication auth) {
-        if (auth == null) return null;
+        if (auth == null)
+            return null;
         Object p = auth.getPrincipal();
         if (p instanceof OidcUser oidc) {
-            if (oidc.getEmail() != null && !oidc.getEmail().isBlank()) return oidc.getEmail();
+            if (oidc.getEmail() != null && !oidc.getEmail().isBlank())
+                return oidc.getEmail();
             return auth.getName();
         }
         if (p instanceof OAuth2User ou) {
@@ -64,10 +71,12 @@ public class CheckoutController {
     /** Tải User từ DB theo username trước, nếu không có thì thử theo email. */
     private User loadUserFromAuth(Authentication authentication) {
         String key = extractUsernameOrEmail(authentication);
-        if (key == null) return null;
+        if (key == null)
+            return null;
 
         User u = userService.findByUsername(key);
-        if (u != null) return u;
+        if (u != null)
+            return u;
 
         try {
             return userService.findByEmail(key);
@@ -83,32 +92,35 @@ public class CheckoutController {
         model.addAttribute("cartItems", items);
 
         BigDecimal totalPrice = items.stream()
-            .map(i -> BigDecimal.valueOf(i.getLaptop().getPrice())
-                                 .multiply(BigDecimal.valueOf(i.getQuantity())))
-            .reduce(BigDecimal.ZERO, BigDecimal::add)
-            .setScale(2, RoundingMode.HALF_UP);
+                .map(i -> BigDecimal.valueOf(i.getLaptop().getPrice())
+                        .multiply(BigDecimal.valueOf(i.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(2, RoundingMode.HALF_UP);
         model.addAttribute("totalPrice", totalPrice);
 
         // 2) Lấy mã/percent từ session
         String discountCode = (String) session.getAttribute("discountCode");
         Integer discountPercent = null;
         Object p = session.getAttribute("discountPercent");
-        if (p instanceof Integer) discountPercent = (Integer) p;
+        if (p instanceof Integer)
+            discountPercent = (Integer) p;
 
         // 3) Tính amount
         BigDecimal discountAmount = BigDecimal.ZERO;
         if (discountPercent != null && discountPercent > 0) {
             discountAmount = totalPrice
-                .multiply(BigDecimal.valueOf(discountPercent))
-                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+                    .multiply(BigDecimal.valueOf(discountPercent))
+                    .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
         } else {
             Object dAmt = session.getAttribute("discountAmount");
             if (dAmt instanceof Long) {
                 discountAmount = BigDecimal.valueOf((Long) dAmt).setScale(2, RoundingMode.HALF_UP);
             }
         }
-        if (discountAmount.compareTo(BigDecimal.ZERO) < 0) discountAmount = BigDecimal.ZERO;
-        if (discountAmount.compareTo(totalPrice) > 0) discountAmount = totalPrice;
+        if (discountAmount.compareTo(BigDecimal.ZERO) < 0)
+            discountAmount = BigDecimal.ZERO;
+        if (discountAmount.compareTo(totalPrice) > 0)
+            discountAmount = totalPrice;
 
         BigDecimal totalAfterDiscount = totalPrice.subtract(discountAmount).setScale(2, RoundingMode.HALF_UP);
 
@@ -131,10 +143,9 @@ public class CheckoutController {
     @PostMapping("/checkout")
     public String processCheckout(
             @ModelAttribute("checkoutForm") CheckoutForm form,
-            Authentication authentication,           // <— dùng Authentication thay vì @AuthenticationPrincipal UserDetails
+            Authentication authentication, // <— dùng Authentication thay vì @AuthenticationPrincipal UserDetails
             HttpSession session,
-            RedirectAttributes ra
-    ) throws UnsupportedEncodingException {
+            RedirectAttributes ra) throws UnsupportedEncodingException {
 
         // 1) Lấy user an toàn cho cả local & Google
         User u = loadUserFromAuth(authentication);
@@ -147,15 +158,16 @@ public class CheckoutController {
         String discountCode = (String) session.getAttribute("discountCode");
         Integer discountPercent = null;
         Object p = session.getAttribute("discountPercent");
-        if (p instanceof Integer) discountPercent = (Integer) p;
+        if (p instanceof Integer)
+            discountPercent = (Integer) p;
 
         // Tính lại amount theo percent dựa trên giỏ hiện tại
         List<CartItem> items = cartService.getItems();
         BigDecimal totalPrice = items.stream()
-            .map(i -> BigDecimal.valueOf(i.getLaptop().getPrice())
-                                 .multiply(BigDecimal.valueOf(i.getQuantity())))
-            .reduce(BigDecimal.ZERO, BigDecimal::add)
-            .setScale(2, RoundingMode.HALF_UP);
+                .map(i -> BigDecimal.valueOf(i.getLaptop().getPrice())
+                        .multiply(BigDecimal.valueOf(i.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(2, RoundingMode.HALF_UP);
 
         BigDecimal discountAmount = BigDecimal.ZERO;
         if (discountPercent != null && discountPercent > 0) {
@@ -209,8 +221,7 @@ public class CheckoutController {
     @GetMapping("/payment")
     public String handleVNPayReturn(
             @RequestParam Map<String, String> params,
-            RedirectAttributes redirectAttributes
-    ) {
+            RedirectAttributes redirectAttributes) {
         String responseCode = params.get("vnp_ResponseCode");
         Long orderId = Long.valueOf(params.get("vnp_TxnRef"));
 
@@ -222,16 +233,17 @@ public class CheckoutController {
 
             redirectAttributes.addFlashAttribute("paymentSuccess", true);
             redirectAttributes.addFlashAttribute(
-                "message", "Thanh toán VNPay thành công cho đơn #" + orderId);
+                    "message", "Thanh toán VNPay thành công cho đơn #" + orderId);
             return "redirect:/confirmation/" + orderId;
         } else {
             // Thanh toán thất bại hoặc bị hủy -> giữ trạng thái PENDING
             orderService.updateStatus(orderId, OrderStatus.PENDING);
             log.warn("[VNPay] Thanh toán thất bại/hủy cho đơn #{}, responseCode: {}", orderId, responseCode);
-            
+
             redirectAttributes.addFlashAttribute("paymentSuccess", false);
-            redirectAttributes.addFlashAttribute("error", 
-                "Thanh toán VNPay thất bại hoặc đã bị hủy. Đơn hàng #" + orderId + " vẫn được lưu với trạng thái chờ xử lý.");
+            redirectAttributes.addFlashAttribute("error",
+                    "Thanh toán VNPay thất bại hoặc đã bị hủy. Đơn hàng #" + orderId
+                            + " vẫn được lưu với trạng thái chờ xử lý.");
             // Redirect về trang chi tiết đơn hàng thay vì confirmation
             return "redirect:/order/" + orderId;
         }

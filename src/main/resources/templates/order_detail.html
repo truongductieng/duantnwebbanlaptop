@@ -116,6 +116,7 @@
 
           <!-- Actions -->
           <div class="d-flex flex-wrap gap-2 mb-4">
+            <!-- Mua lại (khi đã giao thành công) -->
             <form th:if="${order.status == T(com.ductieng.model.OrderStatus).DELIVERED}"
                   th:action="@{'/my-orders/' + ${order.id} + '/buy-again'}" method="post" class="d-inline">
               <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
@@ -123,10 +124,25 @@
                 <i class="fa fa-cart-plus me-1"></i> Mua lại
               </button>
             </form>
+            
+            <!-- Đánh giá sản phẩm (khi đã giao thành công) -->
             <button th:if="${order.status == T(com.ductieng.model.OrderStatus).DELIVERED}"
                     class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#reviewModal">
               <i class="fa fa-star me-1"></i> Đánh giá sản phẩm
             </button>
+            
+            <!-- Thanh toán lại (khi đơn hàng PENDING hoặc CANCELED và phương thức là VNPAY) -->
+            <form th:if="${(order.status == T(com.ductieng.model.OrderStatus).PENDING 
+                           or order.status == T(com.ductieng.model.OrderStatus).CANCELED)
+                           and order.paymentMethod == T(com.ductieng.model.PaymentMethod).VNPAY}"
+                  th:action="@{'/order/' + ${order.id} + '/retry-payment'}" method="post" class="d-inline">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+              <button class="btn btn-success btn-sm">
+                <i class="fa fa-credit-card me-1"></i> Thanh toán lại
+              </button>
+            </form>
+            
+            <!-- Hủy đơn (khi PENDING hoặc CONFIRMED) -->
             <button th:if="${order.status == T(com.ductieng.model.OrderStatus).PENDING
                             or order.status == T(com.ductieng.model.OrderStatus).CONFIRMED}"
                     class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#cancelModal">

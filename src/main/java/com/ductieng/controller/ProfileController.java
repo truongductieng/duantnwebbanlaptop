@@ -17,6 +17,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.ductieng.model.Order;
 import com.ductieng.model.User;
@@ -29,13 +30,16 @@ public class ProfileController {
     private final UserService userService;
     private final OrderService orderService;
     private final PasswordEncoder passwordEncoder;
+    private final com.ductieng.service.impl.VNPayService vnPayService;
 
     public ProfileController(UserService userService,
             OrderService orderService,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            com.ductieng.service.impl.VNPayService vnPayService) {
         this.userService = userService;
         this.orderService = orderService;
         this.passwordEncoder = passwordEncoder;
+        this.vnPayService = vnPayService;
     }
 
     // ========================= Helpers =========================
@@ -239,5 +243,61 @@ public class ProfileController {
 
         model.addAttribute("message", "Đổi mật khẩu thành công.");
         return "change-password";
+    }
+
+    // ==== THANH TOÁN LẠI ĐƠN HÀNG (PENDING hoặc CANCELED) ====
+    @PostMapping("/order/{id}/retry-payment")
+    public String retryPayment(@PathVariable("id") Long orderId,
+            RedirectAttributes redirectAttributes,
+            Authentication authentication) {
+        User user = loadUserFromAuth(authentication);
+        if (user == null) {
+            redirectAttributes.addFlashAttribute("error", "Tài khoản không hợp lệ.");
+            return "redirect:/login";
+        }
+
+        try {
+            Order order = orderService.getById(orderId);
+            
+            // Kiểm tra quyền sở hữu đơn hàng
+            if (!order.getCustomer().getId().equals(user.getId())) {
+                redirectAttributes.addFlashAttribute("error", "Bạn không có quyền thao tác đơn hàng này.");
+                return "redirect:/profile";
+            }
+
+            // Chỉ cho phép thanh toán lại với đơn PENDING hoặc CANCELED
+            if (order.getStatus() != com.ductieng.model.OrderStatus.PENDING 
+                && order.getStatus() != com.ductieng.model.OrderStatus.CANCELED) {
+                redirectAttributes.addFlashAttribute("error", 
+                    "Chỉ có thể thanh toán lại đơn hàng đang chờ xử lý hoặc đã hủy.");
+                return "redirect:/order/" + orderId;
+            }
+
+            // Chỉ hỗ trợ thanh toán lại với VNPay
+            if (order.getPaymentMethod() != com.ductieng.model.PaymentMethod.VNPAY) {
+                redirectAttributes.addFlashAttribute("error", 
+                    "Chỉ hỗ trợ thanh toán lại cho đơn hàng VNPay.");
+                return "redirect:/order/" + orderId;
+            }
+
+            // Tạo link thanh toán VNPay mới
+            String paymentUrl = vnPayService.createPayment(
+                order.getTotal(), 
+                order.getRecipientName(), 
+                order.getId()
+            );
+
+            // Cập nhật lại trạng thái về PENDING nếu đang là CANCELED
+            if (order.getStatus() == com.ductieng.model.OrderStatus.CANCELED) {
+                orderService.updateStatus(orderId, com.ductieng.model.OrderStatus.PENDING);
+            }
+
+            return "redirect:" + paymentUrl;
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", 
+                "Có lỗi xảy ra khi tạo link thanh toán: " + e.getMessage());
+            return "redirect:/order/" + orderId;
+        }
     }
 }

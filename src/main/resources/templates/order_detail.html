@@ -240,10 +240,9 @@
                   <i class="fa fa-star me-1"></i> Đánh giá sản phẩm
                 </button>
 
-                <!-- Thanh toán lại (khi đơn hàng PENDING hoặc CANCELED và phương thức là VNPAY) -->
+                <!-- Thanh toán lại (chỉ khi đơn hàng PENDING và phương thức là VNPAY) -->
                 <form
-                  th:if="${(order.status == T(com.ductieng.model.OrderStatus).PENDING 
-                           or order.status == T(com.ductieng.model.OrderStatus).CANCELED)
+                  th:if="${order.status == T(com.ductieng.model.OrderStatus).PENDING
                            and order.paymentMethod == T(com.ductieng.model.PaymentMethod).VNPAY}"
                   th:action="@{'/profile/order/' + ${order.id} + '/retry-payment'}"
                   method="post"

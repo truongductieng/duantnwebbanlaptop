@@ -54,6 +54,7 @@ public class AdminController {
     private final CategoryRepository categoryRepo;
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
+    private final com.ductieng.service.BrandService brandService;
 
     @Autowired
     public AdminController(ProductService productService,
@@ -63,7 +64,8 @@ public class AdminController {
             DiscountRepository discountRepo,
             CategoryRepository categoryRepo,
             OrderRepository orderRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            com.ductieng.service.BrandService brandService) {
         this.productService = productService;
         this.userService = userService;
         this.orderService = orderService;
@@ -72,6 +74,7 @@ public class AdminController {
         this.categoryRepo = categoryRepo;
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
+        this.brandService = brandService;
     }
 
     // Ngăn hiển thị số mũ
@@ -412,6 +415,7 @@ public class AdminController {
         Product p = new Product();
         p.setFeaturedIndex(1);
         model.addAttribute("product", p);
+        model.addAttribute("brands", brandService.getAllBrands());
         return "admin/product-form";
     }
 
@@ -426,6 +430,7 @@ public class AdminController {
             return "redirect:/admin/dashboard";
         }
         model.addAttribute("product", p);
+        model.addAttribute("brands", brandService.getAllBrands());
         return "admin/product-form";
     }
 

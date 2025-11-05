@@ -379,14 +379,19 @@
                 </div>
 
                 <div class="col-md-6">
-                  <div class="form-floating mb-3">
-                    <input type="text" class="form-control" th:field="*{brand}" 
-                           placeholder="Nhập tên hãng" required
-                           id="brandName"/>
-                    <label for="brandName">
+                  <div class="mb-3">
+                    <label for="brandName" class="form-label">
                       <i class="fas fa-building me-2"></i>
                       Hãng sản xuất
                     </label>
+                    <select class="form-select" th:field="*{brand}" id="brandName" required>
+                      <option value="">-- Chọn hãng sản xuất --</option>
+                      <option th:each="brandObj : ${brands}" 
+                              th:value="${brandObj.name}" 
+                              th:text="${brandObj.name}">
+                        Brand
+                      </option>
+                    </select>
                     <div th:if="${#fields.hasErrors('brand')}" 
                          class="invalid-feedback d-block mt-1" th:errors="*{brand}">
                     </div>

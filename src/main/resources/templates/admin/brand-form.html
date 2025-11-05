@@ -227,43 +227,6 @@
               ></textarea>
             </div>
 
-            <!-- Logo URL -->
-            <div class="mb-4">
-              <label for="logoUrl" class="form-label">
-                <i class="fas fa-image me-1 text-primary"></i>
-                Logo URL
-              </label>
-              <input
-                type="text"
-                class="form-control"
-                id="logoUrl"
-                th:field="*{logoUrl}"
-                placeholder="Nhập URL logo (VD: /images/brands/hp-logo.png)"
-              />
-              <div class="form-text">Đường dẫn tới file logo của brand</div>
-            </div>
-
-            <!-- Preview logo (nếu có) -->
-            <div
-              class="mb-4"
-              th:if="${brand.logoUrl != null and !brand.logoUrl.isEmpty()}"
-            >
-              <label class="form-label">Preview Logo:</label>
-              <div>
-                <img
-                  th:src="@{${brand.logoUrl}}"
-                  alt="Logo preview"
-                  style="
-                    max-width: 150px;
-                    max-height: 100px;
-                    border: 1px solid #dee2e6;
-                    border-radius: 8px;
-                    padding: 8px;
-                  "
-                />
-              </div>
-            </div>
-
             <!-- Buttons -->
             <div class="d-flex gap-2 justify-content-end">
               <a th:href="@{/admin/brands}" class="btn btn-outline-secondary">

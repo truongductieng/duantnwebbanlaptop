@@ -17,9 +17,6 @@ public class Brand {
     @Column(length = 500)
     private String description;
 
-    @Column(name = "logo_url", length = 255)
-    private String logoUrl;
-
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -68,14 +65,6 @@ public class Brand {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getLogoUrl() {
-        return logoUrl;
-    }
-
-    public void setLogoUrl(String logoUrl) {
-        this.logoUrl = logoUrl;
     }
 
     public LocalDateTime getCreatedAt() {

@@ -188,7 +188,6 @@
               <thead>
                 <tr>
                   <th class="ps-4">ID</th>
-                  <th>Logo</th>
                   <th>Tên Brand</th>
                   <th>Mô tả</th>
                   <th>Ngày tạo</th>
@@ -198,19 +197,6 @@
               <tbody>
                 <tr th:each="brand : ${brands}">
                   <td class="ps-4 fw-semibold" th:text="${brand.id}">1</td>
-                  <td>
-                    <img
-                      th:if="${brand.logoUrl != null and !brand.logoUrl.isEmpty()}"
-                      th:src="@{${brand.logoUrl}}"
-                      class="brand-logo"
-                      th:alt="${brand.name}"
-                    />
-                    <span
-                      th:if="${brand.logoUrl == null or brand.logoUrl.isEmpty()}"
-                      class="text-muted fst-italic"
-                      >Chưa có</span
-                    >
-                  </td>
                   <td>
                     <strong th:text="${brand.name}">Brand Name</strong>
                   </td>

@@ -3,6 +3,7 @@ package com.ductieng.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import com.ductieng.model.Laptop;
 
@@ -24,6 +25,12 @@ public interface LaptopRepository extends JpaRepository<Laptop, Long> {
 
     // Phân loại theo giá (nếu nơi khác dùng)
     List<Laptop> findByPriceBetween(double min, double max);
+
     List<Laptop> findByPriceGreaterThan(double price);
+
     List<Laptop> findByPriceLessThan(double price);
+
+    // Lấy danh sách brand duy nhất (distinct) từ DB, sắp xếp theo tên
+    @Query("SELECT DISTINCT l.brand FROM Laptop l WHERE l.brand IS NOT NULL ORDER BY l.brand")
+    List<String> findDistinctBrands();
 }

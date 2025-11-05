@@ -10,9 +10,9 @@ public interface LaptopService {
 
     /**
      * Tìm & phân trang, có thể sort theo:
-     *   - "new"       → id desc
-     *   - "priceAsc"  → price asc
-     *   - "priceDesc" → price desc
+     * - "new" → id desc
+     * - "priceAsc" → price asc
+     * - "priceDesc" → price desc
      */
     Page<Laptop> search(String brand, int page, int size, String sort);
 
@@ -33,6 +33,13 @@ public interface LaptopService {
 
     // Tiện ích cho các block cũ (không phân trang)
     List<Laptop> getOfficeLaptops();
+
     List<Laptop> getGamingLaptops();
+
     List<Laptop> getStudyLaptops();
+
+    /**
+     * Lấy danh sách tất cả brand có trong DB (distinct, sorted)
+     */
+    List<String> getAllBrands();
 }

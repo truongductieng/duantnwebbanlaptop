@@ -66,51 +66,151 @@ public class Laptop {
     private List<LaptopImage> images = new ArrayList<>();
 
     // ===== getters/setters =====
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public String getBrand() { return brand; }
-    public void setBrand(String brand) { this.brand = brand; }
+    public String getName() {
+        return name;
+    }
 
-    public String getConfiguration() { return configuration; }
-    public void setConfiguration(String configuration) { this.configuration = configuration; }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    public Double getPrice() { return price; }
-    public void setPrice(Double price) { this.price = price; }
+    public String getBrand() {
+        return brand;
+    }
 
-    public Integer getQuantity() { return quantity; }
-    public void setQuantity(Integer quantity) { this.quantity = quantity; }
+    public void setBrand(String brand) {
+        this.brand = brand;
+    }
 
-    public Integer getFeaturedIndex() { return featuredIndex; }
-    public void setFeaturedIndex(Integer featuredIndex) { this.featuredIndex = featuredIndex; }
+    public String getConfiguration() {
+        return configuration;
+    }
 
-    public String getImageUrl() { return imageUrl; }
-    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public void setConfiguration(String configuration) {
+        this.configuration = configuration;
+    }
 
-    public byte[] getImage1() { return image1; }
-    public void setImage1(byte[] image1) { this.image1 = image1; }
+    public Double getPrice() {
+        return price;
+    }
 
-    public byte[] getImage2() { return image2; }
-    public void setImage2(byte[] image2) { this.image2 = image2; }
+    public void setPrice(Double price) {
+        this.price = price;
+    }
 
-    public byte[] getImage3() { return image3; }
-    public void setImage3(byte[] image3) { this.image3 = image3; }
+    public Integer getQuantity() {
+        return quantity;
+    }
 
-    public byte[] getImage4() { return image4; }
-    public void setImage4(byte[] image4) { this.image4 = image4; }
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
+    }
 
-    public byte[] getImage5() { return image5; }
-    public void setImage5(byte[] image5) { this.image5 = image5; }
+    public Integer getFeaturedIndex() {
+        return featuredIndex;
+    }
 
-    public Category getCategory() { return category; }
-    public void setCategory(Category category) { this.category = category; }
+    public void setFeaturedIndex(Integer featuredIndex) {
+        this.featuredIndex = featuredIndex;
+    }
+
+    /**
+     * Trả về URL ảnh cho UI. Nếu DB lưu chỉ tên file (ví dụ "hp1.jpg"),
+     * thì thêm prefix "/images/" để template có thể sử dụng trực tiếp.
+     * Nếu trường chứa URL đầy đủ (bắt đầu bằng '/' hoặc 'http'), giữ nguyên.
+     */
+    public String getImageUrl() {
+        if (imageUrl == null || imageUrl.isBlank())
+            return imageUrl;
+        String v = imageUrl.trim();
+        if (v.startsWith("/") || v.startsWith("http://") || v.startsWith("https://"))
+            return v;
+        return "/images/" + v;
+    }
+
+    /**
+     * Lưu vào DB chỉ tên file.
+     * Nếu truyền vào "/images/hp1.jpg" thì chỉ lưu "hp1.jpg".
+     * Nếu truyền vào "/product/1/image/1" (route nội bộ) thì lưu nguyên.
+     */
+    public void setImageUrl(String imageUrl) {
+        if (imageUrl == null) {
+            this.imageUrl = null;
+            return;
+        }
+        String v = imageUrl.trim();
+        v = v.replace('\\', '/');
+        // Chỉ strip path nếu chứa '/images/'
+        if (v.contains("/images/")) {
+            int i = v.lastIndexOf('/');
+            if (i >= 0 && i < v.length() - 1)
+                v = v.substring(i + 1);
+        }
+        this.imageUrl = v;
+    }
+
+    public byte[] getImage1() {
+        return image1;
+    }
+
+    public void setImage1(byte[] image1) {
+        this.image1 = image1;
+    }
+
+    public byte[] getImage2() {
+        return image2;
+    }
+
+    public void setImage2(byte[] image2) {
+        this.image2 = image2;
+    }
+
+    public byte[] getImage3() {
+        return image3;
+    }
+
+    public void setImage3(byte[] image3) {
+        this.image3 = image3;
+    }
+
+    public byte[] getImage4() {
+        return image4;
+    }
+
+    public void setImage4(byte[] image4) {
+        this.image4 = image4;
+    }
+
+    public byte[] getImage5() {
+        return image5;
+    }
+
+    public void setImage5(byte[] image5) {
+        this.image5 = image5;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
 
     // ===== Helpers cho UI/filter =====
     @Transient
-    public List<LaptopImage> getImages() { return images; }
+    public List<LaptopImage> getImages() {
+        return images;
+    }
+
     public void setImages(List<LaptopImage> images) {
         this.images = (images != null) ? images : new ArrayList<>();
     }
@@ -134,11 +234,14 @@ public class Laptop {
         if (getId() != null && hasImage(index)) {
             return "/product/" + getId() + "/image/" + index;
         }
-        if (index == 1 && imageUrl != null && !imageUrl.isBlank()) return imageUrl;
+        if (index == 1 && imageUrl != null && !imageUrl.isBlank())
+            return imageUrl;
         return null;
     }
 
-    /** Stub RAM cho phần lọc; cố gắng parse từ configuration, không được thì trả 0. */
+    /**
+     * Stub RAM cho phần lọc; cố gắng parse từ configuration, không được thì trả 0.
+     */
     @Transient
     public int getRam() {
         try {
@@ -147,41 +250,52 @@ public class Laptop {
                 int i = s.indexOf("GB");
                 if (i > 0) {
                     String digits = s.substring(Math.max(0, i - 3), i).replaceAll("[^0-9]", "");
-                    if (!digits.isBlank()) return Integer.parseInt(digits);
+                    if (!digits.isBlank())
+                        return Integer.parseInt(digits);
                 }
             }
-        } catch (Exception ignore) {}
+        } catch (Exception ignore) {
+        }
         return 0;
     }
 
-    /** Stub CPU cho phần lọc; parse chuỗi nổi bật từ configuration (Intel/AMD/Apple...). */
+    /**
+     * Stub CPU cho phần lọc; parse chuỗi nổi bật từ configuration
+     * (Intel/AMD/Apple...).
+     */
     @Transient
     public String getCpu() {
-        if (configuration == null || configuration.isBlank()) return null;
+        if (configuration == null || configuration.isBlank())
+            return null;
         String conf = configuration;
 
         try {
             Pattern[] patterns = new Pattern[] {
-                Pattern.compile("(intel)\\s*core\\s*i[3-9](?:[-\\s]*\\w+)*", Pattern.CASE_INSENSITIVE),
-                Pattern.compile("(amd)\\s*ryzen\\s*\\d{1,2}(?:[-\\s]*\\w+)*", Pattern.CASE_INSENSITIVE),
-                Pattern.compile("(apple)?\\s*m[1-9](?:\\s*(pro|max|ultra))?", Pattern.CASE_INSENSITIVE)
+                    Pattern.compile("(intel)\\s*core\\s*i[3-9](?:[-\\s]*\\w+)*", Pattern.CASE_INSENSITIVE),
+                    Pattern.compile("(amd)\\s*ryzen\\s*\\d{1,2}(?:[-\\s]*\\w+)*", Pattern.CASE_INSENSITIVE),
+                    Pattern.compile("(apple)?\\s*m[1-9](?:\\s*(pro|max|ultra))?", Pattern.CASE_INSENSITIVE)
             };
 
             for (Pattern p : patterns) {
                 Matcher m = p.matcher(conf);
-                if (m.find()) return m.group().trim().replaceAll("\\s+", " ");
+                if (m.find())
+                    return m.group().trim().replaceAll("\\s+", " ");
             }
 
             int idx = conf.toLowerCase(Locale.ROOT).indexOf("cpu");
             if (idx >= 0) {
                 String tail = conf.substring(idx + 3).replaceFirst("^[:\\s-]*", "");
                 int cut = tail.indexOf(',');
-                if (cut < 0) cut = tail.indexOf('\n');
-                if (cut >= 0) tail = tail.substring(0, cut);
+                if (cut < 0)
+                    cut = tail.indexOf('\n');
+                if (cut >= 0)
+                    tail = tail.substring(0, cut);
                 tail = tail.trim();
-                if (!tail.isBlank()) return tail;
+                if (!tail.isBlank())
+                    return tail;
             }
-        } catch (Exception ignore) {}
+        } catch (Exception ignore) {
+        }
         return null;
     }
 }

@@ -29,22 +29,22 @@ public class HomeController {
     private final ReviewService reviewService;
 
     public HomeController(LaptopService laptopService,
-                          CartService cartService,
-                          AnnouncementService announcementService,
-                          ReviewService reviewService) {
+            CartService cartService,
+            AnnouncementService announcementService,
+            ReviewService reviewService) {
         this.laptopService = laptopService;
         this.cartService = cartService;
         this.announcementService = announcementService;
         this.reviewService = reviewService;
     }
 
-    @GetMapping({"/", "/laptops"})
+    @GetMapping({ "/", "/laptops" })
     public String list(
             @RequestParam(required = false) String brand,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "8") int size,
-            @RequestParam(defaultValue = "all") String category,     // all | office | gaming | study
-            @RequestParam(required = false) Long categoryId,         // ưu tiên nếu có
+            @RequestParam(defaultValue = "all") String category, // all | office | gaming | study
+            @RequestParam(required = false) Long categoryId, // ưu tiên nếu có
             @RequestParam(required = false) String sort,
             @RequestParam(required = false) String priceRange,
             @RequestParam(required = false) String ram,
@@ -58,9 +58,8 @@ public class HomeController {
         if (categoryId == null && !"all".equals(key)) {
             Map<String, Long> legacy = Map.of(
                     "office", 1L,
-                    "study",  2L,
-                    "gaming", 3L
-            );
+                    "study", 2L,
+                    "gaming", 3L);
             categoryId = legacy.get(key);
         }
 
@@ -73,8 +72,8 @@ public class HomeController {
             final Long cid = categoryId;
             base = base.stream()
                     .filter(l -> l.getCategory() != null
-                              && l.getCategory().getId() != null
-                              && l.getCategory().getId().equals(cid))
+                            && l.getCategory().getId() != null
+                            && l.getCategory().getId().equals(cid))
                     .collect(Collectors.toList());
         }
 
@@ -86,20 +85,24 @@ public class HomeController {
                         String[] p = priceRange.split("-");
                         double min = p[0].isEmpty() ? 0 : Double.parseDouble(p[0]);
                         double max = (p.length < 2 || p[1].isEmpty()) ? Double.MAX_VALUE : Double.parseDouble(p[1]);
-                        if (l.getPrice() < min || l.getPrice() > max) return false;
+                        if (l.getPrice() < min || l.getPrice() > max)
+                            return false;
                     }
                     // RAM
                     if (ram != null && !ram.isBlank()) {
                         int r = Integer.parseInt(ram.replace(" GB", "").trim());
-                        if (l.getRam() != r) return false;
+                        if (l.getRam() != r)
+                            return false;
                     }
                     // CPU
                     if (cpu != null && !cpu.isBlank()) {
-                        if (l.getCpu() == null || !l.getCpu().contains(cpu)) return false;
+                        if (l.getCpu() == null || !l.getCpu().contains(cpu))
+                            return false;
                     }
                     // Hãng
                     if (brandFilter != null && !brandFilter.isBlank()) {
-                        if (l.getBrand() == null || !l.getBrand().equalsIgnoreCase(brandFilter)) return false;
+                        if (l.getBrand() == null || !l.getBrand().equalsIgnoreCase(brandFilter))
+                            return false;
                     }
                     return true;
                 })
@@ -111,7 +114,7 @@ public class HomeController {
         int pageClamped = Math.min(Math.max(page, 0), lastPage);
 
         int from = Math.min(pageClamped * size, total);
-        int to   = Math.min(from + size, total);
+        int to = Math.min(from + size, total);
         List<Laptop> pageContent = (from < to) ? filtered.subList(from, to) : List.of();
 
         Page<Laptop> pageLaptops = new PageImpl<>(pageContent, PageRequest.of(pageClamped, size), total);
@@ -124,8 +127,7 @@ public class HomeController {
         Map<Long, Integer> ratingPct = aggMap.entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
-                        e -> (int) Math.round(((e.getValue().avg() == null ? 0.0 : e.getValue().avg()) / 5.0) * 100)
-                ));
+                        e -> (int) Math.round(((e.getValue().avg() == null ? 0.0 : e.getValue().avg()) / 5.0) * 100)));
 
         // 5) Model attributes cho view
         model.addAttribute("products", pageContent);
@@ -145,6 +147,10 @@ public class HomeController {
         // Đưa rating ra view
         model.addAttribute("ratingAgg", aggMap);
         model.addAttribute("ratingPct", ratingPct);
+
+        // Lấy danh sách brand từ DB để hiển thị filter động
+        List<String> allBrands = laptopService.getAllBrands();
+        model.addAttribute("allBrands", allBrands);
 
         // Badge giỏ hàng + Thông báo
         model.addAttribute("cartItemCount", cartService.getItemCount());

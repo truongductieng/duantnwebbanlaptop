@@ -40,7 +40,8 @@ public class LaptopServiceImpl implements LaptopService {
     @Override
     public Page<Laptop> searchByCategoryId(Long categoryId, String brand, int page, int size, String sort) {
         // Nếu không có category → fallback về search all
-        if (categoryId == null) return search(brand, page, size, sort);
+        if (categoryId == null)
+            return search(brand, page, size, sort);
 
         Pageable pageable = buildPageable(page, size, sort);
         String kw = sanitize(brand);
@@ -81,6 +82,11 @@ public class LaptopServiceImpl implements LaptopService {
         return laptopRepo.findByCategory_Id(cid);
     }
 
+    @Override
+    public List<String> getAllBrands() {
+        return laptopRepo.findDistinctBrands();
+    }
+
     // ===== Helpers =====
 
     private Pageable buildPageable(int page, int size, String sort) {
@@ -88,10 +94,10 @@ public class LaptopServiceImpl implements LaptopService {
         int s = Math.max(size, 1);
 
         Sort order = switch (sort == null ? "" : sort) {
-            case "new"       -> Sort.by(Sort.Direction.DESC, "id");
-            case "priceAsc"  -> Sort.by(Sort.Direction.ASC,  "price");
+            case "new" -> Sort.by(Sort.Direction.DESC, "id");
+            case "priceAsc" -> Sort.by(Sort.Direction.ASC, "price");
             case "priceDesc" -> Sort.by(Sort.Direction.DESC, "price");
-            default          -> Sort.by(Sort.Direction.ASC,  "id");
+            default -> Sort.by(Sort.Direction.ASC, "id");
         };
         return PageRequest.of(p, s, order);
         // NOTE: nếu muốn secondary sort ổn định:
@@ -110,9 +116,9 @@ public class LaptopServiceImpl implements LaptopService {
         String k = (key == null ? "all" : key.trim().toLowerCase());
         return switch (k) {
             case "office" -> 1L; // Laptop văn phòng
-            case "study"  -> 2L; // Laptop sinh viên
+            case "study" -> 2L; // Laptop sinh viên
             case "gaming" -> 3L; // Laptop gaming
-            default       -> null; // all
+            default -> null; // all
         };
     }
 }

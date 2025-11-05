@@ -353,6 +353,31 @@
           </div>
         </div>
 
+        <!-- Brand quick filter (under category tabs) -->
+        <div class="col-12">
+          <div class="brand-tabs mt-3">
+            <ul class="nav nav-pills justify-content-start">
+              <li class="nav-item me-2">
+                <a
+                  class="nav-link small-brand"
+                  th:classappend="${brandFilter==null or brandFilter==''} ? 'active' : ''"
+                  th:href="@{/laptops(category=${category}, categoryId=${selectedCategoryId}, brand=${brand}, sort=${sort}, priceRange=${priceRange}, ram=${ram}, cpu=${cpu}, size=${pageLaptops.size})}"
+                >
+                  Tất cả hãng
+                </a>
+              </li>
+              <li class="nav-item me-2" th:each="brandName : ${allBrands}">
+                <a
+                  class="nav-link small-brand"
+                  th:classappend="${brandFilter != null and brandFilter.equalsIgnoreCase(brandName)} ? 'active' : ''"
+                  th:href="@{/laptops(brandFilter=${brandName}, category=${category}, categoryId=${selectedCategoryId}, brand=${brand}, sort=${sort}, priceRange=${priceRange}, ram=${ram}, cpu=${cpu}, size=${pageLaptops.size})}"
+                  th:text="${brandName}"
+                  >Brand</a
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
         <!-- Controls -->
         <div class="col-12">
           <div class="control-buttons d-flex gap-3 justify-content-end">
@@ -526,18 +551,13 @@
               >
                 Tất cả thương hiệu
               </option>
-              <option value="HP" th:selected="${brandFilter=='HP'}">HP</option>
-              <option value="Dell" th:selected="${brandFilter=='Dell'}">
-                Dell
-              </option>
-              <option value="Asus" th:selected="${brandFilter=='Asus'}">
-                Asus
-              </option>
-              <option value="Acer" th:selected="${brandFilter=='Acer'}">
-                Acer
-              </option>
-              <option value="Lenovo" th:selected="${brandFilter=='Lenovo'}">
-                Lenovo
+              <option
+                th:each="brandName : ${allBrands}"
+                th:value="${brandName}"
+                th:selected="${brandFilter != null and brandFilter.equalsIgnoreCase(brandName)}"
+                th:text="${brandName}"
+              >
+                Brand
               </option>
             </select>
           </div>
@@ -626,6 +646,39 @@
           font-size: 0.95rem;
           position: relative;
           z-index: 1;
+        }
+
+        /* Brand Tabs (quick filter under categories) */
+        .brand-tabs .nav-pills {
+          gap: 0.5rem;
+          align-items: center;
+        }
+
+        .brand-tabs .small-brand {
+          padding: 0.4rem 0.8rem;
+          font-size: 0.85rem;
+          border-radius: 0.9rem;
+          background: #fff;
+          color: #2b3035;
+          border: 1px solid #e9ecef;
+          transition: all 0.2s ease;
+        }
+
+        .brand-tabs .small-brand:hover {
+          color: var(--bs-primary);
+          border-color: rgba(var(--bs-primary-rgb), 0.3);
+          transform: translateY(-1px);
+          box-shadow: 0 6px 14px rgba(var(--bs-primary-rgb), 0.06);
+        }
+
+        .brand-tabs .small-brand.active {
+          background: linear-gradient(
+            45deg,
+            var(--bs-primary),
+            rgba(var(--bs-primary-rgb), 0.9)
+          );
+          color: #fff;
+          border-color: var(--bs-primary);
         }
 
         /* Filter Sidebar Styling */

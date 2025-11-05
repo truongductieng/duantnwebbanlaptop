@@ -13,6 +13,7 @@ import com.ductieng.model.OrderStatus;
 import com.ductieng.model.PaymentMethod;
 import com.ductieng.model.User;
 import com.ductieng.repository.OrderRepository;
+import com.ductieng.repository.LaptopRepository;
 
 import org.springframework.security.access.AccessDeniedException;
 
@@ -30,6 +31,9 @@ public class OrderService {
     @Autowired
     private OrderRepository orderRepo;
 
+    @Autowired
+    private LaptopRepository laptopRepo;
+
     /**
      * Tạo đơn hàng mới với customer và status = PENDING.
      */
@@ -45,13 +49,25 @@ public class OrderService {
     /**
      * Tạo đơn hàng kèm items, thông tin nhận hàng và áp dụng (nếu có) mã giảm giá.
      * GHI NHẬN:
-     *   - totalBeforeDiscount = subtotal
-     *   - discountCode / discountPercent / discountAmount
-     *   - total = subtotal - discountAmount (>= 0)
-     *   - paymentMethod (COD/VNPAY/...)
+     * - totalBeforeDiscount = subtotal
+     * - discountCode / discountPercent / discountAmount
+     * - total = subtotal - discountAmount (>= 0)
+     * - paymentMethod (COD/VNPAY/...)
      */
     @Transactional
     public Order createOrder(User customer, List<CartItem> items, CheckoutForm form) {
+        // KIỂM TRA SỐ LƯỢNG TỒN KHO TRƯỚC KHI TẠO ĐƠN
+        for (CartItem ci : items) {
+            Integer availableQty = ci.getLaptop().getQuantity();
+            if (availableQty == null || availableQty < ci.getQuantity()) {
+                throw new IllegalStateException(
+                        String.format("Sản phẩm '%s' không đủ hàng! Còn lại: %d, yêu cầu: %d",
+                                ci.getLaptop().getName(),
+                                availableQty != null ? availableQty : 0,
+                                ci.getQuantity()));
+            }
+        }
+
         Order o = new Order();
         o.setCustomer(customer);
         o.setStatus(OrderStatus.PENDING);
@@ -116,8 +132,10 @@ public class OrderService {
         }
 
         // Chuẩn hoá default
-        if (percent == null) percent = 0;
-        if (discountAmount == null) discountAmount = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+        if (percent == null)
+            percent = 0;
+        if (discountAmount == null)
+            discountAmount = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
 
         // Không cho âm hoặc > subtotal
         if (discountAmount.compareTo(BigDecimal.ZERO) < 0) {
@@ -137,6 +155,15 @@ public class OrderService {
         }
         o.setTotal(total);
 
+        // 4) TRỪ SỐ LƯỢNG TỒN KHO VÀ SAVE VÀO DATABASE
+        for (CartItem ci : items) {
+            Integer currentQty = ci.getLaptop().getQuantity();
+            int newQty = currentQty - ci.getQuantity();
+            ci.getLaptop().setQuantity(newQty);
+            // PHẢI SAVE VÀO DATABASE
+            laptopRepo.save(ci.getLaptop());
+        }
+
         return orderRepo.save(o);
     }
 
@@ -145,7 +172,10 @@ public class OrderService {
         return orderRepo.findByCustomer(user);
     }
 
-    /** NEW: Lấy danh sách đơn theo customer, kèm join fetch items + product để hiển thị ảnh ở profile. */
+    /**
+     * NEW: Lấy danh sách đơn theo customer, kèm join fetch items + product để hiển
+     * thị ảnh ở profile.
+     */
     public List<Order> getByCustomerWithItems(User user) {
         return orderRepo.findByCustomerWithItems(user);
     }
@@ -211,13 +241,13 @@ public class OrderService {
     /** Doanh thu theo tháng. */
     public List<RevenueDataDto> getMonthlyRevenue(LocalDate startMonth, LocalDate endMonth) {
         LocalDateTime start = startMonth.withDayOfMonth(1).atStartOfDay();
-        LocalDateTime end   = endMonth.withDayOfMonth(endMonth.lengthOfMonth()).atTime(LocalTime.MAX);
+        LocalDateTime end = endMonth.withDayOfMonth(endMonth.lengthOfMonth()).atTime(LocalTime.MAX);
 
         return orderRepo.revenueMonthly(OrderStatus.DELIVERED, start, end).stream()
                 .map(row -> {
-                    int y = ((Number) row[0]).intValue();         // year
-                    int m = ((Number) row[1]).intValue();         // month
-                    BigDecimal sum = (BigDecimal) row[2];         // revenue
+                    int y = ((Number) row[0]).intValue(); // year
+                    int m = ((Number) row[1]).intValue(); // month
+                    BigDecimal sum = (BigDecimal) row[2]; // revenue
                     String ym = y + "-" + String.format("%02d", m);
                     return new RevenueDataDto(ym, sum);
                 })
@@ -228,6 +258,7 @@ public class OrderService {
 
     /**
      * Khách tự hủy đơn của chính mình (chỉ khi PENDING hoặc CONFIRMED).
+     * 
      * @param orderId id đơn
      * @param actor   user đang đăng nhập
      * @param reason  lý do (tùy chọn)
@@ -256,9 +287,15 @@ public class OrderService {
         o.setCancelReason((reason == null || reason.isBlank()) ? "Khách yêu cầu hủy" : reason.trim());
         o.setCanceledBy("CUSTOMER");
 
-        // Nếu có quản lý kho/thanh toán thì xử lý tại đây:
-        // - hoàn kho từ o.getItems()
-        // - tạo yêu cầu refund nếu PaymentMethod != COD
+        // HOÀN KHO: Cộng lại số lượng đã trừ khi đặt hàng
+        for (OrderItem item : o.getItems()) {
+            Integer currentQty = item.getProduct().getQuantity();
+            int restoredQty = currentQty + item.getQuantity();
+            item.getProduct().setQuantity(restoredQty);
+            laptopRepo.save(item.getProduct());
+        }
+
+        // TODO: Tạo yêu cầu refund nếu PaymentMethod != COD
         return orderRepo.save(o);
     }
 
@@ -282,12 +319,20 @@ public class OrderService {
         o.setCancelReason((reason == null || reason.isBlank()) ? "Admin hủy đơn" : reason.trim());
         o.setCanceledBy("ADMIN");
 
-        // TODO: Hoàn kho / đánh dấu refund nếu cần
+        // HOÀN KHO: Cộng lại số lượng đã trừ khi đặt hàng
+        for (OrderItem item : o.getItems()) {
+            Integer currentQty = item.getProduct().getQuantity();
+            int restoredQty = currentQty + item.getQuantity();
+            item.getProduct().setQuantity(restoredQty);
+            laptopRepo.save(item.getProduct());
+        }
+
+        // TODO: Đánh dấu refund nếu cần
         return orderRepo.save(o);
     }
 
-	public long countByStatus(OrderStatus pending) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+    public long countByStatus(OrderStatus pending) {
+        // TODO Auto-generated method stub
+        return 0;
+    }
 }

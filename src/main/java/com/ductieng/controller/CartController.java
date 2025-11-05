@@ -36,17 +36,22 @@ public class CartController {
         model.addAttribute("totalPrice", totalPrice);
 
         // Thêm các thông tin giảm giá từ session (để hiển thị)
-        model.addAttribute("discountCode",       session.getAttribute("discountCode"));
-        model.addAttribute("discountPercent",    session.getAttribute("discountPercent")); // NEW
-        model.addAttribute("discountAmount",     session.getAttribute("discountAmount"));
+        model.addAttribute("discountCode", session.getAttribute("discountCode"));
+        model.addAttribute("discountPercent", session.getAttribute("discountPercent")); // NEW
+        model.addAttribute("discountAmount", session.getAttribute("discountAmount"));
         model.addAttribute("totalAfterDiscount", session.getAttribute("totalAfterDiscount"));
         return "cart";
     }
 
     // Thêm 1 sản phẩm
     @PostMapping("/add/{id}")
-    public String addToCart(@PathVariable Long id) {
-        cartService.add(id);
+    public String addToCart(@PathVariable Long id, RedirectAttributes ra) {
+        try {
+            cartService.add(id);
+            ra.addFlashAttribute("success", "Đã thêm sản phẩm vào giỏ hàng!");
+        } catch (IllegalStateException e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
         return "redirect:/cart";
     }
 
@@ -62,8 +67,7 @@ public class CartController {
     public String applyDiscount(
             @RequestParam(name = "discountCode", required = false) String discountCode,
             HttpSession session,
-            RedirectAttributes ra
-    ) {
+            RedirectAttributes ra) {
         // Validate input
         if (discountCode == null || discountCode.trim().isEmpty()) {
             clearDiscount(session);
@@ -87,12 +91,13 @@ public class CartController {
         }
 
         long discountAmount = totalPrice * percent / 100;
-        if (discountAmount > totalPrice) discountAmount = totalPrice;
+        if (discountAmount > totalPrice)
+            discountAmount = totalPrice;
         long totalAfter = totalPrice - discountAmount;
 
         // Lưu session cho checkout
         session.setAttribute("discountCode", code);
-        session.setAttribute("discountPercent", percent);       // NEW
+        session.setAttribute("discountPercent", percent); // NEW
         session.setAttribute("discountAmount", discountAmount);
         session.setAttribute("totalAfterDiscount", totalAfter);
 
@@ -125,7 +130,7 @@ public class CartController {
     // Helper: clear toàn bộ thông tin giảm giá
     private void clearDiscount(HttpSession session) {
         session.removeAttribute("discountCode");
-        session.removeAttribute("discountPercent");             // NEW
+        session.removeAttribute("discountPercent"); // NEW
         session.removeAttribute("discountAmount");
         session.removeAttribute("totalAfterDiscount");
     }

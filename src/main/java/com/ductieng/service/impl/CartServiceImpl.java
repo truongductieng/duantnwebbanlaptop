@@ -15,7 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 
 @Service
-@SessionScope  // Giữ giỏ hàng riêng cho mỗi session
+@SessionScope // Giữ giỏ hàng riêng cho mỗi session
 public class CartServiceImpl implements CartService {
 
     private final LaptopRepository laptopRepo;
@@ -28,14 +28,27 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public void add(Long laptopId) {
+        Laptop lp = laptopRepo.findById(laptopId)
+                .orElseThrow(() -> new IllegalArgumentException("Laptop không tồn tại"));
+
+        // KIỂM TRA SỐ LƯỢNG TỒN KHO
+        Integer availableQty = lp.getQuantity();
+        if (availableQty == null || availableQty < 1) {
+            throw new IllegalStateException("Sản phẩm '" + lp.getName() + "' đã hết hàng!");
+        }
+
         for (CartItem ci : items) {
             if (ci.getLaptop().getId().equals(laptopId)) {
-                ci.increment();  // +1
+                int newQty = ci.getQuantity() + 1;
+                if (newQty > availableQty) {
+                    throw new IllegalStateException(
+                            String.format("Không đủ hàng! Tồn kho: %d, trong giỏ: %d",
+                                    availableQty, ci.getQuantity()));
+                }
+                ci.increment(); // +1
                 return;
             }
         }
-        Laptop lp = laptopRepo.findById(laptopId)
-                              .orElseThrow(() -> new IllegalArgumentException("Laptop không tồn tại"));
         items.add(new CartItem(lp, 1));
     }
 
@@ -71,8 +84,8 @@ public class CartServiceImpl implements CartService {
     @Override
     public double getTotalPrice() {
         return items.stream()
-                    .mapToDouble(ci -> ci.getLaptop().getPrice() * ci.getQuantity())
-                    .sum();
+                .mapToDouble(ci -> ci.getLaptop().getPrice() * ci.getQuantity())
+                .sum();
     }
 
     @Override
@@ -83,15 +96,37 @@ public class CartServiceImpl implements CartService {
     // ✅ Implement thêm để hỗ trợ /product/{id}/add-to-cart
     @Override
     public void addToCart(Long id, int quantity, Authentication auth) {
-        if (quantity < 1) quantity = 1;
+        if (quantity < 1)
+            quantity = 1;
+
+        Laptop lp = laptopRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Laptop không tồn tại"));
+
+        // KIỂM TRA SỐ LƯỢNG TỒN KHO
+        Integer availableQty = lp.getQuantity();
+        if (availableQty == null || availableQty < 1) {
+            throw new IllegalStateException("Sản phẩm '" + lp.getName() + "' đã hết hàng!");
+        }
+
+        // Kiểm tra nếu đã có trong giỏ
         for (CartItem ci : items) {
             if (ci.getLaptop().getId().equals(id)) {
-                ci.setQuantity(ci.getQuantity() + quantity);
+                int newQty = ci.getQuantity() + quantity;
+                if (newQty > availableQty) {
+                    throw new IllegalStateException(
+                            String.format("Không đủ hàng! Tồn kho: %d, trong giỏ: %d, yêu cầu thêm: %d",
+                                    availableQty, ci.getQuantity(), quantity));
+                }
+                ci.setQuantity(newQty);
                 return;
             }
         }
-        Laptop lp = laptopRepo.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Laptop không tồn tại"));
+
+        // Thêm mới vào giỏ
+        if (quantity > availableQty) {
+            throw new IllegalStateException(
+                    String.format("Không đủ hàng! Tồn kho: %d, yêu cầu: %d", availableQty, quantity));
+        }
         items.add(new CartItem(lp, quantity));
     }
 }

@@ -187,8 +187,15 @@ public class CheckoutController {
         form.setDiscountAmount(discountAmount);
         form.setTotalAfterDiscount(totalAfterDiscount);
 
-        // 3) Tạo order
-        Order order = orderService.createOrder(u, items, form);
+        // 3) Tạo order - KIỂM TRA TỒN KHO
+        Order order;
+        try {
+            order = orderService.createOrder(u, items, form);
+        } catch (IllegalStateException e) {
+            // Hết hàng hoặc không đủ số lượng
+            ra.addFlashAttribute("error", e.getMessage());
+            return "redirect:/checkout";
+        }
 
         // 3.5) Gửi mail sau khi tạo đơn
         log.info("[Checkout] Send initial confirmation email for order #{}", order.getId());

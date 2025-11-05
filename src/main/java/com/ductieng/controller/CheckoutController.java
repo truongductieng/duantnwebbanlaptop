@@ -229,9 +229,33 @@ public class CheckoutController {
     public String handleVNPayReturn(
             @RequestParam Map<String, String> params,
             RedirectAttributes redirectAttributes) {
+        // VNPay may send the user back without the expected params when they click
+        // "Back" or cancel.
+        // Defensively validate required parameters to avoid NPE /
+        // NumberFormatException.
         String responseCode = params.get("vnp_ResponseCode");
-        Long orderId = Long.valueOf(params.get("vnp_TxnRef"));
+        String txnRef = params.get("vnp_TxnRef");
 
+        if (txnRef == null || txnRef.isBlank()) {
+            log.warn("[VNPay] Missing vnp_TxnRef in return params: {}", params);
+            redirectAttributes.addFlashAttribute("paymentSuccess", false);
+            redirectAttributes.addFlashAttribute("error",
+                    "Không có thông tin đơn hàng trả về từ VNPay. Vui lòng kiểm tra lại lịch sử đơn hàng.");
+            return "redirect:/profile"; // fallback to profile/orders page
+        }
+
+        Long orderId;
+        try {
+            orderId = Long.valueOf(txnRef);
+        } catch (NumberFormatException ex) {
+            log.error("[VNPay] Invalid vnp_TxnRef='{}'", txnRef, ex);
+            redirectAttributes.addFlashAttribute("paymentSuccess", false);
+            redirectAttributes.addFlashAttribute("error",
+                    "Mã đơn hàng trả về từ VNPay không hợp lệ.");
+            return "redirect:/orders";
+        }
+
+        // If responseCode is null, treat as canceled/unknown and keep order in PENDING
         if ("00".equals(responseCode)) {
             orderService.updateStatus(orderId, OrderStatus.CONFIRMED);
             log.info("[VNPay] Thanh toán thành công cho đơn #{} -> gửi mail xác nhận (CONFIRMED)", orderId);
@@ -239,12 +263,15 @@ public class CheckoutController {
             gmailService.sendOrderConfirmationEmail(orderService.getById(orderId));
 
             redirectAttributes.addFlashAttribute("paymentSuccess", true);
-            redirectAttributes.addFlashAttribute(
-                    "message", "Thanh toán VNPay thành công cho đơn #" + orderId);
+            redirectAttributes.addFlashAttribute("message", "Thanh toán VNPay thành công cho đơn #" + orderId);
             return "redirect:/confirmation/" + orderId;
         } else {
             // Thanh toán thất bại hoặc bị hủy -> giữ trạng thái PENDING
-            orderService.updateStatus(orderId, OrderStatus.PENDING);
+            try {
+                orderService.updateStatus(orderId, OrderStatus.PENDING);
+            } catch (Exception e) {
+                log.warn("[VNPay] Failed to set order {} to PENDING: {}", orderId, e.getMessage());
+            }
             log.warn("[VNPay] Thanh toán thất bại/hủy cho đơn #{}, responseCode: {}", orderId, responseCode);
 
             redirectAttributes.addFlashAttribute("paymentSuccess", false);
@@ -252,7 +279,7 @@ public class CheckoutController {
                     "Thanh toán VNPay thất bại hoặc đã bị hủy. Đơn hàng #" + orderId
                             + " vẫn được lưu với trạng thái chờ xử lý.");
             // Redirect về trang chi tiết đơn hàng thay vì confirmation
-            return "redirect:/order/" + orderId;
+            return "redirect:/profile/order/" + orderId;
         }
     }
 

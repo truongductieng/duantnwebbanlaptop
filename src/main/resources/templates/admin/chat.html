@@ -1085,9 +1085,9 @@
       function appendMessage(raw) {
         const msg = normalize(raw);
         // ✅ Quy tắc căn trái/phải:
-        // Nếu đã chọn 'partner': tin có from === partner => TRÁI, còn lại => PHẢI (admin)
-        // Nếu chưa chọn partner (hiếm khi) thì fallback theo myUsername.
-        const mine = partner ? msg.from !== partner : msg.from === myUsername;
+        // Tin của tôi (admin): msg.from === myUsername => PHẢI (me)
+        // Tin của người khác: msg.from !== myUsername => TRÁI (not me)
+        const mine = msg.from === myUsername || msg.from.toUpperCase() === myUsername.toUpperCase();
 
         const box = document.getElementById("chatBox");
         const div = document.createElement("div");
@@ -1246,16 +1246,14 @@
 
               if (from && from !== myUsername) pushRecent(from);
 
-              const isCurrentRoomInbound =
-                partner && from === partner && to === myUsername;
-              const isCurrentRoomEchoOut =
-                partner && from === myUsername && to === partner;
+              // Kiểm tra xem tin nhắn này có liên quan đến partner hiện tại không
+              // Nếu tin từ partner tới tôi, hoặc tin từ tôi tới partner
+              const isForCurrentPartner = partner && (
+                (from === myUsername && to.toUpperCase() === partner.toUpperCase()) || 
+                (from.toUpperCase() === partner.toUpperCase() && to === myUsername)
+              );
 
-              // Dù 2 cờ trên có sai vì myUsername rỗng, phần căn phải vẫn OK nhờ logic dựa vào 'partner' trong appendMessage.
-              if (
-                partner &&
-                (from === partner || to === partner || from !== partner)
-              ) {
+              if (isForCurrentPartner) {
                 appendMessage(msg);
                 if (partner) {
                   fetch(
@@ -1263,18 +1261,18 @@
                     { method: "POST" }
                   ).catch(() => {});
                 }
-                if (from !== myUsername) setBadge(from, 0);
+                if (from.toUpperCase() !== myUsername.toUpperCase()) setBadge(from, 0);
                 return;
               }
 
               // Badge cho phòng khác
-              if (to === myUsername && from !== myUsername) {
+              if (to === myUsername && from.toUpperCase() !== myUsername.toUpperCase()) {
                 setBadge(from, (unreadMap[from] || 0) + 1);
               }
 
               const autoOpen =
                 document.getElementById("autoOpenToggle").checked;
-              if (autoOpen && from && from !== myUsername && from !== partner) {
+              if (autoOpen && from && from.toUpperCase() !== myUsername.toUpperCase() && from !== partner) {
                 openConversation(from);
                 return;
               }

@@ -255,7 +255,7 @@ public class OrderService {
                 OrderStatus.CONFIRMED,
                 OrderStatus.SHIPPED,
                 OrderStatus.DELIVERED);
-        
+
         // Lấy doanh thu từng ngày rồi gộp theo tháng
         Map<String, BigDecimal> monthMap = new LinkedHashMap<>();
         orderRepo.revenueDailyBetween(start, end, statuses).forEach(row -> {
@@ -265,7 +265,7 @@ public class OrderService {
             BigDecimal sum = (BigDecimal) row[1];
             monthMap.merge(ym, sum, BigDecimal::add);
         });
-        
+
         return monthMap.entrySet().stream()
                 .map(e -> new RevenueDataDto(e.getKey(), e.getValue()))
                 .collect(Collectors.toList());

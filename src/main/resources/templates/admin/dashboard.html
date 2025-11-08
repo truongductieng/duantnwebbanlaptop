@@ -128,6 +128,92 @@
   .kpi .label { font-size: .9rem; color: #6c757d; }
   .kpi .value { font-weight: 800; font-size: clamp(20px, 3.2vw, 34px); color: #182848; }
   .kpi .icon { opacity: .7; color: #6a11cb; }
+
+  /* ===== Side Navigation ===== */
+  .side-nav {
+    position: fixed;
+    left: -300px;
+    top: 72px;
+    width: 300px;
+    height: calc(100vh - 72px);
+    background: linear-gradient(180deg, #4b6cb7, #182848);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    z-index: 999;
+    transition: left 0.3s ease;
+    overflow-y: auto;
+  }
+
+  .side-nav.open {
+    left: 0;
+  }
+
+  .side-nav-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    background: rgba(0, 0, 0, 0.1);
+  }
+
+  .side-nav-menu {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 0;
+  }
+
+  .side-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+  }
+
+  .side-nav-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border-left-color: #ffd200;
+  }
+
+  .side-nav-item.active {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    border-left-color: #ffd200;
+    font-weight: 600;
+  }
+
+  .side-nav-item i {
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
+  }
+
+  .side-nav-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0);
+    z-index: 998;
+    transition: background 0.3s ease;
+    pointer-events: none;
+  }
+
+  .side-nav-overlay.active {
+    background: rgba(0, 0, 0, 0.5);
+    pointer-events: auto;
+  }
+
+  /* Ẩn menu card cũ */
+  #menu {
+    display: none !important;
+  }
 </style>
 </head>
 
@@ -142,6 +228,9 @@
       </a>
 
       <div class="ms-auto d-flex align-items-center gap-2">
+        <button id="sideNavToggle" class="btn btn-outline-light" title="Menu">
+          <i class="fas fa-bars"></i>
+        </button>
         <a class="btn btn-outline-light" th:href="@{/}" title="Trang chủ">
           <i class="fas fa-home"></i>
         </a>
@@ -155,12 +244,61 @@
     </div>
   </nav>
 
+  <!-- Side Navigation -->
+  <div id="sideNav" class="side-nav">
+    <div class="side-nav-header">
+      <h5 class="mb-0">Menu</h5>
+      <button id="sideNavClose" class="btn btn-sm btn-light">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <nav class="side-nav-menu">
+      <a href="#orders" data-target="orders" class="side-nav-item">
+        <i class="fa-solid fa-box-open"></i>
+        <span>Đơn hàng</span>
+      </a>
+      <a href="#reports" data-target="reports" class="side-nav-item">
+        <i class="fa-solid fa-chart-column"></i>
+        <span>Thống kê</span>
+      </a>
+      <a href="#products" data-target="products" class="side-nav-item">
+        <i class="fa-solid fa-cubes-stacked"></i>
+        <span>Sản phẩm</span>
+      </a>
+      <a href="#users" data-target="users" class="side-nav-item">
+        <i class="fa-solid fa-user-group"></i>
+        <span>Người dùng</span>
+      </a>
+      <a href="#discounts" data-target="discounts" class="side-nav-item">
+        <i class="fa-solid fa-ticket"></i>
+        <span>Mã giảm giá</span>
+      </a>
+      <a th:href="@{/admin/ann}" class="side-nav-item">
+        <i class="fa-solid fa-photo-film"></i>
+        <span>Thông báo ảnh</span>
+      </a>
+      <a th:href="@{/admin/reviews}" class="side-nav-item">
+        <i class="fa-solid fa-comments"></i>
+        <span>Đánh giá & bình luận</span>
+      </a>
+      <a th:href="@{/admin/chat}" class="side-nav-item">
+        <i class="fa-solid fa-comments"></i>
+        <span>Chat người dùng</span>
+      </a>
+      <a th:href="@{/admin/brands}" class="side-nav-item">
+        <i class="fa-solid fa-tags"></i>
+        <span>Quản lý Brand</span>
+      </a>
+    </nav>
+  </div>
+
+  <!-- Overlay khi side nav mở -->
+  <div id="sideNavOverlay" class="side-nav-overlay"></div>
+
   <div class="container mt-4">
     <!-- Nội dung trang -->
   </div>
 </body>
-
-    <!-- HERO -->
     <section class="text-center mb-4">
 <i class="fas fa-laptop-code fa-5x hero-icon mb-3"></i>
       <h1 class="fw-bold">Xin chào, Admin VIP!</h1>
@@ -1212,6 +1350,45 @@
           icon.classList.toggle('fa-chevron-right');
           icon.classList.toggle('fa-chevron-down');
         });
+      });
+    })();
+  </script>
+
+  <!-- Side Nav Toggle Script -->
+  <script>
+    (function() {
+      const toggle = document.getElementById('sideNavToggle');
+      const close = document.getElementById('sideNavClose');
+      const sideNav = document.getElementById('sideNav');
+      const overlay = document.getElementById('sideNavOverlay');
+      const items = document.querySelectorAll('.side-nav-item');
+
+      function openSideNav() {
+        sideNav.classList.add('open');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeSideNav() {
+        sideNav.classList.remove('open');
+        overlay.classList.remove('active');
+        document.body.style.overflow = 'auto';
+      }
+
+      toggle?.addEventListener('click', openSideNav);
+      close?.addEventListener('click', closeSideNav);
+      overlay?.addEventListener('click', closeSideNav);
+
+      // Đóng khi click vào item (sau khi xử lý href)
+      items.forEach(item => {
+        item.addEventListener('click', () => {
+          setTimeout(closeSideNav, 100);
+        });
+      });
+
+      // Đóng khi nhấn ESC
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeSideNav();
       });
     })();
   </script>

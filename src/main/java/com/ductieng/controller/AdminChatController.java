@@ -14,7 +14,7 @@ import java.security.Principal;
 public class AdminChatController {
 
     @GetMapping
-    public String page(Principal principal, Model model){
+    public String page(Principal principal, Model model) {
         String username = principal != null ? principal.getName() : "ADMIN";
         model.addAttribute("username", username);
         return "admin/chat";

@@ -23,6 +23,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -233,7 +235,12 @@ public class OrderService {
     public List<RevenueDataDto> getDailyRevenue(LocalDate startDate, LocalDate endDate) {
         LocalDateTime start = startDate.atStartOfDay();
         LocalDateTime end = endDate.atTime(LocalTime.MAX);
-        return orderRepo.revenueDaily(OrderStatus.DELIVERED, start, end).stream()
+        // Lấy đơn có trạng thái: CONFIRMED, SHIPPED, DELIVERED (bỏ PENDING, CANCELED)
+        List<OrderStatus> statuses = List.of(
+                OrderStatus.CONFIRMED,
+                OrderStatus.SHIPPED,
+                OrderStatus.DELIVERED);
+        return orderRepo.revenueDailyBetween(start, end, statuses).stream()
                 .map(row -> new RevenueDataDto(row[0].toString(), (BigDecimal) row[1]))
                 .collect(Collectors.toList());
     }
@@ -243,14 +250,24 @@ public class OrderService {
         LocalDateTime start = startMonth.withDayOfMonth(1).atStartOfDay();
         LocalDateTime end = endMonth.withDayOfMonth(endMonth.lengthOfMonth()).atTime(LocalTime.MAX);
 
-        return orderRepo.revenueMonthly(OrderStatus.DELIVERED, start, end).stream()
-                .map(row -> {
-                    int y = ((Number) row[0]).intValue(); // year
-                    int m = ((Number) row[1]).intValue(); // month
-                    BigDecimal sum = (BigDecimal) row[2]; // revenue
-                    String ym = y + "-" + String.format("%02d", m);
-                    return new RevenueDataDto(ym, sum);
-                })
+        // Lấy đơn có trạng thái: CONFIRMED, SHIPPED, DELIVERED (bỏ PENDING, CANCELED)
+        List<OrderStatus> statuses = List.of(
+                OrderStatus.CONFIRMED,
+                OrderStatus.SHIPPED,
+                OrderStatus.DELIVERED);
+        
+        // Lấy doanh thu từng ngày rồi gộp theo tháng
+        Map<String, BigDecimal> monthMap = new LinkedHashMap<>();
+        orderRepo.revenueDailyBetween(start, end, statuses).forEach(row -> {
+            String dateStr = row[0].toString(); // "2025-11-01"
+            String[] parts = dateStr.split("-");
+            String ym = parts[0] + "-" + parts[1]; // "2025-11"
+            BigDecimal sum = (BigDecimal) row[1];
+            monthMap.merge(ym, sum, BigDecimal::add);
+        });
+        
+        return monthMap.entrySet().stream()
+                .map(e -> new RevenueDataDto(e.getKey(), e.getValue()))
                 .collect(Collectors.toList());
     }
 

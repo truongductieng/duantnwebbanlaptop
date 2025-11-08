@@ -1246,14 +1246,13 @@
 
               if (from && from !== myUsername) pushRecent(from);
 
-              // Kiểm tra xem tin nhắn này có liên quan đến partner hiện tại không
-              // Nếu tin từ partner tới tôi, hoặc tin từ tôi tới partner
-              const isForCurrentPartner = partner && (
-                (from === myUsername && to.toUpperCase() === partner.toUpperCase()) || 
-                (from.toUpperCase() === partner.toUpperCase() && to === myUsername)
-              );
+              const isCurrentRoomInbound =
+                partner && from === partner && to === myUsername;
+              const isCurrentRoomEchoOut =
+                partner && from === myUsername && to === partner;
 
-              if (isForCurrentPartner) {
+              // Chỉ hiển thị tin nhắn nếu liên quan đến cuộc trò chuyện hiện tại
+              if (partner && (isCurrentRoomInbound || isCurrentRoomEchoOut)) {
                 appendMessage(msg);
                 if (partner) {
                   fetch(
@@ -1261,18 +1260,18 @@
                     { method: "POST" }
                   ).catch(() => {});
                 }
-                if (from.toUpperCase() !== myUsername.toUpperCase()) setBadge(from, 0);
+                if (from !== myUsername) setBadge(from, 0);
                 return;
               }
 
               // Badge cho phòng khác
-              if (to === myUsername && from.toUpperCase() !== myUsername.toUpperCase()) {
+              if (to === myUsername && from !== myUsername) {
                 setBadge(from, (unreadMap[from] || 0) + 1);
               }
 
               const autoOpen =
                 document.getElementById("autoOpenToggle").checked;
-              if (autoOpen && from && from.toUpperCase() !== myUsername.toUpperCase() && from !== partner) {
+              if (autoOpen && from && from !== myUsername && from !== partner) {
                 openConversation(from);
                 return;
               }

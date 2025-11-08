@@ -1085,9 +1085,10 @@
       function appendMessage(raw) {
         const msg = normalize(raw);
         // ✅ Quy tắc căn trái/phải:
-        // Tin của tôi (admin): msg.from === myUsername => PHẢI (me)
-        // Tin của người khác: msg.from !== myUsername => TRÁI (not me)
-        const mine = msg.from === myUsername || msg.from.toUpperCase() === myUsername.toUpperCase();
+        // - Tin từ partner: căn TRÁI (của họ)
+        // - Tin không phải từ partner: căn PHẢI (của admin)
+        // Điều kiện: đã chọn partner và tin từ partner → căn trái, ngược lại → căn phải
+        const mine = !(partner && msg.from === partner);
 
         const box = document.getElementById("chatBox");
         const div = document.createElement("div");
@@ -1251,7 +1252,7 @@
               const isCurrentRoomEchoOut =
                 partner && from === myUsername && to === partner;
 
-              // Chỉ hiển thị tin nhắn nếu liên quan đến cuộc trò chuyện hiện tại
+              // Chỉ hiển thị tin nhắn thuộc cuộc trò chuyện hiện tại
               if (partner && (isCurrentRoomInbound || isCurrentRoomEchoOut)) {
                 appendMessage(msg);
                 if (partner) {

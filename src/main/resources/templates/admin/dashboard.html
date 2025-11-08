@@ -808,22 +808,27 @@
                 <option value="monthly" th:selected="${type=='monthly'}">Tháng</option>
               </select>
             </div>
-            <div class="col-auto" th:if="${type=='daily'}">
+            
+            <!-- Input Ngày -->
+            <div class="col-auto" th:style="${type != 'daily'} ? 'display: none;' : ''">
               <label class="form-label">Từ ngày</label>
               <input type="date" name="start" class="form-control" th:value="${start}"/>
             </div>
-            <div class="col-auto" th:if="${type=='daily'}">
+            <div class="col-auto" th:style="${type != 'daily'} ? 'display: none;' : ''">
               <label class="form-label">Đến ngày</label>
               <input type="date" name="end" class="form-control" th:value="${end}"/>
             </div>
-            <div class="col-auto" th:if="${type=='monthly'}">
+            
+            <!-- Input Tháng -->
+            <div class="col-auto" th:style="${type == 'daily'} ? 'display: none;' : ''">
               <label class="form-label">Từ tháng</label>
               <input type="month" name="startMonth" class="form-control" th:value="${startMonth}"/>
             </div>
-            <div class="col-auto" th:if="${type=='monthly'}">
+            <div class="col-auto" th:style="${type == 'daily'} ? 'display: none;' : ''">
               <label class="form-label">Đến tháng</label>
               <input type="month" name="endMonth" class="form-control" th:value="${endMonth}"/>
             </div>
+            
             <div class="col-auto">
               <button class="btn btn-primary"><i class="fas fa-filter me-1"></i>Lọc</button>
               <a th:href="@{/admin/dashboard}" class="btn btn-outline-secondary"><i class="fas fa-undo me-1"></i>Đặt lại</a>
@@ -875,6 +880,13 @@
               </tr>
             </tbody>
           </table>
+        </div>
+      </div>
+      
+      <div th:if="!${revenueData}" class="card">
+        <div class="card-body text-center text-muted py-5">
+          <i class="fas fa-chart-line fa-3x mb-3 opacity-50"></i>
+          <p>Không có dữ liệu. Vui lòng chọn khoảng thời gian và bấm Lọc.</p>
         </div>
       </div>
     </section>
@@ -1138,13 +1150,38 @@
       // Giữ #reports khi submit lọc
       const reportForm = document.getElementById('reportFilterForm');
       if (reportForm) {
+        // Khi thay đổi loại (daily/monthly), ẩn/hiện input phù hợp
+        const typeSelect = reportForm.querySelector('select[name="type"]');
+        if (typeSelect) {
+          typeSelect.addEventListener('change', function() {
+            const isDailyView = this.value === 'daily';
+            // Ẩn/hiện div input ngày
+            reportForm.querySelectorAll('.col-auto').forEach(div => {
+              const label = div.querySelector('label')?.textContent || '';
+              const hasDateInputs = label.includes('Từ ngày') || label.includes('Đến ngày');
+              const hasMonthInputs = label.includes('Từ tháng') || label.includes('Đến tháng');
+              
+              if (hasDateInputs) {
+                div.style.display = isDailyView ? 'block' : 'none';
+              } else if (hasMonthInputs) {
+                div.style.display = isDailyView ? 'none' : 'block';
+              }
+            });
+          });
+          typeSelect.dispatchEvent(new Event('change'));
+        }
+
+        // Xử lý submit để giữ hash
         reportForm.addEventListener('submit', function (e) {
-          e.preventDefault();
+          const base = reportForm.getAttribute('action') || window.location.pathname;
           const fd = new FormData(reportForm);
           const params = new URLSearchParams(fd).toString();
-          const base = reportForm.getAttribute('action') || window.location.pathname;
-          window.location.href = base + (params ? ('?' + params) : '') + '#reports';
+          const url = base + (params ? ('?' + params) : '') + '#reports';
+          window.location.href = url;
+          e.preventDefault();
+          return false;
         });
+
         const resetLink = reportForm.closest('.card-body')?.querySelector('a.btn.btn-outline-secondary');
         if (resetLink) {
           const href = resetLink.getAttribute('href') || '/admin/dashboard';

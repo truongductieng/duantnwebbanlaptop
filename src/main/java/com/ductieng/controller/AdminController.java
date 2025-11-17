@@ -582,6 +582,17 @@ public class AdminController {
         return null;
     }
 
+    @PostMapping("/product/{id}/delete")
+    public String deleteProduct(@PathVariable Long id, RedirectAttributes ra) {
+        try {
+            productService.deleteById(id);
+            ra.addFlashAttribute("success", "Sản phẩm đã được xóa thành công");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Xóa sản phẩm thất bại: " + e.getMessage());
+        }
+        return "redirect:/admin/dashboard";
+    }
+
     // ================== USERS ==================
 
     @GetMapping("/user/new")

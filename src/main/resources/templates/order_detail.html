@@ -268,6 +268,16 @@
                 >
                   <i class="fa fa-ban me-1"></i> Hủy đơn
                 </button>
+
+                <!-- Yêu cầu trả hàng (khi DELIVERED và trong thời hạn) -->
+                <button
+                  th:if="${order.status == T(com.ductieng.model.OrderStatus).DELIVERED}"
+                  class="btn btn-warning btn-sm"
+                  data-bs-toggle="modal"
+                  data-bs-target="#returnModal"
+                >
+                  <i class="fa fa-undo me-1"></i> Yêu cầu trả hàng
+                </button>
               </div>
 
               <!-- Items table -->
@@ -650,6 +660,167 @@
       </div>
     </div>
 
+    <!-- Return Request Modal -->
+    <div class="modal fade" id="returnModal" tabindex="-1" aria-hidden="true">
+      <div
+        class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"
+      >
+        <div class="modal-content">
+          <div class="modal-header bg-warning text-dark">
+            <h5 class="modal-title">
+              <i class="fa fa-undo me-2"></i>Yêu cầu trả hàng #<span
+                th:text="${order.id}"
+              ></span>
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Đóng"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="returnRequestForm" enctype="multipart/form-data">
+              <input type="hidden" name="orderId" th:value="${order.id}" />
+
+              <div class="alert alert-info mb-3">
+                <i class="fa fa-info-circle me-1"></i>
+                <strong>Chính sách trả hàng:</strong> Bạn có thể trả hàng trong
+                vòng 14 ngày kể từ ngày nhận hàng.
+              </div>
+
+              <!-- Chọn sản phẩm muốn trả -->
+              <div class="mb-3">
+                <label class="form-label fw-bold"
+                  >Chọn sản phẩm muốn trả
+                  <span class="text-danger">*</span></label
+                >
+                <div class="list-group">
+                  <div
+                    th:each="item, iterStat : ${items}"
+                    class="list-group-item"
+                  >
+                    <div class="form-check">
+                      <input
+                        class="form-check-input return-item-checkbox"
+                        type="checkbox"
+                        th:id="'returnItem' + ${iterStat.index}"
+                        th:data-item-id="${item.id}"
+                        th:data-max-qty="${item.quantity}"
+                        th:data-unit-price="${item.unitPrice}"
+                      />
+                      <label
+                        class="form-check-label w-100"
+                        th:for="'returnItem' + ${iterStat.index}"
+                      >
+                        <div
+                          class="d-flex justify-content-between align-items-center"
+                        >
+                          <div>
+                            <strong th:text="${item.product?.name}"
+                              >Product Name</strong
+                            >
+                            <div class="text-muted small">
+                              Giá:
+                              <span
+                                th:text="${#numbers.formatDecimal(item.unitPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'"
+                              ></span>
+                            </div>
+                          </div>
+                          <div class="text-end">
+                            <label class="small text-muted"
+                              >Số lượng trả:</label
+                            >
+                            <input
+                              type="number"
+                              class="form-control form-control-sm return-qty-input"
+                              th:id="'returnQty' + ${iterStat.index}"
+                              min="1"
+                              th:max="${item.quantity}"
+                              th:value="${item.quantity}"
+                              style="width: 80px"
+                              disabled
+                            />
+                            <div class="small text-muted">
+                              Tối đa: <span th:text="${item.quantity}"></span>
+                            </div>
+                          </div>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lý do trả hàng -->
+              <div class="mb-3">
+                <label class="form-label fw-bold"
+                  >Lý do trả hàng <span class="text-danger">*</span></label
+                >
+                <select class="form-select mb-2" id="returnReasonSelect">
+                  <option value="">-- Chọn lý do --</option>
+                  <option value="Sản phẩm bị hư hỏng">
+                    Sản phẩm bị hư hỏng
+                  </option>
+                  <option value="Sản phẩm không đúng mô tả">
+                    Sản phẩm không đúng mô tả
+                  </option>
+                  <option value="Nhận sai sản phẩm">Nhận sai sản phẩm</option>
+                  <option value="Đổi ý">Đổi ý</option>
+                  <option value="other">Khác (nhập chi tiết)</option>
+                </select>
+                <textarea
+                  class="form-control"
+                  id="returnReasonText"
+                  name="reason"
+                  rows="3"
+                  placeholder="Mô tả chi tiết lý do trả hàng..."
+                  required
+                ></textarea>
+              </div>
+
+              <!-- Upload ảnh -->
+              <div class="mb-3">
+                <label class="form-label fw-bold"
+                  >Ảnh chứng minh (tùy chọn, tối đa 5 ảnh)</label
+                >
+                <input
+                  type="file"
+                  class="form-control"
+                  name="photos"
+                  id="returnPhotos"
+                  accept="image/*"
+                  multiple
+                />
+                <div class="form-text">
+                  Khuyến khích đính kèm ảnh nếu sản phẩm bị hư hỏng hoặc không
+                  đúng mô tả
+                </div>
+              </div>
+
+              <!-- Tổng tiền hoàn trả -->
+              <div class="alert alert-success">
+                <strong>Số tiền hoàn trả dự kiến:</strong>
+                <span id="estimatedRefund">0 đ</span>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Hủy
+            </button>
+            <button type="button" class="btn btn-warning" id="btnSubmitReturn">
+              <i class="fa fa-paper-plane me-1"></i> Gửi yêu cầu
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Cancel Modal -->
     <div class="modal fade" id="cancelModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
@@ -706,9 +877,129 @@
       </div>
     </div>
 
-    <!-- JS inline: gửi đánh giá kèm CSRF -->
+    <!-- JS: Xử lý Return Request Form -->
     <script>
       document.addEventListener("DOMContentLoaded", function () {
+        // === Return Request Logic ===
+        const returnModal = document.getElementById("returnModal");
+        if (returnModal) {
+          const checkboxes = document.querySelectorAll(".return-item-checkbox");
+          const qtyInputs = document.querySelectorAll(".return-qty-input");
+          const refundDisplay = document.getElementById("estimatedRefund");
+          const reasonSelect = document.getElementById("returnReasonSelect");
+          const reasonText = document.getElementById("returnReasonText");
+          const btnSubmit = document.getElementById("btnSubmitReturn");
+
+          // Enable/disable quantity input khi checkbox change
+          checkboxes.forEach((cb, idx) => {
+            cb.addEventListener("change", function () {
+              qtyInputs[idx].disabled = !cb.checked;
+              if (!cb.checked) qtyInputs[idx].value = qtyInputs[idx].max;
+              updateRefundEstimate();
+            });
+          });
+
+          // Update refund khi quantity thay đổi
+          qtyInputs.forEach((input) => {
+            input.addEventListener("input", updateRefundEstimate);
+          });
+
+          // Auto-fill reason text khi chọn predefined
+          reasonSelect.addEventListener("change", function () {
+            if (this.value && this.value !== "other") {
+              reasonText.value = this.value;
+            } else if (this.value === "other") {
+              reasonText.value = "";
+              reasonText.focus();
+            }
+          });
+
+          function updateRefundEstimate() {
+            let total = 0;
+            checkboxes.forEach((cb, idx) => {
+              if (cb.checked) {
+                const qty = parseInt(qtyInputs[idx].value) || 0;
+                const unitPrice = parseFloat(cb.dataset.unitPrice) || 0;
+                total += qty * unitPrice;
+              }
+            });
+            refundDisplay.textContent = total.toLocaleString("vi-VN") + " đ";
+          }
+
+          // Submit return request
+          btnSubmit.addEventListener("click", async function () {
+            const selectedItems = [];
+            checkboxes.forEach((cb, idx) => {
+              if (cb.checked) {
+                selectedItems.push({
+                  orderItemId: parseInt(cb.dataset.itemId),
+                  quantity: parseInt(qtyInputs[idx].value) || 1,
+                });
+              }
+            });
+
+            if (selectedItems.length === 0) {
+              alert("Vui lòng chọn ít nhất một sản phẩm để trả!");
+              return;
+            }
+
+            const reason = reasonText.value.trim();
+            if (!reason) {
+              alert("Vui lòng nhập lý do trả hàng!");
+              return;
+            }
+
+            const formData = new FormData(
+              document.getElementById("returnRequestForm")
+            );
+            formData.set("returnItems", JSON.stringify(selectedItems));
+
+            const csrfToken = document
+              .querySelector('meta[name="_csrf"]')
+              ?.getAttribute("content");
+            const csrfHeader = document
+              .querySelector('meta[name="_csrf_header"]')
+              ?.getAttribute("content");
+
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML =
+              '<span class="spinner-border spinner-border-sm me-1"></span>Đang gửi...';
+
+            try {
+              const headers = {};
+              if (csrfToken && csrfHeader) headers[csrfHeader] = csrfToken;
+
+              const response = await fetch("/api/returns/request", {
+                method: "POST",
+                headers: headers,
+                body: formData,
+              });
+
+              const result = await response.json();
+
+              if (result.success) {
+                alert(
+                  "Yêu cầu trả hàng đã được gửi thành công!\n\nMã yêu cầu: #" +
+                    result.returnRequestId
+                );
+                window.location.reload();
+              } else {
+                alert("Lỗi: " + (result.message || "Không thể gửi yêu cầu"));
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML =
+                  '<i class="fa fa-paper-plane me-1"></i> Gửi yêu cầu';
+              }
+            } catch (error) {
+              console.error("Error:", error);
+              alert("Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại!");
+              btnSubmit.disabled = false;
+              btnSubmit.innerHTML =
+                '<i class="fa fa-paper-plane me-1"></i> Gửi yêu cầu';
+            }
+          });
+        }
+
+        // === Review Submission Logic (existing) ===
         const btn = document.getElementById("btnSubmitReviews");
         if (!btn) return;
 

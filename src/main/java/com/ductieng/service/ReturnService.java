@@ -263,17 +263,10 @@ public class ReturnService {
 
         // Chuyển đơn hàng sang trạng thái CANCELED
         Order order = req.getOrder();
-        System.out.println("DEBUG: Order ID before cancel: " + order.getId() + ", Status: " + order.getStatus());
         order.setStatus(OrderStatus.CANCELED);
-        Order savedOrder = orderRepository.save(order);
-        System.out
-                .println("DEBUG: Order ID after cancel: " + savedOrder.getId() + ", Status: " + savedOrder.getStatus());
+        orderRepository.save(order);
 
-        ReturnRequest savedReturn = returnRequestRepository.save(req);
-        System.out.println(
-                "DEBUG: Return request saved, ID: " + savedReturn.getId() + ", Status: " + savedReturn.getStatus());
-
-        return savedReturn;
+        return returnRequestRepository.save(req);
     }
 
     /**

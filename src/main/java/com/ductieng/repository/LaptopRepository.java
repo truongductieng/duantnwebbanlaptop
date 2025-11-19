@@ -33,4 +33,7 @@ public interface LaptopRepository extends JpaRepository<Laptop, Long> {
     // Lấy danh sách brand duy nhất (distinct) từ DB, sắp xếp theo tên
     @Query("SELECT DISTINCT l.brand FROM Laptop l WHERE l.brand IS NOT NULL ORDER BY l.brand")
     List<String> findDistinctBrands();
+
+    // Đếm số sản phẩm có brand cụ thể (case-insensitive)
+    long countByBrandIgnoreCase(String brand);
 }

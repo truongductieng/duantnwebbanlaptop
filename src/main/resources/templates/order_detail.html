@@ -258,10 +258,9 @@
                   </button>
                 </form>
 
-                <!-- Hủy đơn (khi PENDING hoặc CONFIRMED) -->
+                <!-- Hủy đơn (chỉ khi PENDING - chưa xác nhận) -->
                 <button
-                  th:if="${order.status == T(com.ductieng.model.OrderStatus).PENDING
-                            or order.status == T(com.ductieng.model.OrderStatus).CONFIRMED}"
+                  th:if="${order.status == T(com.ductieng.model.OrderStatus).PENDING}"
                   class="btn btn-danger btn-sm"
                   data-bs-toggle="modal"
                   data-bs-target="#cancelModal"

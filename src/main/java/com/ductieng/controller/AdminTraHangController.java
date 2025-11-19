@@ -23,7 +23,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/admin/returns")
 @PreAuthorize("hasRole('ADMIN')")
-public class AdminReturnController {
+public class AdminTraHangController {
 
     @Autowired
     private ReturnService returnService;

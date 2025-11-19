@@ -2,6 +2,7 @@ package com.ductieng.service.impl;
 
 import com.ductieng.model.Brand;
 import com.ductieng.repository.BrandRepository;
+import com.ductieng.repository.LaptopRepository;
 import com.ductieng.service.BrandService;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -15,9 +16,11 @@ import java.util.Optional;
 public class BrandServiceImpl implements BrandService {
 
     private final BrandRepository brandRepository;
+    private final LaptopRepository laptopRepository;
 
-    public BrandServiceImpl(BrandRepository brandRepository) {
+    public BrandServiceImpl(BrandRepository brandRepository, LaptopRepository laptopRepository) {
         this.brandRepository = brandRepository;
+        this.laptopRepository = laptopRepository;
     }
 
     @Override
@@ -51,5 +54,10 @@ public class BrandServiceImpl implements BrandService {
     public boolean existsByNameAndNotId(String name, Long id) {
         Optional<Brand> existing = brandRepository.findByNameIgnoreCase(name);
         return existing.isPresent() && !existing.get().getId().equals(id);
+    }
+
+    @Override
+    public long countProductsByBrand(String brandName) {
+        return laptopRepository.countByBrandIgnoreCase(brandName);
     }
 }

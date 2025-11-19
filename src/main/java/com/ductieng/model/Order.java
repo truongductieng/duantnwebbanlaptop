@@ -74,21 +74,26 @@ public class Order {
     @Column(name = "canceled_by", length = 32)
     private String canceledBy;
 
-    /** Có thể hủy khi còn PENDING/CONFIRMED */
+    /** Có thể hủy chỉ khi còn PENDING (chưa xác nhận) */
     @Transient
     public boolean isCancelable() {
-        return this.status == OrderStatus.PENDING || this.status == OrderStatus.CONFIRMED;
+        return this.status == OrderStatus.PENDING;
     }
     // =====================================
 
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
-        if (totalBeforeDiscount == null) totalBeforeDiscount = BigDecimal.ZERO;
-        if (discountAmount == null) discountAmount = BigDecimal.ZERO;
-        if (total == null) total = BigDecimal.ZERO;
-        if (discountPercent == null) discountPercent = 0;
-        if (status == null) status = OrderStatus.PENDING; // mặc định đơn mới
+        if (totalBeforeDiscount == null)
+            totalBeforeDiscount = BigDecimal.ZERO;
+        if (discountAmount == null)
+            discountAmount = BigDecimal.ZERO;
+        if (total == null)
+            total = BigDecimal.ZERO;
+        if (discountPercent == null)
+            discountPercent = 0;
+        if (status == null)
+            status = OrderStatus.PENDING; // mặc định đơn mới
     }
 
     /**
@@ -103,65 +108,160 @@ public class Order {
 
     // ========== Getters & Setters ===========
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public User getCustomer() { return customer; }
-    public void setCustomer(User customer) { this.customer = customer; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public OrderStatus getStatus() { return status; }
-    public void setStatus(OrderStatus status) { this.status = status; }
+    public User getCustomer() {
+        return customer;
+    }
 
-    public PaymentMethod getPaymentMethod() { return paymentMethod; }
-    public void setPaymentMethod(PaymentMethod paymentMethod) { this.paymentMethod = paymentMethod; }
+    public void setCustomer(User customer) {
+        this.customer = customer;
+    }
 
-    public String getRecipientName() { return recipientName; }
-    public void setRecipientName(String recipientName) { this.recipientName = recipientName; }
+    public OrderStatus getStatus() {
+        return status;
+    }
 
-    public String getRecipientEmail() { return recipientEmail; }
-    public void setRecipientEmail(String recipientEmail) { this.recipientEmail = recipientEmail; }
+    public void setStatus(OrderStatus status) {
+        this.status = status;
+    }
 
-    public String getRecipientAddress() { return recipientAddress; }
-    public void setRecipientAddress(String recipientAddress) { this.recipientAddress = recipientAddress; }
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
 
-    public String getRecipientPhone() { return recipientPhone; }
-    public void setRecipientPhone(String recipientPhone) { this.recipientPhone = recipientPhone; }
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public String getRecipientName() {
+        return recipientName;
+    }
 
-    public LocalDateTime getDeliveredAt() { return deliveredAt; }
-    public void setDeliveredAt(LocalDateTime deliveredAt) { this.deliveredAt = deliveredAt; }
+    public void setRecipientName(String recipientName) {
+        this.recipientName = recipientName;
+    }
 
-    public BigDecimal getTotal() { return total; }
-    public void setTotal(BigDecimal total) { this.total = total; }
+    public String getRecipientEmail() {
+        return recipientEmail;
+    }
 
-    public BigDecimal getTotalBeforeDiscount() { return totalBeforeDiscount; }
-    public void setTotalBeforeDiscount(BigDecimal totalBeforeDiscount) { this.totalBeforeDiscount = totalBeforeDiscount; }
+    public void setRecipientEmail(String recipientEmail) {
+        this.recipientEmail = recipientEmail;
+    }
 
-    public String getDiscountCode() { return discountCode; }
-    public void setDiscountCode(String discountCode) { this.discountCode = discountCode; }
+    public String getRecipientAddress() {
+        return recipientAddress;
+    }
 
-    public Integer getDiscountPercent() { return discountPercent; }
-    public void setDiscountPercent(Integer discountPercent) { this.discountPercent = discountPercent; }
+    public void setRecipientAddress(String recipientAddress) {
+        this.recipientAddress = recipientAddress;
+    }
 
-    public BigDecimal getDiscountAmount() { return discountAmount; }
-    public void setDiscountAmount(BigDecimal discountAmount) { this.discountAmount = discountAmount; }
+    public String getRecipientPhone() {
+        return recipientPhone;
+    }
 
-    public List<OrderItem> getItems() { return items; }
-    public void setItems(List<OrderItem> items) { this.items = items; }
+    public void setRecipientPhone(String recipientPhone) {
+        this.recipientPhone = recipientPhone;
+    }
 
-    public LocalDateTime getCanceledAt() { return canceledAt; }
-    public void setCanceledAt(LocalDateTime canceledAt) { this.canceledAt = canceledAt; }
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
 
-    public String getCancelReason() { return cancelReason; }
-    public void setCancelReason(String cancelReason) { this.cancelReason = cancelReason; }
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
 
-    public String getCanceledBy() { return canceledBy; }
-    public void setCanceledBy(String canceledBy) { this.canceledBy = canceledBy; }
+    public LocalDateTime getDeliveredAt() {
+        return deliveredAt;
+    }
 
-	public Object getUser() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public void setDeliveredAt(LocalDateTime deliveredAt) {
+        this.deliveredAt = deliveredAt;
+    }
+
+    public BigDecimal getTotal() {
+        return total;
+    }
+
+    public void setTotal(BigDecimal total) {
+        this.total = total;
+    }
+
+    public BigDecimal getTotalBeforeDiscount() {
+        return totalBeforeDiscount;
+    }
+
+    public void setTotalBeforeDiscount(BigDecimal totalBeforeDiscount) {
+        this.totalBeforeDiscount = totalBeforeDiscount;
+    }
+
+    public String getDiscountCode() {
+        return discountCode;
+    }
+
+    public void setDiscountCode(String discountCode) {
+        this.discountCode = discountCode;
+    }
+
+    public Integer getDiscountPercent() {
+        return discountPercent;
+    }
+
+    public void setDiscountPercent(Integer discountPercent) {
+        this.discountPercent = discountPercent;
+    }
+
+    public BigDecimal getDiscountAmount() {
+        return discountAmount;
+    }
+
+    public void setDiscountAmount(BigDecimal discountAmount) {
+        this.discountAmount = discountAmount;
+    }
+
+    public List<OrderItem> getItems() {
+        return items;
+    }
+
+    public void setItems(List<OrderItem> items) {
+        this.items = items;
+    }
+
+    public LocalDateTime getCanceledAt() {
+        return canceledAt;
+    }
+
+    public void setCanceledAt(LocalDateTime canceledAt) {
+        this.canceledAt = canceledAt;
+    }
+
+    public String getCancelReason() {
+        return cancelReason;
+    }
+
+    public void setCancelReason(String cancelReason) {
+        this.cancelReason = cancelReason;
+    }
+
+    public String getCanceledBy() {
+        return canceledBy;
+    }
+
+    public void setCanceledBy(String canceledBy) {
+        this.canceledBy = canceledBy;
+    }
+
+    public Object getUser() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

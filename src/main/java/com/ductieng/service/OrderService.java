@@ -274,7 +274,7 @@ public class OrderService {
     // ================== HỦY ĐƠN HÀNG ==================
 
     /**
-     * Khách tự hủy đơn của chính mình (chỉ khi PENDING hoặc CONFIRMED).
+     * Khách tự hủy đơn của chính mình (chỉ khi PENDING - chưa được admin xác nhận).
      * 
      * @param orderId id đơn
      * @param actor   user đang đăng nhập
@@ -317,8 +317,9 @@ public class OrderService {
     }
 
     /**
-     * Admin hủy đơn (mặc định cũng chỉ khi PENDING hoặc CONFIRMED để an toàn).
-     * Nếu anh muốn admin có thể hủy cả khi SHIPPED, sửa điều kiện theo nhu cầu.
+     * Admin hủy đơn (chỉ khi PENDING - chưa xác nhận).
+     * Sau khi admin đã xác nhận (CONFIRMED trở đi), không cho phép hủy để đảm bảo
+     * tính nhất quán.
      */
     @Transactional
     public Order cancelOrderByAdmin(Long orderId, String reason) {

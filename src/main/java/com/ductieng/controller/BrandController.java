@@ -103,8 +103,20 @@ public class BrandController {
     public String delete(@PathVariable Long id, RedirectAttributes ra) {
         try {
             if (brandService.findById(id).isPresent()) {
+                Brand brand = brandService.findById(id).get();
+
+                // Kiểm tra có sản phẩm nào dùng brand này không
+                long productCount = brandService.countProductsByBrand(brand.getName());
+                if (productCount > 0) {
+                    ra.addFlashAttribute("error",
+                            "Không thể xóa brand '" + brand.getName() + "' vì còn " + productCount
+                                    + " sản phẩm đang sử dụng. " +
+                                    "Vui lòng cập nhật hoặc xóa các sản phẩm này trước.");
+                    return "redirect:/admin/brands";
+                }
+
                 brandService.deleteById(id);
-                ra.addFlashAttribute("success", "Xóa brand thành công");
+                ra.addFlashAttribute("success", "Xóa brand '" + brand.getName() + "' thành công");
             } else {
                 ra.addFlashAttribute("error", "Không tìm thấy brand với ID: " + id);
             }

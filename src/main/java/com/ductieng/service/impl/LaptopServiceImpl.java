@@ -6,18 +6,22 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ductieng.model.Laptop;
 import com.ductieng.repository.LaptopRepository;
+import com.ductieng.service.BrandService;
 import com.ductieng.service.LaptopService;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
 public class LaptopServiceImpl implements LaptopService {
 
     private final LaptopRepository laptopRepo;
+    private final BrandService brandService;
 
-    public LaptopServiceImpl(LaptopRepository laptopRepo) {
+    public LaptopServiceImpl(LaptopRepository laptopRepo, BrandService brandService) {
         this.laptopRepo = laptopRepo;
+        this.brandService = brandService;
     }
 
     // ===== Public APIs =====
@@ -84,7 +88,12 @@ public class LaptopServiceImpl implements LaptopService {
 
     @Override
     public List<String> getAllBrands() {
-        return laptopRepo.findDistinctBrands();
+        // Lấy tất cả brands từ bảng Brand, không chỉ từ products
+        // Như vậy brand mới thêm sẽ hiển thị ngay cả khi không có sản phẩm
+        return brandService.getAllBrands()
+                .stream()
+                .map(b -> b.getName())
+                .collect(Collectors.toList());
     }
 
     // ===== Helpers =====

@@ -19,12 +19,12 @@ import java.util.Map;
 @Controller
 @RequestMapping("/admin/discounts")
 @PreAuthorize("hasRole('ADMIN')")
-public class AdminDiscountController {
+public class AdminMaGiamgiaController {
 
     private final DiscountRepository repo;
     private final OrderRepository orderRepo;
 
-    public AdminDiscountController(DiscountRepository repo, OrderRepository orderRepo) {
+    public AdminMaGiamgiaController(DiscountRepository repo, OrderRepository orderRepo) {
         this.repo = repo;
         this.orderRepo = orderRepo;
     }

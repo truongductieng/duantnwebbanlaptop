@@ -16,11 +16,11 @@ import java.nio.file.*;
 @Controller
 @RequestMapping("/admin/ann")
 @PreAuthorize("hasRole('ADMIN')")
-public class AnnouncementAdminController {
+public class BannerAdminController {
 
   private final AnnouncementService announcementService;
 
-  public AnnouncementAdminController(AnnouncementService announcementService) {
+  public BannerAdminController(AnnouncementService announcementService) {
     this.announcementService = announcementService;
   }
 

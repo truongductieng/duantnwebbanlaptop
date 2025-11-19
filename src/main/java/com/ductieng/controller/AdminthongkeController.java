@@ -26,11 +26,11 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/admin/api/reports")
-public class AdminReportApiController {
+public class AdminthongkeController {
 
     private final OrderRepository orderRepo;
 
-    public AdminReportApiController(OrderRepository orderRepo) {
+    public AdminthongkeController(OrderRepository orderRepo) {
         this.orderRepo = orderRepo;
     }
 

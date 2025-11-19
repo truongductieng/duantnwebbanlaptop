@@ -36,4 +36,9 @@ public interface BrandService {
      * Kiểm tra brand có tồn tại theo tên (trừ ID hiện tại - dùng khi update)
      */
     boolean existsByNameAndNotId(String name, Long id);
+
+    /**
+     * Đếm số sản phẩm dùng brand này
+     */
+    long countProductsByBrand(String brandName);
 }

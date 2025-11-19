@@ -17,10 +17,10 @@ import javax.crypto.spec.SecretKeySpec;
 import jakarta.servlet.http.HttpServletRequest;
 
 public class Config {
-	public static String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
+    public static String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
     public static String vnp_ReturnUrl = "http://localhost:8080/payment";
-    public static String vnp_TmnCode = "X4QXWSBQ";
-    public static String secretKey = "O5SFI4RZDX6FTIG2431VZQODT20MJRYW";
+    public static String vnp_TmnCode = "CN16WCSI";
+    public static String secretKey = "BRNSOKVUIEAYNTQA97GJWUQ1ROGD8OGO";
     public static String vnp_ApiUrl = "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";
 
     public static String md5(String message) {
@@ -59,7 +59,7 @@ public class Config {
         return digest;
     }
 
-    //Util for VNPAY
+    // Util for VNPAY
     public static String hashAllFields(Map fields) {
         List fieldNames = new ArrayList(fields.keySet());
         Collections.sort(fieldNames);
@@ -77,9 +77,9 @@ public class Config {
                 sb.append("&");
             }
         }
-        return hmacSHA512(secretKey,sb.toString());
+        return hmacSHA512(secretKey, sb.toString());
     }
-    
+
     public static String hmacSHA512(final String key, final String data) {
         try {
 
@@ -102,7 +102,7 @@ public class Config {
             return "";
         }
     }
-    
+
     public static String getIpAddress(HttpServletRequest request) {
         String ipAdress;
         try {

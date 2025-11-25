@@ -18,16 +18,26 @@
 
   <style>
   /* ===== Tổng thể ===== */
+  :root{
+    --primary-1: #6a11cb; /* gradient start */
+    --primary-2: #2575fc; /* gradient end */
+    --accent: #4b6cb7;
+    --bg: #eef1f8;
+    --card-bg: #ffffff;
+    --muted: #6c757d;
+    --text: #182848;
+  }
+
   body {
     font-family: 'Poppins', sans-serif;
-    background: #eef1f8;
-    padding-top: 72px; /* tránh che navbar cố định */
-    color: #333;
+    background: var(--bg);
+    padding-top: 64px; /* tránh che navbar cố định */
+    color: var(--text);
   }
 
   /* ===== Navbar ===== */
   .navbar {
-    background: linear-gradient(90deg, #4b6cb7, #182848) !important; /* xanh tím đậm */
+    background: linear-gradient(90deg, var(--accent), #182848) !important; /* xanh tím đậm */
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   }
   .navbar-brand {
@@ -48,19 +58,19 @@
   /* ===== Card ===== */
   .card {
     border: none;
-    border-radius: 1rem;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-    background: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.07);
+    background: var(--card-bg);
   }
   .card-header {
-    background: linear-gradient(135deg, #6a11cb, #2575fc); /* xanh tím gradient */
+    background: linear-gradient(135deg, var(--primary-1), var(--primary-2)); /* xanh tím gradient */
     color: #fff;
-    font-weight: 500;
+    font-weight: 600;
   }
 
   /* ===== Buttons ===== */
   .btn-primary {
-    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    background: linear-gradient(135deg, var(--primary-1), var(--primary-2));
     border: none;
     color: #fff;
   }
@@ -82,9 +92,14 @@
 
   /* ===== Bảng ===== */
   .table thead th {
-    background: linear-gradient(135deg, #4b6cb7, #182848);
+    background: linear-gradient(135deg, var(--accent), #182848);
     color: #fff;
     border: none;
+    font-weight: 600;
+  }
+  .table td, .table th {
+    padding: .65rem .75rem;
+    vertical-align: middle;
   }
   .table tbody tr:hover {
     background: rgba(75, 108, 183, 0.07);
@@ -103,19 +118,29 @@
   /* ===== Menu Card ===== */
   .menu-card {
     display: block;
-    padding: 2rem;
-    border-radius: 1rem;
-    background: #fff;
+    padding: 1.25rem 1rem;
+    border-radius: 0.8rem;
+    background: linear-gradient(180deg, #fff, #fbfbff);
     text-decoration: none;
     color: inherit;
-    transition: transform 0.3s, box-shadow 0.3s;
+    transition: transform 0.2s, box-shadow 0.2s;
+    min-height: 120px;
+    display:flex;
+    align-items:center;
+    gap:12px;
   }
   .menu-card:hover {
     transform: translateY(-8px);
     box-shadow: 0 12px 24px rgba(0,0,0,0.15);
   }
   .menu-card i {
-    color: #6a11cb;
+    color: var(--primary-1);
+    font-size: 28px;
+    width:38px;
+    height:38px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
   }
   .menu-card.active {
     outline: 3px solid #9c8df2;
@@ -145,6 +170,12 @@
 
   .side-nav.open {
     left: 0;
+  }
+
+  /* Mặc định hiển thị side-nav trên desktop rộng */
+  @media (min-width: 992px) {
+    .side-nav { left: 0; }
+    body { padding-left: 300px; }
   }
 
   .side-nav-header {
@@ -210,10 +241,18 @@
     pointer-events: auto;
   }
 
-  /* Ẩn menu card cũ */
+  /* Ẩn menu card cũ -> dùng side nav hiện đại, chỉ hiển thị trên màn lớn */
   #menu {
     display: none !important;
   }
+
+  /* Container gọn */
+  .container {
+    max-width: 1200px;
+  }
+
+  /* Tweak section margins */
+  section { scroll-margin-top: 88px; }
 </style>
 </head>
 
@@ -303,21 +342,29 @@
     <!-- Nội dung trang -->
   </div>
 </body>
-    <section class="text-center mb-4">
-<i class="fas fa-laptop-code fa-5x hero-icon mb-3"></i>
-      <h1 class="fw-bold">Xin chào, Admin VIP!</h1>
-      <p class="text-muted">Vui lòng chọn chức năng quản trị bên dưới</p>
+    <section class="d-flex align-items-center justify-content-between mb-3">
+      <div class="d-flex align-items-center gap-3">
+        <i class="fas fa-laptop-code fa-3x hero-icon"></i>
+        <div>
+          <div class="h5 mb-0 fw-semibold">Xin chào, Admin VIP!</div>
+          <div class="small text-muted">Quản lý đơn hàng, sản phẩm, và thống kê</div>
+        </div>
+      </div>
+      <div>
+        <a class="btn btn-sm btn-outline-light" th:href="@{/admin/orders}"><i class="fa-solid fa-list me-1"></i> Quản lý đơn</a>
+        <a class="btn btn-sm btn-primary ms-2" th:href="@{/admin/product/new}"><i class="fa-solid fa-plus me-1"></i> Thêm sản phẩm</a>
+      </div>
     </section>
 
     <!-- ===== KPI (trên cùng) ===== -->
     <section id="kpi-and-tops" class="mb-5">
-  <div class="row g-4 kpi">
+  <div class="row g-3 kpi">
 
 
     
     <!-- 💰 Doanh thu -->
-    <div class="col-12 col-lg-4">
-      <div class="card p-4 h-100 kpi-card">
+    <div class="col-12 col-md-6 col-lg-4">
+      <div class="card p-3 h-100 kpi-card">
         <div class="d-flex justify-content-between align-items-center mb-2">
           <div>
             <div class="label fw-semibold text-secondary">Doanh thu</div>
@@ -330,7 +377,7 @@
 
         <div id="revValue" class="value money mt-2" th:data-vnd="${todayRevenue}">0₫</div>
 
-        <div class="btn-switch mt-4 d-flex gap-2">
+        <div class="btn-switch mt-3 d-flex gap-2">
           <button id="btnRevToday" type="button" class="btn btn-sm btn-switch-item active">Hôm nay</button>
           <button id="btnRevYesterday" type="button" class="btn btn-sm btn-switch-item">Hôm qua</button>
         </div>
@@ -341,7 +388,7 @@
 
 
     <!-- 📦 Đơn hàng -->
-    <div class="col-12 col-lg-4">
+    <div class="col-12 col-md-6 col-lg-4">
       <div class="card p-4 h-100 kpi-card">
         <div class="d-flex justify-content-between align-items-center mb-2">
           <div>
@@ -361,7 +408,7 @@
 
 
     <!-- 👥 Khách hàng -->
-    <div class="col-12 col-lg-4">
+    <div class="col-12 col-md-12 col-lg-4">
       <div class="card p-4 h-100 kpi-card">
         <div class="d-flex justify-content-between align-items-center mb-2">
           <div>
@@ -436,6 +483,20 @@
   background: linear-gradient(135deg, #6a11cb, #2575fc);
   color: #fff;
   border: none;
+}
+/* Global small utilities */
+.small-btn {
+  padding: .35rem .6rem;
+  font-size: .85rem;
+}
+
+.card .card-header .btn {
+  padding: .35rem .6rem;
+}
+
+/* Make actions smaller and concise */
+.btn-sm.btn-outline-primary, .btn-sm.btn-outline-danger {
+  padding: .25rem .45rem;
 }
 </style>
 
@@ -513,7 +574,7 @@
         <!-- Top theo SL (giữ nguyên) -->
       <!-- ========== TOP 5 THEO SỐ LƯỢNG (7 NGÀY) ========== -->
 <div class="col-12 col-xl-6">
-  <div class="card top-card p-4 h-100">
+  <div class="card top-card p-3 h-100">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h5 class="m-0 fw-semibold text-gradient">
         <i class="fa-solid fa-crown me-2 text-warning"></i>
@@ -553,7 +614,7 @@
       
         <!-- ========== ĐƠN MỚI CHỜ XÁC NHẬN ========== -->
 <div class="col-12 col-xl-6">
-  <div class="card order-card p-4 h-100">
+  <div class="card order-card p-3 h-100">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h5 class="m-0 fw-semibold text-gradient">
         <i class="fa-solid fa-bell me-2 text-warning"></i>
@@ -900,8 +961,7 @@
 
     <!-- PRODUCTS -->
     
-<section id="products" class="card border-0 shadow-lg mb-5 rounded-4" 
-         style="background: linear-gradient(135deg, #5B21B6, #4F46E5); color: white;">
+<section id="products" class="card border-0 shadow-lg mb-5 rounded-4">
   <div class="card-header border-0 d-flex justify-content-between align-items-center px-4 py-3"
        style="background: rgba(255, 255, 255, 0.1); border-radius: 1rem 1rem 0 0;">
     <h4 class="mb-0 fw-bold">

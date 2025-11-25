@@ -15,29 +15,14 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <!-- FontAwesome -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" rel="stylesheet"/>
+  <!-- Admin Dashboard CSS -->
+  <link rel="stylesheet" th:href="@{/css/admin-dashboard.css}" />
 
-  <style>
-  /* ===== Tổng thể ===== */
-  :root{
-    --primary-1: #6a11cb; /* gradient start */
-    --primary-2: #2575fc; /* gradient end */
-    --accent: #4b6cb7;
-    --bg: #eef1f8;
-    --card-bg: #ffffff;
-    --muted: #6c757d;
-    --text: #182848;
-  }
-
-  body {
-    font-family: 'Poppins', sans-serif;
-    background: var(--bg);
-    padding-top: 64px; /* tránh che navbar cố định */
-    color: var(--text);
-  }
+  
 
   /* ===== Navbar ===== */
   .navbar {
-    background: linear-gradient(90deg, var(--accent), #182848) !important; /* xanh tím đậm */
+    background: linear-gradient(90deg, #4b6cb7, #182848) !important; /* xanh tím đậm */
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   }
   .navbar-brand {
@@ -58,19 +43,19 @@
   /* ===== Card ===== */
   .card {
     border: none;
-    border-radius: 0.75rem;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.07);
-    background: var(--card-bg);
+    border-radius: 1rem;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    background: #fff;
   }
   .card-header {
-    background: linear-gradient(135deg, var(--primary-1), var(--primary-2)); /* xanh tím gradient */
+    background: linear-gradient(135deg, #6a11cb, #2575fc); /* xanh tím gradient */
     color: #fff;
-    font-weight: 600;
+    font-weight: 500;
   }
 
   /* ===== Buttons ===== */
   .btn-primary {
-    background: linear-gradient(135deg, var(--primary-1), var(--primary-2));
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
     border: none;
     color: #fff;
   }
@@ -92,14 +77,9 @@
 
   /* ===== Bảng ===== */
   .table thead th {
-    background: linear-gradient(135deg, var(--accent), #182848);
+    background: linear-gradient(135deg, #4b6cb7, #182848);
     color: #fff;
     border: none;
-    font-weight: 600;
-  }
-  .table td, .table th {
-    padding: .65rem .75rem;
-    vertical-align: middle;
   }
   .table tbody tr:hover {
     background: rgba(75, 108, 183, 0.07);
@@ -118,29 +98,19 @@
   /* ===== Menu Card ===== */
   .menu-card {
     display: block;
-    padding: 1.25rem 1rem;
-    border-radius: 0.8rem;
-    background: linear-gradient(180deg, #fff, #fbfbff);
+    padding: 2rem;
+    border-radius: 1rem;
+    background: #fff;
     text-decoration: none;
     color: inherit;
-    transition: transform 0.2s, box-shadow 0.2s;
-    min-height: 120px;
-    display:flex;
-    align-items:center;
-    gap:12px;
+    transition: transform 0.3s, box-shadow 0.3s;
   }
   .menu-card:hover {
     transform: translateY(-8px);
     box-shadow: 0 12px 24px rgba(0,0,0,0.15);
   }
   .menu-card i {
-    color: var(--primary-1);
-    font-size: 28px;
-    width:38px;
-    height:38px;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
+    color: #6a11cb;
   }
   .menu-card.active {
     outline: 3px solid #9c8df2;
@@ -170,12 +140,6 @@
 
   .side-nav.open {
     left: 0;
-  }
-
-  /* Mặc định hiển thị side-nav trên desktop rộng */
-  @media (min-width: 992px) {
-    .side-nav { left: 0; }
-    body { padding-left: 300px; }
   }
 
   .side-nav-header {
@@ -241,19 +205,7 @@
     pointer-events: auto;
   }
 
-  /* Ẩn menu card cũ -> dùng side nav hiện đại, chỉ hiển thị trên màn lớn */
-  #menu {
-    display: none !important;
-  }
-
-  /* Container gọn */
-  .container {
-    max-width: 1200px;
-  }
-
-  /* Tweak section margins */
-  section { scroll-margin-top: 88px; }
-</style>
+  
 </head>
 
 <body>
@@ -342,29 +294,21 @@
     <!-- Nội dung trang -->
   </div>
 </body>
-    <section class="d-flex align-items-center justify-content-between mb-3">
-      <div class="d-flex align-items-center gap-3">
-        <i class="fas fa-laptop-code fa-3x hero-icon"></i>
-        <div>
-          <div class="h5 mb-0 fw-semibold">Xin chào, Admin VIP!</div>
-          <div class="small text-muted">Quản lý đơn hàng, sản phẩm, và thống kê</div>
-        </div>
-      </div>
-      <div>
-        <a class="btn btn-sm btn-outline-light" th:href="@{/admin/orders}"><i class="fa-solid fa-list me-1"></i> Quản lý đơn</a>
-        <a class="btn btn-sm btn-primary ms-2" th:href="@{/admin/product/new}"><i class="fa-solid fa-plus me-1"></i> Thêm sản phẩm</a>
-      </div>
+    <section class="text-center mb-4">
+<i class="fas fa-laptop-code fa-5x hero-icon mb-3"></i>
+      <h1 class="fw-bold">Xin chào, Admin VIP!</h1>
+      <p class="text-muted">Vui lòng chọn chức năng quản trị bên dưới</p>
     </section>
 
     <!-- ===== KPI (trên cùng) ===== -->
     <section id="kpi-and-tops" class="mb-5">
-  <div class="row g-3 kpi">
+  <div class="row g-4 kpi">
 
 
     
     <!-- 💰 Doanh thu -->
-    <div class="col-12 col-md-6 col-lg-4">
-      <div class="card p-3 h-100 kpi-card">
+    <div class="col-12 col-lg-4">
+      <div class="card p-4 h-100 kpi-card">
         <div class="d-flex justify-content-between align-items-center mb-2">
           <div>
             <div class="label fw-semibold text-secondary">Doanh thu</div>
@@ -377,7 +321,7 @@
 
         <div id="revValue" class="value money mt-2" th:data-vnd="${todayRevenue}">0₫</div>
 
-        <div class="btn-switch mt-3 d-flex gap-2">
+        <div class="btn-switch mt-4 d-flex gap-2">
           <button id="btnRevToday" type="button" class="btn btn-sm btn-switch-item active">Hôm nay</button>
           <button id="btnRevYesterday" type="button" class="btn btn-sm btn-switch-item">Hôm qua</button>
         </div>
@@ -388,7 +332,7 @@
 
 
     <!-- 📦 Đơn hàng -->
-    <div class="col-12 col-md-6 col-lg-4">
+    <div class="col-12 col-lg-4">
       <div class="card p-4 h-100 kpi-card">
         <div class="d-flex justify-content-between align-items-center mb-2">
           <div>
@@ -408,7 +352,7 @@
 
 
     <!-- 👥 Khách hàng -->
-    <div class="col-12 col-md-12 col-lg-4">
+    <div class="col-12 col-lg-4">
       <div class="card p-4 h-100 kpi-card">
         <div class="d-flex justify-content-between align-items-center mb-2">
           <div>
@@ -431,74 +375,7 @@
 
 
 
-<!-- ===== CSS phong cách xanh tím hiện đại ===== -->
-<style>
-/* ===== KPI Card ===== */
-.kpi-card {
-  background: linear-gradient(135deg, #ffffff, #f4f6ff);
-  border: 1px solid rgba(102, 126, 234, 0.15);
-  border-radius: 1rem;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
-  transition: all 0.3s ease;
-}
-.kpi-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 24px rgba(102,126,234,0.25);
-}
-
-.kpi-card .icon-wrapper {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #6a11cb, #2575fc);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  box-shadow: 0 4px 10px rgba(102,126,234,0.3);
-}
-
-.kpi-card .label {
-  font-size: 0.9rem;
-  color: #6c757d;
-}
-
-.kpi-card .value {
-  font-weight: 800;
-  font-size: 2rem;
-  color: #182848;
-}
-
-.btn-switch-item {
-  flex: 1;
-  border-radius: 8px;
-  border: 1px solid #6a11cb;
-  background: transparent;
-  color: #6a11cb;
-  font-weight: 500;
-  transition: all 0.3s;
-}
-.btn-switch-item.active,
-.btn-switch-item:hover {
-  background: linear-gradient(135deg, #6a11cb, #2575fc);
-  color: #fff;
-  border: none;
-}
-/* Global small utilities */
-.small-btn {
-  padding: .35rem .6rem;
-  font-size: .85rem;
-}
-
-.card .card-header .btn {
-  padding: .35rem .6rem;
-}
-
-/* Make actions smaller and concise */
-.btn-sm.btn-outline-primary, .btn-sm.btn-outline-danger {
-  padding: .25rem .45rem;
-}
-</style>
+<!-- KPI styles moved to admin-dashboard.css -->
 
 
 
@@ -539,31 +416,7 @@
   </div>
 </section>
 
-<!-- ===== CSS làm đẹp theo giao diện xanh tím ===== -->
-<style>
-.mini-card {
-  border: none;
-  border-radius: 15px;
-  background: linear-gradient(135deg, #ffffff, #f3f5ff);
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-}
-.mini-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 24px rgba(102, 126, 234, 0.25);
-}
-.mini-card .label {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: #6a11cb;
-  margin-bottom: 5px;
-}
-.mini-card .value {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #182848;
-}
-</style>
+<!-- mini-cards styles moved to admin-dashboard.css -->
 
 
 
@@ -574,7 +427,7 @@
         <!-- Top theo SL (giữ nguyên) -->
       <!-- ========== TOP 5 THEO SỐ LƯỢNG (7 NGÀY) ========== -->
 <div class="col-12 col-xl-6">
-  <div class="card top-card p-3 h-100">
+  <div class="card top-card p-4 h-100">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h5 class="m-0 fw-semibold text-gradient">
         <i class="fa-solid fa-crown me-2 text-warning"></i>
@@ -614,7 +467,7 @@
       
         <!-- ========== ĐƠN MỚI CHỜ XÁC NHẬN ========== -->
 <div class="col-12 col-xl-6">
-  <div class="card order-card p-3 h-100">
+  <div class="card order-card p-4 h-100">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h5 class="m-0 fw-semibold text-gradient">
         <i class="fa-solid fa-bell me-2 text-warning"></i>
@@ -761,62 +614,7 @@
   </div>
 </div>
 
-<!-- CSS hiện đại -->
-<style>
-  #menu .menu-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: #f7f5ff;
-    border-radius: 1rem;
-    padding: 2rem 1rem;
-    text-decoration: none;
-    color: #333;
-    transition: all 0.3s ease;
-    box-shadow: 0 3px 8px rgba(111, 66, 193, 0.1);
-  }
-
-  #menu .menu-card:hover {
-    background: linear-gradient(135deg, #6f42c1, #9b59b6);
-    color: #fff;
-    transform: translateY(-5px);
-    box-shadow: 0 8px 18px rgba(111, 66, 193, 0.3);
-  }
-
-  #menu .menu-icon {
-    background: rgba(111, 66, 193, 0.1);
-    border-radius: 50%;
-    width: 80px;
-    height: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 1rem;
-    transition: 0.3s;
-  }
-
-  #menu .menu-card:hover .menu-icon {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.1);
-  }
-
-  #menu i {
-    font-size: 2.5rem;
-    color: #6f42c1;
-    transition: color 0.3s;
-  }
-
-  #menu .menu-card:hover i {
-    color: #fff;
-  }
-
-  #menu h5 {
-    margin: 0;
-    font-weight: 600;
-    font-size: 1.05rem;
-  }
-</style>
+<!-- Menu card styles moved to admin-dashboard.css -->
 
     <!-- ===== /MENU ===== -->
 
@@ -961,7 +759,8 @@
 
     <!-- PRODUCTS -->
     
-<section id="products" class="card border-0 shadow-lg mb-5 rounded-4">
+<section id="products" class="card border-0 shadow-lg mb-5 rounded-4" 
+         style="background: linear-gradient(135deg, #5B21B6, #4F46E5); color: white;">
   <div class="card-header border-0 d-flex justify-content-between align-items-center px-4 py-3"
        style="background: rgba(255, 255, 255, 0.1); border-radius: 1rem 1rem 0 0;">
     <h4 class="mb-0 fw-bold">
@@ -1019,21 +818,7 @@
   </div>
 </section>
 
-<!-- Hiệu ứng hover hàng -->
-<style>
-  .table-row:hover {
-    background-color: rgba(79, 70, 229, 0.08) !important;
-    transition: background-color 0.2s ease-in-out;
-  }
-  .btn-outline-primary:hover {
-    background-color: #4F46E5;
-    color: white !important;
-  }
-  .btn-outline-danger:hover {
-    background-color: #DC2626;
-    color: white !important;
-  }
-</style>
+<!-- Table hover styles moved to admin-dashboard.css -->
 
 
 

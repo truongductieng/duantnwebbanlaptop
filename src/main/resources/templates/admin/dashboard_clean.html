@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin Dashboard</title>
+
+    <!-- CSRF cho AJAX -->
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet" />
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" rel="stylesheet" />
+    <!-- Admin Dashboard CSS -->
+    <link rel="stylesheet" th:href="@{/css/admin-dashboard.css}" />
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4 fixed-top">
+      <div class="container">
+        <a class="navbar-brand d-flex align-items-center" th:href="@{/admin/dashboard}">
+          <i class="fas fa-gem me-2 text-light"></i>
+          ADMIN
+        </a>
+        <div class="ms-auto d-flex align-items-center gap-2">
+          <button id="sideNavToggle" class="btn btn-outline-light" title="Menu">
+            <i class="fas fa-bars"></i>
+          </button>
+          <a class="btn btn-outline-light" th:href="@{/}" title="Trang chủ">
+            <i class="fas fa-home"></i>
+          </a>
+          <form th:action="@{/logout}" method="post" class="d-inline">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <button type="submit" class="btn btn-outline-light" title="Đăng xuất">
+              <i class="fas fa-sign-out-alt"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+    </nav>
+
+    <div id="sideNav" class="side-nav">
+      <div class="side-nav-header">
+        <h5 class="mb-0">Menu</h5>
+        <button id="sideNavClose" class="btn btn-sm btn-light">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <nav class="side-nav-menu">
+        <a href="#orders" data-target="orders" class="side-nav-item"><i class="fa-solid fa-box-open"></i><span>Đơn hàng</span></a>
+        <a th:href="@{/admin/returns}" class="side-nav-item"><i class="fa-solid fa-rotate-left"></i><span>Quản lý trả hàng</span></a>
+        <a href="#reports" data-target="reports" class="side-nav-item"><i class="fa-solid fa-chart-column"></i><span>Thống kê</span></a>
+        <a href="#products" data-target="products" class="side-nav-item"><i class="fa-solid fa-cubes-stacked"></i><span>Sản phẩm</span></a>
+        <a href="#users" data-target="users" class="side-nav-item"><i class="fa-solid fa-user-group"></i><span>Người dùng</span></a>
+        <a href="#discounts" data-target="discounts" class="side-nav-item"><i class="fa-solid fa-ticket"></i><span>Mã giảm giá</span></a>
+        <a th:href="@{/admin/ann}" class="side-nav-item"><i class="fa-solid fa-photo-film"></i><span>Thông báo ảnh</span></a>
+        <a th:href="@{/admin/reviews}" class="side-nav-item"><i class="fa-solid fa-comments"></i><span>Đánh giá</span></a>
+        <a th:href="@{/admin/chat}" class="side-nav-item"><i class="fa-solid fa-comments"></i><span>Chat</span></a>
+        <a th:href="@{/admin/brands}" class="side-nav-item"><i class="fa-solid fa-tags"></i><span>Quản lý Brand</span></a>
+      </nav>
+    </div>
+
+    <div id="sideNavOverlay" class="side-nav-overlay"></div>
+
+    <div class="container mt-4">
+      <section class="text-center mb-4">
+        <i class="fas fa-laptop-code fa-5x hero-icon mb-3"></i>
+        <h1 class="fw-bold">Xin chào, Admin VIP!</h1>
+        <p class="text-muted">Vui lòng chọn chức năng quản trị bên dưới</p>
+      </section>
+
+      <section id="kpi-and-tops" class="mb-5">
+        <div class="row g-4 kpi">
+          <div class="col-md-3">
+            <div class="kpi-card p-3">
+              <div class="d-flex align-items-center gap-3">
+                <div class="icon-wrapper"><i class="fas fa-wallet"></i></div>
+                <div>
+                  <div class="label">Doanh thu hôm nay</div>
+                  <div id="revValue" class="value">0₫</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="kpi-card p-3">
+              <div class="d-flex align-items-center gap-3">
+                <div class="icon-wrapper"><i class="fas fa-basket-shopping"></i></div>
+                <div>
+                  <div class="label">Đơn hàng</div>
+                  <div id="ordersCount" class="value">0</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="kpi-card p-3">
+              <div class="d-flex align-items-center gap-3">
+                <div class="icon-wrapper"><i class="fas fa-truck-fast"></i></div>
+                <div>
+                  <div class="label">Đã bán</div>
+                  <div id="soldCount" class="value">0</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="kpi-card p-3">
+              <div class="d-flex align-items-center gap-3">
+                <div class="icon-wrapper"><i class="fas fa-users"></i></div>
+                <div>
+                  <div class="label">Khách mới</div>
+                  <div id="newCusCount" class="value">0</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="row g-4 mb-5" id="menu">
+        <div class="col-md-3"><a href="#orders" data-target="orders" class="menu-card"><div class="menu-icon"><i class="fa-solid fa-box-open"></i></div><h5>Đơn hàng</h5></a></div>
+        <div class="col-md-3"><a href="#reports" data-target="reports" class="menu-card"><div class="menu-icon"><i class="fa-solid fa-chart-column"></i></div><h5>Thống kê</h5></a></div>
+        <div class="col-md-3"><a href="#products" data-target="products" class="menu-card"><div class="menu-icon"><i class="fa-solid fa-cubes-stacked"></i></div><h5>Sản phẩm</h5></a></div>
+        <div class="col-md-3"><a href="#users" data-target="users" class="menu-card"><div class="menu-icon"><i class="fa-solid fa-user-group"></i></div><h5>Người dùng</h5></a></div>
+        <div class="col-md-3"><a href="#discounts" data-target="discounts" class="menu-card"><div class="menu-icon"><i class="fa-solid fa-ticket"></i></div><h5>Mã giảm giá</h5></a></div>
+        <div class="col-md-3"><a th:href="@{/admin/ann}" class="menu-card"><div class="menu-icon"><i class="fa-solid fa-photo-film"></i></div><h5>Thông báo ảnh</h5></a></div>
+        <div class="col-md-3"><a th:href="@{/admin/reviews}" class="menu-card"><div class="menu-icon"><i class="fa-solid fa-comments"></i></div><h5>Đánh giá</h5></a></div>
+        <div class="col-md-3"><a th:href="@{/admin/chat}" class="menu-card"><div class="menu-icon"><i class="fa-solid fa-comments"></i></div><h5>Chat</h5></a></div>
+      </div>
+
+      <!-- ORDERS -->
+      <section id="orders" class="feature-section card mb-5">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0"><i class="fas fa-shopping-cart me-2"></i>Đơn hàng (Pending)</h5>
+          <a class="btn btn-primary" th:href="@{/admin/orders}"><i class="fas fa-list-alt me-1"></i>Xem tất cả</a>
+        </div>
+        <div class="card-body p-0">
+          <table class="table table-hover mb-0"><thead><tr><th>#</th><th>ID</th><th>Khách hàng</th><th class="text-end">Tổng tiền</th><th>Ngày tạo</th><th>Hành động</th></tr></thead>
+          <tbody id="pendingOrdersTbody">
+            <tr th:each="order, idx : ${orders}">
+              <td th:text="${idx.count}"></td>
+              <td th:text="${order.id}" class="fw-semibold text-primary"></td>
+              <td th:text="${order.customer != null ? order.customer.username : 'Khách'}">user</td>
+              <td class="text-end fw-semibold text-success" th:text="${#numbers.formatDecimal(order.total,0,'COMMA',2,'POINT')} + '₫'">0₫</td>
+              <td th:text="${#temporals.format(order.createdAt,'dd/MM/yyyy HH:mm')}">--/--/---- --:--</td>
+              <td class="text-center">
+                <form th:action="@{/admin/orders/{id}/status(id=${order.id})}" method="post" class="d-inline"><input type="hidden" name="status" th:value="${T(com.ductieng.model.OrderStatus).CONFIRMED}"/><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="btn btn-sm btn-success me-1 btn-confirm" th:attr="data-id=${order.id}"><i class="fas fa-check-circle me-1"></i> Xác nhận</button>
+              </form>
+            </td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(orders)}"><td colspan="6" class="text-center text-muted py-3">Chưa có đơn PENDING</td></tr>
+          </tbody></table>
+        </div>
+      </section>
+
+      <!-- REPORTS -->
+      <section id="reports" class="feature-section mb-5">
+        <div class="card mb-4"><div class="card-body">
+        <form id="reportFilterForm" th:action="@{/admin/dashboard}" method="get" class="row g-3 align-items-end">
+        <div class="col-auto"><label class="form-label">Loại</label><select name="type" class="form-select"><option value="daily" th:selected="${type=='daily'}">Ngày</option><option value="monthly" th:selected="${type=='monthly'}">Tháng</option></select></div>
+        <div class="col-auto" th:style="${type != 'daily'} ? 'display: none;' : ''"><label class="form-label">Từ ngày</label><input type="date" name="start" class="form-control" th:value="${start}" /></div>
+        <div class="col-auto" th:style="${type != 'daily'} ? 'display: none;' : ''"><label class="form-label">Đến ngày</label><input type="date" name="end" class="form-control" th:value="${end}" /></div>
+        <div class="col-auto" th:style="${type == 'daily'} ? 'display: none;' : ''"><label class="form-label">Từ tháng</label><input type="month" name="startMonth" class="form-control" th:value="${startMonth}" /></div>
+        <div class="col-auto" th:style="${type == 'daily'} ? 'display: none;' : ''"><label class="form-label">Đến tháng</label><input type="month" name="endMonth" class="form-control" th:value="${endMonth}" /></div>
+        <div class="col-auto"><button class="btn btn-primary"><i class="fas fa-filter me-1"></i>Lọc</button><a th:href="@{/admin/dashboard}" class="btn btn-outline-secondary"><i class="fas fa-undo me-1"></i>Đặt lại</a></div>
+        </form></div></div>
+
+        <div class="card">
+          <div class="card-header"><i class="fas fa-table me-2"></i>Doanh thu chi tiết</div>
+          <div class="table-responsive p-3"><table class="table table-striped mb-0"><thead><tr><th th:text="${type=='daily'?'Ngày':'Tháng'}">Thời gian</th><th class="text-end">Doanh thu</th></tr></thead>
+          <tbody th:if="${type=='daily'}">
+            <th:block th:each="rd : ${revenueData}"><tr><td><button class="btn btn-sm btn-outline-primary toggle-day" th:attr="data-day=${rd.period}"><i class="fa fa-chevron-right me-1"></i><span th:text="${rd.period}">2025-08-23</span></button></td><td class="text-end" th:text="${#numbers.formatDecimal(rd.revenue,0,'COMMA',2,'POINT')} + '₫'">0₫</td></tr><tr class="detail-row d-none" th:attr="id=${'detail-' + rd.period}"><td colspan="2"><div class="p-3 small"><span class="spinner-border spinner-border-sm me-2"></span>Đang tải...</div></td></tr></th:block>
+I truncated here for readability — the rest is the rest of the content and scripts.

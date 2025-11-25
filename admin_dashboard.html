@@ -1,0 +1,2141 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Dashboard</title>
+
+  <!-- CSRF cho AJAX -->
+  <meta name="_csrf" content="9dc6539a-b29d-4138-9c1c-e999f1d7c5df" />
+  <meta name="_csrf_header" content="X-XSRF-TOKEN" />
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet"/>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <!-- FontAwesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" rel="stylesheet"/>
+  <!-- Admin Dashboard CSS -->
+  <link rel="stylesheet" href="/css/admin-dashboard.css" />
+
+  
+
+  /* ===== Navbar ===== */
+  .navbar {
+    background: linear-gradient(90deg, #4b6cb7, #182848) !important; /* xanh tím đậm */
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  }
+  .navbar-brand {
+    font-weight: 600;
+    font-size: 1.2rem;
+    letter-spacing: 0.5px;
+  }
+  .navbar .btn-outline-light {
+    border-color: rgba(255,255,255,0.6);
+    color: #fff;
+    transition: all 0.3s;
+  }
+  .navbar .btn-outline-light:hover {
+    background: rgba(255,255,255,0.15);
+    border-color: transparent;
+  }
+
+  /* ===== Card ===== */
+  .card {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    background: #fff;
+  }
+  .card-header {
+    background: linear-gradient(135deg, #6a11cb, #2575fc); /* xanh tím gradient */
+    color: #fff;
+    font-weight: 500;
+  }
+
+  /* ===== Buttons ===== */
+  .btn-primary {
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    border: none;
+    color: #fff;
+  }
+  .btn-primary:hover {
+    opacity: 0.9;
+  }
+  .btn-success {
+    background: linear-gradient(135deg, #00b09b, #96c93d);
+    border: none;
+  }
+  .btn-warning {
+    background: linear-gradient(135deg, #f7971e, #ffd200);
+    border: none;
+  }
+  .btn-danger {
+    background: linear-gradient(135deg, #e53935, #e35d5b);
+    border: none;
+  }
+
+  /* ===== Bảng ===== */
+  .table thead th {
+    background: linear-gradient(135deg, #4b6cb7, #182848);
+    color: #fff;
+    border: none;
+  }
+  .table tbody tr:hover {
+    background: rgba(75, 108, 183, 0.07);
+  }
+
+  /* ===== Hiệu ứng icon ===== */
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+  .hero-icon {
+    animation: bounce 2s infinite;
+    color: #6a11cb;
+  }
+
+  /* ===== Menu Card ===== */
+  .menu-card {
+    display: block;
+    padding: 2rem;
+    border-radius: 1rem;
+    background: #fff;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .menu-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+  }
+  .menu-card i {
+    color: #6a11cb;
+  }
+  .menu-card.active {
+    outline: 3px solid #9c8df2;
+  }
+
+  /* ===== Section offset ===== */
+  section { scroll-margin-top: 96px; }
+
+  /* ===== KPI Section ===== */
+  .kpi .label { font-size: .9rem; color: #6c757d; }
+  .kpi .value { font-weight: 800; font-size: clamp(20px, 3.2vw, 34px); color: #182848; }
+  .kpi .icon { opacity: .7; color: #6a11cb; }
+
+  /* ===== Side Navigation ===== */
+  .side-nav {
+    position: fixed;
+    left: -300px;
+    top: 72px;
+    width: 300px;
+    height: calc(100vh - 72px);
+    background: linear-gradient(180deg, #4b6cb7, #182848);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    z-index: 999;
+    transition: left 0.3s ease;
+    overflow-y: auto;
+  }
+
+  .side-nav.open {
+    left: 0;
+  }
+
+  .side-nav-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    background: rgba(0, 0, 0, 0.1);
+  }
+
+  .side-nav-menu {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 0;
+  }
+
+  .side-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+  }
+
+  .side-nav-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border-left-color: #ffd200;
+  }
+
+  .side-nav-item.active {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    border-left-color: #ffd200;
+    font-weight: 600;
+  }
+
+  .side-nav-item i {
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
+  }
+
+  .side-nav-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0);
+    z-index: 998;
+    transition: background 0.3s ease;
+    pointer-events: none;
+  }
+
+  .side-nav-overlay.active {
+    background: rgba(0, 0, 0, 0.5);
+    pointer-events: auto;
+  }
+
+  
+</head>
+
+<body>
+
+  <!-- ===== NAVBAR ===== -->
+  <nav class="navbar navbar-expand-lg navbar-dark mb-4 fixed-top">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center" href="/admin/dashboard">
+        <i class="fas fa-gem me-2 text-light"></i>
+        ADMIN 
+      </a>
+
+      <div class="ms-auto d-flex align-items-center gap-2">
+        <button id="sideNavToggle" class="btn btn-outline-light" title="Menu">
+          <i class="fas fa-bars"></i>
+        </button>
+        <a class="btn btn-outline-light" href="/" title="Trang chủ">
+          <i class="fas fa-home"></i>
+        </a>
+        <form action="/logout" method="post" class="d-inline"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+          <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df">
+          <button type="submit" class="btn btn-outline-light" title="Đăng xuất">
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Side Navigation -->
+  <div id="sideNav" class="side-nav">
+    <div class="side-nav-header">
+      <h5 class="mb-0">Menu</h5>
+      <button id="sideNavClose" class="btn btn-sm btn-light">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <nav class="side-nav-menu">
+      <a href="#orders" data-target="orders" class="side-nav-item">
+        <i class="fa-solid fa-box-open"></i>
+        <span>Đơn hàng</span>
+      </a>
+      <a href="/admin/returns" class="side-nav-item">
+        <i class="fa-solid fa-rotate-left"></i>
+        <span>Quản lý trả hàng</span>
+      </a>
+      <a href="#reports" data-target="reports" class="side-nav-item">
+        <i class="fa-solid fa-chart-column"></i>
+        <span>Thống kê</span>
+      </a>
+      <a href="#products" data-target="products" class="side-nav-item">
+        <i class="fa-solid fa-cubes-stacked"></i>
+        <span>Sản phẩm</span>
+      </a>
+      <a href="#users" data-target="users" class="side-nav-item">
+        <i class="fa-solid fa-user-group"></i>
+        <span>Người dùng</span>
+      </a>
+      <a href="#discounts" data-target="discounts" class="side-nav-item">
+        <i class="fa-solid fa-ticket"></i>
+        <span>Mã giảm giá</span>
+      </a>
+      <a href="/admin/ann" class="side-nav-item">
+        <i class="fa-solid fa-photo-film"></i>
+        <span>Thông báo ảnh</span>
+      </a>
+      <a href="/admin/reviews" class="side-nav-item">
+        <i class="fa-solid fa-comments"></i>
+        <span>Đánh giá & bình luận</span>
+      </a>
+      <a href="/admin/chat" class="side-nav-item">
+        <i class="fa-solid fa-comments"></i>
+        <span>Chat người dùng</span>
+      </a>
+      <a href="/admin/brands" class="side-nav-item">
+        <i class="fa-solid fa-tags"></i>
+        <span>Quản lý Brand</span>
+      </a>
+    </nav>
+  </div>
+
+  <!-- Overlay khi side nav mở -->
+  <div id="sideNavOverlay" class="side-nav-overlay"></div>
+
+  <div class="container mt-4">
+    <!-- Nội dung trang -->
+  </div>
+</body>
+    <section class="text-center mb-4">
+<i class="fas fa-laptop-code fa-5x hero-icon mb-3"></i>
+      <h1 class="fw-bold">Xin chào, Admin VIP!</h1>
+      <p class="text-muted">Vui lòng chọn chức năng quản trị bên dưới</p>
+    </section>
+
+    <!-- ===== KPI (trên cùng) ===== -->
+    <section id="kpi-and-tops" class="mb-5">
+  <div class="row g-4 kpi">
+
+
+    
+    <!-- 💰 Doanh thu -->
+    <div class="col-12 col-lg-4">
+      <div class="card p-4 h-100 kpi-card">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div>
+            <div class="label fw-semibold text-secondary">Doanh thu</div>
+            <div id="revDate" class="small text-muted">25/11/2025</div>
+          </div>
+          <div class="icon-wrapper">
+            <i class="fa-solid fa-sack-dollar fa-2x"></i>
+          </div>
+        </div>
+
+        <div id="revValue" class="value money mt-2" data-vnd="0.00">0₫</div>
+
+        <div class="btn-switch mt-4 d-flex gap-2">
+          <button id="btnRevToday" type="button" class="btn btn-sm btn-switch-item active">Hôm nay</button>
+          <button id="btnRevYesterday" type="button" class="btn btn-sm btn-switch-item">Hôm qua</button>
+        </div>
+      </div>
+    </div>
+
+
+
+
+    <!-- 📦 Đơn hàng -->
+    <div class="col-12 col-lg-4">
+      <div class="card p-4 h-100 kpi-card">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div>
+            <div class="label fw-semibold text-secondary">Đơn hàng</div>
+            <div class="small text-muted">Hôm nay</div>
+          </div>
+          <div class="icon-wrapper">
+            <i class="fa-solid fa-cart-shopping fa-2x"></i>
+          </div>
+        </div>
+
+        <div class="value mt-2"></div>
+        <div class="text-muted small">Tổng đơn đã xử lý hôm nay</div>
+      </div>
+    </div>
+
+
+
+    <!-- 👥 Khách hàng -->
+    <div class="col-12 col-lg-4">
+      <div class="card p-4 h-100 kpi-card">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div>
+            <div class="label fw-semibold text-secondary">Khách hàng mới</div>
+            <div class="small text-muted">Hôm nay</div>
+          </div>
+          <div class="icon-wrapper">
+            <i class="fa-solid fa-user-plus fa-2x"></i>
+          </div>
+        </div>
+
+        <div class="value mt-2"></div>
+        <div class="text-muted small">Đăng ký mới trong ngày</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+
+
+<!-- KPI styles moved to admin-dashboard.css -->
+
+
+
+
+
+       <!-- Số đơn, SP bán ra, Đơn hủy, Khách mới -->
+<section id="mini-kpis" class="mb-4">
+  <div class="row g-3 justify-content-center">
+
+    <div class="col-6 col-md-3 col-lg-2">
+      <div class="card text-center p-4 mini-card">
+        <div class="label">Đơn</div>
+        <div id="ordersCount" class="value">0</div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3 col-lg-2">
+      <div class="card text-center p-4 mini-card">
+        <div class="label">SP bán ra</div>
+        <div id="soldCount" class="value">0</div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3 col-lg-2">
+      <div class="card text-center p-4 mini-card">
+        <div class="label">Đơn huỷ</div>
+        <div id="cancelCount" class="value">0</div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3 col-lg-2">
+      <div class="card text-center p-4 mini-card">
+        <div class="label">Khách mới</div>
+        <div id="newCusCount" class="value">0</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- mini-cards styles moved to admin-dashboard.css -->
+
+
+
+
+
+      <!-- TRÁI: Top SL | PHẢI: Đơn mới chờ xác nhận -->
+      <div class="row g-4 mt-1">
+        <!-- Top theo SL (giữ nguyên) -->
+      <!-- ========== TOP 5 THEO SỐ LƯỢNG (7 NGÀY) ========== -->
+<div class="col-12 col-xl-6">
+  <div class="card top-card p-4 h-100">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="m-0 fw-semibold text-gradient">
+        <i class="fa-solid fa-crown me-2 text-warning"></i>
+        Top 5 sản phẩm bán chạy (7 ngày)
+      </h5>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table custom-table align-middle mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Sản phẩm</th>
+            <th class="text-end">Số lượng</th>
+            <th class="text-end">Doanh thu</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Lặp dữ liệu động từ database -->
+          
+
+          <!-- Khi không có dữ liệu -->
+          <tr>
+            <td colspan="4" class="text-center text-muted py-3">Chưa có dữ liệu</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+      
+        <!-- ========== ĐƠN MỚI CHỜ XÁC NHẬN ========== -->
+<div class="col-12 col-xl-6">
+  <div class="card order-card p-4 h-100">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="m-0 fw-semibold text-gradient">
+        <i class="fa-solid fa-bell me-2 text-warning"></i>
+        Đơn mới chờ xác nhận
+        <span class="badge bg-gradient ms-2" data-pending-count>14</span>
+      </h5>
+      <a class="btn btn-sm btn-outline-primary rounded-pill shadow-sm" href="/admin/orders">
+        Xem tất cả
+      </a>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table custom-table align-middle mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Mã đơn</th>
+            <th>Khách</th>
+            <th class="text-end">Tổng</th>
+            <th>Ngày tạo</th>
+            <th class="text-center">Xử lý</th>
+          </tr>
+        </thead>
+        <tbody id="pendingOrdersTbody">
+          <!-- Hiển thị tối đa 5 đơn -->
+          <tr id="row-59">
+            <td>1</td>
+            <td class="fw-semibold text-primary">59</td>
+            <td>tadmin</td>
+            <td class="text-end fw-semibold text-success">2.00₫</td>
+            <td>30/10/2025 14:26</td>
+            <td class="text-center">
+              <button type="button" class="btn btn-sm btn-gradient btn-confirm shadow-sm" data-id="59">
+                <i class="fas fa-check-circle me-1"></i> Xác nhận
+              </button>
+            </td>
+          </tr>
+          <tr id="row-60">
+            <td>2</td>
+            <td class="fw-semibold text-primary">60</td>
+            <td>tadmin</td>
+            <td class="text-end fw-semibold text-success">14,990,000.00₫</td>
+            <td>30/10/2025 14:26</td>
+            <td class="text-center">
+              <button type="button" class="btn btn-sm btn-gradient btn-confirm shadow-sm" data-id="60">
+                <i class="fas fa-check-circle me-1"></i> Xác nhận
+              </button>
+            </td>
+          </tr>
+          <tr id="row-61">
+            <td>3</td>
+            <td class="fw-semibold text-primary">61</td>
+            <td>tadmin</td>
+            <td class="text-end fw-semibold text-success">.00₫</td>
+            <td>30/10/2025 14:26</td>
+            <td class="text-center">
+              <button type="button" class="btn btn-sm btn-gradient btn-confirm shadow-sm" data-id="61">
+                <i class="fas fa-check-circle me-1"></i> Xác nhận
+              </button>
+            </td>
+          </tr>
+          <tr id="row-62">
+            <td>4</td>
+            <td class="fw-semibold text-primary">62</td>
+            <td>tadmin</td>
+            <td class="text-end fw-semibold text-success">13,990,000.00₫</td>
+            <td>30/10/2025 14:26</td>
+            <td class="text-center">
+              <button type="button" class="btn btn-sm btn-gradient btn-confirm shadow-sm" data-id="62">
+                <i class="fas fa-check-circle me-1"></i> Xác nhận
+              </button>
+            </td>
+          </tr>
+          <tr id="row-63">
+            <td>5</td>
+            <td class="fw-semibold text-primary">63</td>
+            <td>tadmin</td>
+            <td class="text-end fw-semibold text-success">13,990,000.00₫</td>
+            <td>30/10/2025 14:26</td>
+            <td class="text-center">
+              <button type="button" class="btn btn-sm btn-gradient btn-confirm shadow-sm" data-id="63">
+                <i class="fas fa-check-circle me-1"></i> Xác nhận
+              </button>
+            </td>
+          </tr>
+          
+          
+          
+          
+          
+          
+          
+          
+          
+
+          <!-- Khi không có đơn -->
+          
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+    <!-- ===== /KPI ===== -->
+
+    <!-- ===== MENU ===== -->
+    <div class="row g-4 mb-5" id="menu">
+  <!-- Đơn hàng -->
+  <div class="col-md-3">
+    <a href="#orders" data-target="orders" class="menu-card">
+      <div class="menu-icon">
+        <i class="fa-solid fa-box-open"></i>
+      </div>
+      <h5>Đơn hàng</h5>
+    </a>
+  </div>
+
+  <!-- Thống kê -->
+  <div class="col-md-3">
+    <a href="#reports" data-target="reports" class="menu-card">
+      <div class="menu-icon">
+        <i class="fa-solid fa-chart-column"></i>
+      </div>
+      <h5>Thống kê</h5>
+    </a>
+  </div>
+
+  <!-- Sản phẩm -->
+  <div class="col-md-3">
+    <a href="#products" data-target="products" class="menu-card">
+      <div class="menu-icon">
+        <i class="fa-solid fa-cubes-stacked"></i>
+      </div>
+      <h5>Sản phẩm</h5>
+    </a>
+  </div>
+
+  <!-- Người dùng -->
+  <div class="col-md-3">
+    <a href="#users" data-target="users" class="menu-card">
+      <div class="menu-icon">
+        <i class="fa-solid fa-user-group"></i>
+      </div>
+      <h5>Người dùng</h5>
+    </a>
+  </div>
+
+  <!-- Mã giảm giá -->
+  <div class="col-md-3">
+    <a href="#discounts" data-target="discounts" class="menu-card">
+      <div class="menu-icon">
+        <i class="fa-solid fa-ticket"></i>
+      </div>
+      <h5>Mã giảm giá</h5>
+    </a>
+  </div>
+
+  <!-- Thông báo ảnh -->
+  <div class="col-md-3">
+    <a href="/admin/ann" class="menu-card">
+      <div class="menu-icon">
+        <i class="fa-solid fa-photo-film"></i>
+      </div>
+      <h5>Thông báo ảnh</h5>
+    </a>
+  </div>
+
+  <!-- Đánh giá & bình luận -->
+  <div class="col-md-3">
+    <a href="/admin/reviews" class="menu-card">
+      <div class="menu-icon">
+        <i class="fa-solid fa-comments"></i>
+      </div>
+      <h5>Đánh giá & bình luận</h5>
+    </a>
+  </div>
+
+  <!-- Chat người dùng -->
+  <div class="col-md-3">
+    <a href="/admin/chat" class="menu-card">
+      <div class="menu-icon">
+        <i class="fa-solid fa-comments"></i>
+      </div>
+      <h5>Chat người dùng</h5>
+    </a>
+  </div>
+
+  <!-- Quản lý Brand -->
+  <div class="col-md-3">
+    <a href="/admin/brands" class="menu-card">
+      <div class="menu-icon">
+        <i class="fa-solid fa-tags"></i>
+      </div>
+      <h5>Quản lý Brand</h5>
+    </a>
+  </div>
+</div>
+
+<!-- Menu card styles moved to admin-dashboard.css -->
+
+    <!-- ===== /MENU ===== -->
+
+    <!-- ORDERS -->
+    <section id="orders" class="feature-section card mb-5">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-shopping-cart me-2"></i>Đơn hàng (Pending)</h5>
+        <a class="btn btn-primary" href="/admin/orders">
+          <i class="fas fa-list-alt me-1"></i>Xem tất cả
+        </a>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr><th>ID</th><th>Ngày tạo</th><th>Khách hàng</th><th>Tổng tiền</th><th>Hành động</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>59</td>
+              <td>30/10/2025 14:26</td>
+              <td>tadmin</td>
+              <td>2.00₫</td>
+              <td>
+                <!-- SỬA endpoint confirm đúng -->
+                <form action="/admin/orders/59/status" method="post" class="d-inline"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="status" value="CONFIRMED"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-success me-1"><i class="fas fa-check-circle"></i></button>
+                </form>
+                <form action="/admin/orders/59/delete" method="post" class="d-inline"
+                      onsubmit="return confirm('Xác nhận xóa?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>60</td>
+              <td>30/10/2025 14:26</td>
+              <td>tadmin</td>
+              <td>14,990,000.00₫</td>
+              <td>
+                <!-- SỬA endpoint confirm đúng -->
+                <form action="/admin/orders/60/status" method="post" class="d-inline"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="status" value="CONFIRMED"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-success me-1"><i class="fas fa-check-circle"></i></button>
+                </form>
+                <form action="/admin/orders/60/delete" method="post" class="d-inline"
+                      onsubmit="return confirm('Xác nhận xóa?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>61</td>
+              <td>30/10/2025 14:26</td>
+              <td>tadmin</td>
+              <td>.00₫</td>
+              <td>
+                <!-- SỬA endpoint confirm đúng -->
+                <form action="/admin/orders/61/status" method="post" class="d-inline"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="status" value="CONFIRMED"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-success me-1"><i class="fas fa-check-circle"></i></button>
+                </form>
+                <form action="/admin/orders/61/delete" method="post" class="d-inline"
+                      onsubmit="return confirm('Xác nhận xóa?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>62</td>
+              <td>30/10/2025 14:26</td>
+              <td>tadmin</td>
+              <td>13,990,000.00₫</td>
+              <td>
+                <!-- SỬA endpoint confirm đúng -->
+                <form action="/admin/orders/62/status" method="post" class="d-inline"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="status" value="CONFIRMED"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-success me-1"><i class="fas fa-check-circle"></i></button>
+                </form>
+                <form action="/admin/orders/62/delete" method="post" class="d-inline"
+                      onsubmit="return confirm('Xác nhận xóa?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>63</td>
+              <td>30/10/2025 14:26</td>
+              <td>tadmin</td>
+              <td>13,990,000.00₫</td>
+              <td>
+                <!-- SỬA endpoint confirm đúng -->
+                <form action="/admin/orders/63/status" method="post" class="d-inline"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="status" value="CONFIRMED"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-success me-1"><i class="fas fa-check-circle"></i></button>
+                </form>
+                <form action="/admin/orders/63/delete" method="post" class="d-inline"
+                      onsubmit="return confirm('Xác nhận xóa?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>64</td>
+              <td>30/10/2025 14:27</td>
+              <td>tadmin</td>
+              <td>14,990,000.00₫</td>
+              <td>
+                <!-- SỬA endpoint confirm đúng -->
+                <form action="/admin/orders/64/status" method="post" class="d-inline"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="status" value="CONFIRMED"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-success me-1"><i class="fas fa-check-circle"></i></button>
+                </form>
+                <form action="/admin/orders/64/delete" method="post" class="d-inline"
+                      onsubmit="return confirm('Xác nhận xóa?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>65</td>
+              <td>30/10/2025 14:27</td>
+              <td>tadmin</td>
+              <td>1.00₫</td>
+              <td>
+                <!-- SỬA endpoint confirm đúng -->
+                <form action="/admin/orders/65/status" method="post" class="d-inline"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="status" value="CONFIRMED"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-success me-1"><i class="fas fa-check-circle"></i></button>
+                </form>
+                <form action="/admin/orders/65/delete" method="post" class="d-inline"
+                      onsubmit="return confirm('Xác nhận xóa?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>67</td>
+              <td>30/10/2025 14:27</td>
+              <td>tadmin</td>
+              <td>.00₫</td>
+              <td>
+                <!-- SỬA endpoint confirm đúng -->
+                <form action="/admin/orders/67/status" method="post" class="d-inline"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="status" value="CONFIRMED"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-success me-1"><i class="fas fa-check-circle"></i></button>
+                </form>
+                <form action="/admin/orders/67/delete" method="post" class="d-inline"
+                      onsubmit="return confirm('Xác nhận xóa?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>68</td>
+              <td>17/11/2025 19:04</td>
+              <td>tadmin</td>
+              <td>1.00₫</td>
+              <td>
+                <!-- SỬA endpoint confirm đúng -->
+                <form action="/admin/orders/68/status" method="post" class="d-inline"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="status" value="CONFIRMED"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-success me-1"><i class="fas fa-check-circle"></i></button>
+                </form>
+                <form action="/admin/orders/68/delete" method="post" class="d-inline"
+                      onsubmit="return confirm('Xác nhận xóa?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>69</td>
+              <td>17/11/2025 19:14</td>
+              <td>tadmin</td>
+              <td>1.00₫</td>
+              <td>
+                <!-- SỬA endpoint confirm đúng -->
+                <form action="/admin/orders/69/status" method="post" class="d-inline"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="status" value="CONFIRMED"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-success me-1"><i class="fas fa-check-circle"></i></button>
+                </form>
+                <form action="/admin/orders/69/delete" method="post" class="d-inline"
+                      onsubmit="return confirm('Xác nhận xóa?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>70</td>
+              <td>19/11/2025 14:22</td>
+              <td>tadmin</td>
+              <td>123,123.00₫</td>
+              <td>
+                <!-- SỬA endpoint confirm đúng -->
+                <form action="/admin/orders/70/status" method="post" class="d-inline"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="status" value="CONFIRMED"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-success me-1"><i class="fas fa-check-circle"></i></button>
+                </form>
+                <form action="/admin/orders/70/delete" method="post" class="d-inline"
+                      onsubmit="return confirm('Xác nhận xóa?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>71</td>
+              <td>24/11/2025 19:41</td>
+              <td>Tuser</td>
+              <td>14,990,000.00₫</td>
+              <td>
+                <!-- SỬA endpoint confirm đúng -->
+                <form action="/admin/orders/71/status" method="post" class="d-inline"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="status" value="CONFIRMED"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-success me-1"><i class="fas fa-check-circle"></i></button>
+                </form>
+                <form action="/admin/orders/71/delete" method="post" class="d-inline"
+                      onsubmit="return confirm('Xác nhận xóa?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>72</td>
+              <td>24/11/2025 19:41</td>
+              <td>Tuser</td>
+              <td>.00₫</td>
+              <td>
+                <!-- SỬA endpoint confirm đúng -->
+                <form action="/admin/orders/72/status" method="post" class="d-inline"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="status" value="CONFIRMED"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-success me-1"><i class="fas fa-check-circle"></i></button>
+                </form>
+                <form action="/admin/orders/72/delete" method="post" class="d-inline"
+                      onsubmit="return confirm('Xác nhận xóa?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>73</td>
+              <td>24/11/2025 19:41</td>
+              <td>Tuser</td>
+              <td>.00₫</td>
+              <td>
+                <!-- SỬA endpoint confirm đúng -->
+                <form action="/admin/orders/73/status" method="post" class="d-inline"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="status" value="CONFIRMED"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-success me-1"><i class="fas fa-check-circle"></i></button>
+                </form>
+                <form action="/admin/orders/73/delete" method="post" class="d-inline"
+                      onsubmit="return confirm('Xác nhận xóa?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                </form>
+              </td>
+            </tr>
+            
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- REPORTS -->
+    <section id="reports" class="feature-section mb-5">
+      <div class="card mb-4">
+        <div class="card-body">
+          <form id="reportFilterForm" action="/admin/dashboard" method="get" class="row g-3 align-items-end">
+            <div class="col-auto">
+              <label class="form-label">Loại</label>
+              <select name="type" class="form-select">
+                <option value="daily" selected="selected">Ngày</option>
+                <option value="monthly">Tháng</option>
+              </select>
+            </div>
+            
+            <!-- Input Ngày -->
+            <div class="col-auto">
+              <label class="form-label">Từ ngày</label>
+              <input type="date" name="start" class="form-control" value="2025-11-18"/>
+            </div>
+            <div class="col-auto">
+              <label class="form-label">Đến ngày</label>
+              <input type="date" name="end" class="form-control" value="2025-11-25"/>
+            </div>
+            
+            <!-- Input Tháng -->
+            <div class="col-auto" style="display: none;">
+              <label class="form-label">Từ tháng</label>
+              <input type="month" name="startMonth" class="form-control" value=""/>
+            </div>
+            <div class="col-auto" style="display: none;">
+              <label class="form-label">Đến tháng</label>
+              <input type="month" name="endMonth" class="form-control" value=""/>
+            </div>
+            
+            <div class="col-auto">
+              <button class="btn btn-primary"><i class="fas fa-filter me-1"></i>Lọc</button>
+              <a href="/admin/dashboard" class="btn btn-outline-secondary"><i class="fas fa-undo me-1"></i>Đặt lại</a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><i class="fas fa-table me-2"></i>Doanh thu chi tiết</div>
+        <div class="table-responsive p-3">
+          <table class="table table-striped mb-0">
+            <thead>
+              <tr>
+                <th>Ngày</th>
+                <th class="text-end">Doanh thu</th>
+              </tr>
+            </thead>
+
+            <!-- DAILY: có nút bấm để bung chi tiết -->
+            <tbody>
+              
+              <tr>
+                <td colspan="2" class="text-center text-muted py-3">Không có dữ liệu</td>
+              </tr>
+            </tbody>
+
+            <!-- MONTHLY: hiển thị bình thường -->
+            
+          </table>
+        </div>
+      </div>
+    </section>
+
+
+
+
+
+    <!-- PRODUCTS -->
+    
+<section id="products" class="card border-0 shadow-lg mb-5 rounded-4" 
+         style="background: linear-gradient(135deg, #5B21B6, #4F46E5); color: white;">
+  <div class="card-header border-0 d-flex justify-content-between align-items-center px-4 py-3"
+       style="background: rgba(255, 255, 255, 0.1); border-radius: 1rem 1rem 0 0;">
+    <h4 class="mb-0 fw-bold">
+      <i class="fas fa-box-open me-2"></i>Danh sách sản phẩm
+    </h4>
+    <a class="btn btn-light fw-semibold text-primary px-3 py-2 rounded-pill shadow-sm" 
+       href="/admin/product/new">
+      <i class="fas fa-plus-circle me-1"></i>Thêm mới
+    </a>
+  </div>
+
+  <div class="card-body bg-white rounded-bottom-4 p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 align-middle">
+        <thead style="background-color: #4F46E5; color: white;">
+          <tr>
+            <th class="ps-4">ID</th>
+            <th>Tên</th>
+            <th>Hãng</th>
+            <th>Giá</th>
+            <th>Số lượng</th>
+            <th class="text-center pe-4">Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="table-row">
+            <td class="ps-4 fw-semibold text-dark">1</td>
+            <td class="text-secondary">Dell Inspiron 15 3000</td>
+            <td class="text-secondary">Dell</td>
+            <td class="text-success fw-semibold">13,990,000.00</td>
+            <td class="text-secondary">5</td>
+            <td class="text-center pe-4">
+              <a class="btn btn-sm btn-outline-primary me-1 rounded-pill px-3 py-1 fw-semibold"
+                 href="/admin/product/1/edit">
+                <i class="fas fa-edit me-1"></i>Sửa
+              </a>
+              <form action="/admin/product/1/delete" method="post" class="d-inline"
+                    onsubmit="return confirm('Xác nhận xóa sản phẩm này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df" />
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-semibold">
+                  <i class="fas fa-trash-alt me-1"></i>Xóa
+                </button>
+              </form>
+            </td>
+          </tr>
+          <tr class="table-row">
+            <td class="ps-4 fw-semibold text-dark">2</td>
+            <td class="text-secondary">HP Pavilion 14</td>
+            <td class="text-secondary">HP</td>
+            <td class="text-success fw-semibold">1.00</td>
+            <td class="text-secondary">4</td>
+            <td class="text-center pe-4">
+              <a class="btn btn-sm btn-outline-primary me-1 rounded-pill px-3 py-1 fw-semibold"
+                 href="/admin/product/2/edit">
+                <i class="fas fa-edit me-1"></i>Sửa
+              </a>
+              <form action="/admin/product/2/delete" method="post" class="d-inline"
+                    onsubmit="return confirm('Xác nhận xóa sản phẩm này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df" />
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-semibold">
+                  <i class="fas fa-trash-alt me-1"></i>Xóa
+                </button>
+              </form>
+            </td>
+          </tr>
+          <tr class="table-row">
+            <td class="ps-4 fw-semibold text-dark">3</td>
+            <td class="text-secondary">Lenovo IdeaPad 3</td>
+            <td class="text-secondary">Lenovo</td>
+            <td class="text-success fw-semibold">14,990,000.00</td>
+            <td class="text-secondary">0</td>
+            <td class="text-center pe-4">
+              <a class="btn btn-sm btn-outline-primary me-1 rounded-pill px-3 py-1 fw-semibold"
+                 href="/admin/product/3/edit">
+                <i class="fas fa-edit me-1"></i>Sửa
+              </a>
+              <form action="/admin/product/3/delete" method="post" class="d-inline"
+                    onsubmit="return confirm('Xác nhận xóa sản phẩm này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df" />
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-semibold">
+                  <i class="fas fa-trash-alt me-1"></i>Xóa
+                </button>
+              </form>
+            </td>
+          </tr>
+          <tr class="table-row">
+            <td class="ps-4 fw-semibold text-dark">4</td>
+            <td class="text-secondary">Acer Nitro 5</td>
+            <td class="text-secondary">Acer</td>
+            <td class="text-success fw-semibold">15,990,000.00</td>
+            <td class="text-secondary">0</td>
+            <td class="text-center pe-4">
+              <a class="btn btn-sm btn-outline-primary me-1 rounded-pill px-3 py-1 fw-semibold"
+                 href="/admin/product/4/edit">
+                <i class="fas fa-edit me-1"></i>Sửa
+              </a>
+              <form action="/admin/product/4/delete" method="post" class="d-inline"
+                    onsubmit="return confirm('Xác nhận xóa sản phẩm này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df" />
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-semibold">
+                  <i class="fas fa-trash-alt me-1"></i>Xóa
+                </button>
+              </form>
+            </td>
+          </tr>
+          <tr class="table-row">
+            <td class="ps-4 fw-semibold text-dark">5</td>
+            <td class="text-secondary">Acer Swift 5</td>
+            <td class="text-secondary">Acer</td>
+            <td class="text-success fw-semibold">20,990,000.00</td>
+            <td class="text-secondary">0</td>
+            <td class="text-center pe-4">
+              <a class="btn btn-sm btn-outline-primary me-1 rounded-pill px-3 py-1 fw-semibold"
+                 href="/admin/product/5/edit">
+                <i class="fas fa-edit me-1"></i>Sửa
+              </a>
+              <form action="/admin/product/5/delete" method="post" class="d-inline"
+                    onsubmit="return confirm('Xác nhận xóa sản phẩm này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df" />
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-semibold">
+                  <i class="fas fa-trash-alt me-1"></i>Xóa
+                </button>
+              </form>
+            </td>
+          </tr>
+          <tr class="table-row">
+            <td class="ps-4 fw-semibold text-dark">6</td>
+            <td class="text-secondary">Asus ROG Zephyrus G14</td>
+            <td class="text-secondary">Asus</td>
+            <td class="text-success fw-semibold">33,990,000.00</td>
+            <td class="text-secondary">0</td>
+            <td class="text-center pe-4">
+              <a class="btn btn-sm btn-outline-primary me-1 rounded-pill px-3 py-1 fw-semibold"
+                 href="/admin/product/6/edit">
+                <i class="fas fa-edit me-1"></i>Sửa
+              </a>
+              <form action="/admin/product/6/delete" method="post" class="d-inline"
+                    onsubmit="return confirm('Xác nhận xóa sản phẩm này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df" />
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-semibold">
+                  <i class="fas fa-trash-alt me-1"></i>Xóa
+                </button>
+              </form>
+            </td>
+          </tr>
+          <tr class="table-row">
+            <td class="ps-4 fw-semibold text-dark">7</td>
+            <td class="text-secondary">Asus VivoBook 14</td>
+            <td class="text-secondary">Asus</td>
+            <td class="text-success fw-semibold">14,990,000.00</td>
+            <td class="text-secondary">0</td>
+            <td class="text-center pe-4">
+              <a class="btn btn-sm btn-outline-primary me-1 rounded-pill px-3 py-1 fw-semibold"
+                 href="/admin/product/7/edit">
+                <i class="fas fa-edit me-1"></i>Sửa
+              </a>
+              <form action="/admin/product/7/delete" method="post" class="d-inline"
+                    onsubmit="return confirm('Xác nhận xóa sản phẩm này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df" />
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-semibold">
+                  <i class="fas fa-trash-alt me-1"></i>Xóa
+                </button>
+              </form>
+            </td>
+          </tr>
+          <tr class="table-row">
+            <td class="ps-4 fw-semibold text-dark">8</td>
+            <td class="text-secondary">Dell XPS 13</td>
+            <td class="text-secondary">Dell</td>
+            <td class="text-success fw-semibold">28,990,000.00</td>
+            <td class="text-secondary">0</td>
+            <td class="text-center pe-4">
+              <a class="btn btn-sm btn-outline-primary me-1 rounded-pill px-3 py-1 fw-semibold"
+                 href="/admin/product/8/edit">
+                <i class="fas fa-edit me-1"></i>Sửa
+              </a>
+              <form action="/admin/product/8/delete" method="post" class="d-inline"
+                    onsubmit="return confirm('Xác nhận xóa sản phẩm này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df" />
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-semibold">
+                  <i class="fas fa-trash-alt me-1"></i>Xóa
+                </button>
+              </form>
+            </td>
+          </tr>
+          <tr class="table-row">
+            <td class="ps-4 fw-semibold text-dark">9</td>
+            <td class="text-secondary">Dell XPS 15</td>
+            <td class="text-secondary">Dell</td>
+            <td class="text-success fw-semibold">32,990,000.00</td>
+            <td class="text-secondary">0</td>
+            <td class="text-center pe-4">
+              <a class="btn btn-sm btn-outline-primary me-1 rounded-pill px-3 py-1 fw-semibold"
+                 href="/admin/product/9/edit">
+                <i class="fas fa-edit me-1"></i>Sửa
+              </a>
+              <form action="/admin/product/9/delete" method="post" class="d-inline"
+                    onsubmit="return confirm('Xác nhận xóa sản phẩm này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df" />
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-semibold">
+                  <i class="fas fa-trash-alt me-1"></i>Xóa
+                </button>
+              </form>
+            </td>
+          </tr>
+          <tr class="table-row">
+            <td class="ps-4 fw-semibold text-dark">10</td>
+            <td class="text-secondary">HP Envy 13</td>
+            <td class="text-secondary">HP</td>
+            <td class="text-success fw-semibold">15,990,000.00</td>
+            <td class="text-secondary">0</td>
+            <td class="text-center pe-4">
+              <a class="btn btn-sm btn-outline-primary me-1 rounded-pill px-3 py-1 fw-semibold"
+                 href="/admin/product/10/edit">
+                <i class="fas fa-edit me-1"></i>Sửa
+              </a>
+              <form action="/admin/product/10/delete" method="post" class="d-inline"
+                    onsubmit="return confirm('Xác nhận xóa sản phẩm này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df" />
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-semibold">
+                  <i class="fas fa-trash-alt me-1"></i>Xóa
+                </button>
+              </form>
+            </td>
+          </tr>
+          <tr class="table-row">
+            <td class="ps-4 fw-semibold text-dark">11</td>
+            <td class="text-secondary">HP Spectre x360</td>
+            <td class="text-secondary">HP</td>
+            <td class="text-success fw-semibold">26,990,000.00</td>
+            <td class="text-secondary">0</td>
+            <td class="text-center pe-4">
+              <a class="btn btn-sm btn-outline-primary me-1 rounded-pill px-3 py-1 fw-semibold"
+                 href="/admin/product/11/edit">
+                <i class="fas fa-edit me-1"></i>Sửa
+              </a>
+              <form action="/admin/product/11/delete" method="post" class="d-inline"
+                    onsubmit="return confirm('Xác nhận xóa sản phẩm này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df" />
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-semibold">
+                  <i class="fas fa-trash-alt me-1"></i>Xóa
+                </button>
+              </form>
+            </td>
+          </tr>
+          <tr class="table-row">
+            <td class="ps-4 fw-semibold text-dark">12</td>
+            <td class="text-secondary">Lenovo ThinkPad X1 Carbon</td>
+            <td class="text-secondary">Lenovo</td>
+            <td class="text-success fw-semibold">31,990,000.00</td>
+            <td class="text-secondary">0</td>
+            <td class="text-center pe-4">
+              <a class="btn btn-sm btn-outline-primary me-1 rounded-pill px-3 py-1 fw-semibold"
+                 href="/admin/product/12/edit">
+                <i class="fas fa-edit me-1"></i>Sửa
+              </a>
+              <form action="/admin/product/12/delete" method="post" class="d-inline"
+                    onsubmit="return confirm('Xác nhận xóa sản phẩm này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df" />
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-semibold">
+                  <i class="fas fa-trash-alt me-1"></i>Xóa
+                </button>
+              </form>
+            </td>
+          </tr>
+          <tr class="table-row">
+            <td class="ps-4 fw-semibold text-dark">13</td>
+            <td class="text-secondary">MacBook Air M1</td>
+            <td class="text-secondary">Apple</td>
+            <td class="text-success fw-semibold">21,990,000.00</td>
+            <td class="text-secondary">0</td>
+            <td class="text-center pe-4">
+              <a class="btn btn-sm btn-outline-primary me-1 rounded-pill px-3 py-1 fw-semibold"
+                 href="/admin/product/13/edit">
+                <i class="fas fa-edit me-1"></i>Sửa
+              </a>
+              <form action="/admin/product/13/delete" method="post" class="d-inline"
+                    onsubmit="return confirm('Xác nhận xóa sản phẩm này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df" />
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-semibold">
+                  <i class="fas fa-trash-alt me-1"></i>Xóa
+                </button>
+              </form>
+            </td>
+          </tr>
+          <tr class="table-row">
+            <td class="ps-4 fw-semibold text-dark">14</td>
+            <td class="text-secondary">MSI GF63</td>
+            <td class="text-secondary">MSI</td>
+            <td class="text-success fw-semibold">20,990,000.00</td>
+            <td class="text-secondary">0</td>
+            <td class="text-center pe-4">
+              <a class="btn btn-sm btn-outline-primary me-1 rounded-pill px-3 py-1 fw-semibold"
+                 href="/admin/product/14/edit">
+                <i class="fas fa-edit me-1"></i>Sửa
+              </a>
+              <form action="/admin/product/14/delete" method="post" class="d-inline"
+                    onsubmit="return confirm('Xác nhận xóa sản phẩm này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df" />
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-semibold">
+                  <i class="fas fa-trash-alt me-1"></i>Xóa
+                </button>
+              </form>
+            </td>
+          </tr>
+          <tr class="table-row">
+            <td class="ps-4 fw-semibold text-dark">15</td>
+            <td class="text-secondary">MSI Prestige 14</td>
+            <td class="text-secondary">MSI</td>
+            <td class="text-success fw-semibold">23,990,000.00</td>
+            <td class="text-secondary">0</td>
+            <td class="text-center pe-4">
+              <a class="btn btn-sm btn-outline-primary me-1 rounded-pill px-3 py-1 fw-semibold"
+                 href="/admin/product/15/edit">
+                <i class="fas fa-edit me-1"></i>Sửa
+              </a>
+              <form action="/admin/product/15/delete" method="post" class="d-inline"
+                    onsubmit="return confirm('Xác nhận xóa sản phẩm này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df" />
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-semibold">
+                  <i class="fas fa-trash-alt me-1"></i>Xóa
+                </button>
+              </form>
+            </td>
+          </tr>
+          <tr class="table-row">
+            <td class="ps-4 fw-semibold text-dark">16</td>
+            <td class="text-secondary">Surface Laptop 4</td>
+            <td class="text-secondary">Microsoft</td>
+            <td class="text-success fw-semibold">19,990,000.00</td>
+            <td class="text-secondary">0</td>
+            <td class="text-center pe-4">
+              <a class="btn btn-sm btn-outline-primary me-1 rounded-pill px-3 py-1 fw-semibold"
+                 href="/admin/product/16/edit">
+                <i class="fas fa-edit me-1"></i>Sửa
+              </a>
+              <form action="/admin/product/16/delete" method="post" class="d-inline"
+                    onsubmit="return confirm('Xác nhận xóa sản phẩm này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df" />
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-semibold">
+                  <i class="fas fa-trash-alt me-1"></i>Xóa
+                </button>
+              </form>
+            </td>
+          </tr>
+          <tr class="table-row">
+            <td class="ps-4 fw-semibold text-dark">18</td>
+            <td class="text-secondary">sp 18</td>
+            <td class="text-secondary">Lenovo</td>
+            <td class="text-success fw-semibold">20,000,000.00</td>
+            <td class="text-secondary">5</td>
+            <td class="text-center pe-4">
+              <a class="btn btn-sm btn-outline-primary me-1 rounded-pill px-3 py-1 fw-semibold"
+                 href="/admin/product/18/edit">
+                <i class="fas fa-edit me-1"></i>Sửa
+              </a>
+              <form action="/admin/product/18/delete" method="post" class="d-inline"
+                    onsubmit="return confirm('Xác nhận xóa sản phẩm này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df" />
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-semibold">
+                  <i class="fas fa-trash-alt me-1"></i>Xóa
+                </button>
+              </form>
+            </td>
+          </tr>
+          <tr class="table-row">
+            <td class="ps-4 fw-semibold text-dark">21</td>
+            <td class="text-secondary">sp20</td>
+            <td class="text-secondary">Lenovo</td>
+            <td class="text-success fw-semibold">30,000,000.00</td>
+            <td class="text-secondary">5</td>
+            <td class="text-center pe-4">
+              <a class="btn btn-sm btn-outline-primary me-1 rounded-pill px-3 py-1 fw-semibold"
+                 href="/admin/product/21/edit">
+                <i class="fas fa-edit me-1"></i>Sửa
+              </a>
+              <form action="/admin/product/21/delete" method="post" class="d-inline"
+                    onsubmit="return confirm('Xác nhận xóa sản phẩm này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df" />
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-semibold">
+                  <i class="fas fa-trash-alt me-1"></i>Xóa
+                </button>
+              </form>
+            </td>
+          </tr>
+          <tr class="table-row">
+            <td class="ps-4 fw-semibold text-dark">22</td>
+            <td class="text-secondary">sp 19</td>
+            <td class="text-secondary">Dell</td>
+            <td class="text-success fw-semibold">20,000,000.00</td>
+            <td class="text-secondary">5</td>
+            <td class="text-center pe-4">
+              <a class="btn btn-sm btn-outline-primary me-1 rounded-pill px-3 py-1 fw-semibold"
+                 href="/admin/product/22/edit">
+                <i class="fas fa-edit me-1"></i>Sửa
+              </a>
+              <form action="/admin/product/22/delete" method="post" class="d-inline"
+                    onsubmit="return confirm('Xác nhận xóa sản phẩm này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df" />
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-semibold">
+                  <i class="fas fa-trash-alt me-1"></i>Xóa
+                </button>
+              </form>
+            </td>
+          </tr>
+          <tr class="table-row">
+            <td class="ps-4 fw-semibold text-dark">23</td>
+            <td class="text-secondary">sp21</td>
+            <td class="text-secondary">Lenovo</td>
+            <td class="text-success fw-semibold">25,000,000.00</td>
+            <td class="text-secondary">5</td>
+            <td class="text-center pe-4">
+              <a class="btn btn-sm btn-outline-primary me-1 rounded-pill px-3 py-1 fw-semibold"
+                 href="/admin/product/23/edit">
+                <i class="fas fa-edit me-1"></i>Sửa
+              </a>
+              <form action="/admin/product/23/delete" method="post" class="d-inline"
+                    onsubmit="return confirm('Xác nhận xóa sản phẩm này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df" />
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-semibold">
+                  <i class="fas fa-trash-alt me-1"></i>Xóa
+                </button>
+              </form>
+            </td>
+          </tr>
+          <tr class="table-row">
+            <td class="ps-4 fw-semibold text-dark">26</td>
+            <td class="text-secondary">Lap Top Của Khoa</td>
+            <td class="text-secondary">Lenovo</td>
+            <td class="text-success fw-semibold">23,000,000.00</td>
+            <td class="text-secondary">5</td>
+            <td class="text-center pe-4">
+              <a class="btn btn-sm btn-outline-primary me-1 rounded-pill px-3 py-1 fw-semibold"
+                 href="/admin/product/26/edit">
+                <i class="fas fa-edit me-1"></i>Sửa
+              </a>
+              <form action="/admin/product/26/delete" method="post" class="d-inline"
+                    onsubmit="return confirm('Xác nhận xóa sản phẩm này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df" />
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-semibold">
+                  <i class="fas fa-trash-alt me-1"></i>Xóa
+                </button>
+              </form>
+            </td>
+          </tr>
+          <tr class="table-row">
+            <td class="ps-4 fw-semibold text-dark">27</td>
+            <td class="text-secondary">Lap Top 1</td>
+            <td class="text-secondary">Dell</td>
+            <td class="text-success fw-semibold">50,000,000.00</td>
+            <td class="text-secondary">5</td>
+            <td class="text-center pe-4">
+              <a class="btn btn-sm btn-outline-primary me-1 rounded-pill px-3 py-1 fw-semibold"
+                 href="/admin/product/27/edit">
+                <i class="fas fa-edit me-1"></i>Sửa
+              </a>
+              <form action="/admin/product/27/delete" method="post" class="d-inline"
+                    onsubmit="return confirm('Xác nhận xóa sản phẩm này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df" />
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-semibold">
+                  <i class="fas fa-trash-alt me-1"></i>Xóa
+                </button>
+              </form>
+            </td>
+          </tr>
+          <tr class="table-row">
+            <td class="ps-4 fw-semibold text-dark">28</td>
+            <td class="text-secondary">luân</td>
+            <td class="text-secondary">dvdf</td>
+            <td class="text-success fw-semibold">123,123.00</td>
+            <td class="text-secondary">0</td>
+            <td class="text-center pe-4">
+              <a class="btn btn-sm btn-outline-primary me-1 rounded-pill px-3 py-1 fw-semibold"
+                 href="/admin/product/28/edit">
+                <i class="fas fa-edit me-1"></i>Sửa
+              </a>
+              <form action="/admin/product/28/delete" method="post" class="d-inline"
+                    onsubmit="return confirm('Xác nhận xóa sản phẩm này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df" />
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-semibold">
+                  <i class="fas fa-trash-alt me-1"></i>Xóa
+                </button>
+              </form>
+            </td>
+          </tr>
+          <tr class="table-row">
+            <td class="ps-4 fw-semibold text-dark">29</td>
+            <td class="text-secondary">ưefdwerwe</td>
+            <td class="text-secondary">ưerwerwe</td>
+            <td class="text-success fw-semibold">1.00</td>
+            <td class="text-secondary">120</td>
+            <td class="text-center pe-4">
+              <a class="btn btn-sm btn-outline-primary me-1 rounded-pill px-3 py-1 fw-semibold"
+                 href="/admin/product/29/edit">
+                <i class="fas fa-edit me-1"></i>Sửa
+              </a>
+              <form action="/admin/product/29/delete" method="post" class="d-inline"
+                    onsubmit="return confirm('Xác nhận xóa sản phẩm này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df" />
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-semibold">
+                  <i class="fas fa-trash-alt me-1"></i>Xóa
+                </button>
+              </form>
+            </td>
+          </tr>
+          <tr class="table-row">
+            <td class="ps-4 fw-semibold text-dark">30</td>
+            <td class="text-secondary">zsdasd</td>
+            <td class="text-secondary">ádasd</td>
+            <td class="text-success fw-semibold">123,123.00</td>
+            <td class="text-secondary">0</td>
+            <td class="text-center pe-4">
+              <a class="btn btn-sm btn-outline-primary me-1 rounded-pill px-3 py-1 fw-semibold"
+                 href="/admin/product/30/edit">
+                <i class="fas fa-edit me-1"></i>Sửa
+              </a>
+              <form action="/admin/product/30/delete" method="post" class="d-inline"
+                    onsubmit="return confirm('Xác nhận xóa sản phẩm này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df" />
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-semibold">
+                  <i class="fas fa-trash-alt me-1"></i>Xóa
+                </button>
+              </form>
+            </td>
+          </tr>
+
+          
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- Table hover styles moved to admin-dashboard.css -->
+
+
+
+
+
+    <!-- USERS -->
+    <section id="users" class="feature-section card mb-5">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-users me-2"></i>Người dùng</h5>
+        <a class="btn btn-primary" href="/admin/user/new">
+          <i class="fas fa-user-plus me-1"></i>Thêm mới
+        </a>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr><th>ID</th><th>Username</th><th>Role</th><th>Hành động</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>3</td>
+              <td>khoa1</td>
+              <td>ROLE_USER</td>
+              <td>
+                <a class="btn btn-sm btn-warning me-1" href="/admin/user/3/edit">
+                  <i class="fas fa-edit"></i>
+                </a>
+                <form action="/admin/user/3/delete" method="post" class="d-inline"
+                      onsubmit="return confirm('Xác nhận xóa người dùng này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td>khoa</td>
+              <td>ROLE_ADMIN</td>
+              <td>
+                <a class="btn btn-sm btn-warning me-1" href="/admin/user/6/edit">
+                  <i class="fas fa-edit"></i>
+                </a>
+                <form action="/admin/user/6/delete" method="post" class="d-inline"
+                      onsubmit="return confirm('Xác nhận xóa người dùng này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>7</td>
+              <td>khoas1612@gmail.com</td>
+              <td>ROLE_USER</td>
+              <td>
+                <a class="btn btn-sm btn-warning me-1" href="/admin/user/7/edit">
+                  <i class="fas fa-edit"></i>
+                </a>
+                <form action="/admin/user/7/delete" method="post" class="d-inline"
+                      onsubmit="return confirm('Xác nhận xóa người dùng này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>11</td>
+              <td>user1</td>
+              <td>ROLE_USER</td>
+              <td>
+                <a class="btn btn-sm btn-warning me-1" href="/admin/user/11/edit">
+                  <i class="fas fa-edit"></i>
+                </a>
+                <form action="/admin/user/11/delete" method="post" class="d-inline"
+                      onsubmit="return confirm('Xác nhận xóa người dùng này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>12</td>
+              <td>user2</td>
+              <td>ROLE_USER</td>
+              <td>
+                <a class="btn btn-sm btn-warning me-1" href="/admin/user/12/edit">
+                  <i class="fas fa-edit"></i>
+                </a>
+                <form action="/admin/user/12/delete" method="post" class="d-inline"
+                      onsubmit="return confirm('Xác nhận xóa người dùng này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>14</td>
+              <td>tieng</td>
+              <td>ROLE_ADMIN</td>
+              <td>
+                <a class="btn btn-sm btn-warning me-1" href="/admin/user/14/edit">
+                  <i class="fas fa-edit"></i>
+                </a>
+                <form action="/admin/user/14/delete" method="post" class="d-inline"
+                      onsubmit="return confirm('Xác nhận xóa người dùng này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>27</td>
+              <td>tieng2</td>
+              <td>ROLE_ADMIN</td>
+              <td>
+                <a class="btn btn-sm btn-warning me-1" href="/admin/user/27/edit">
+                  <i class="fas fa-edit"></i>
+                </a>
+                <form action="/admin/user/27/delete" method="post" class="d-inline"
+                      onsubmit="return confirm('Xác nhận xóa người dùng này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>31</td>
+              <td>tadmin</td>
+              <td>ROLE_ADMIN</td>
+              <td>
+                <a class="btn btn-sm btn-warning me-1" href="/admin/user/31/edit">
+                  <i class="fas fa-edit"></i>
+                </a>
+                <form action="/admin/user/31/delete" method="post" class="d-inline"
+                      onsubmit="return confirm('Xác nhận xóa người dùng này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>32</td>
+              <td>Tuser</td>
+              <td>USER</td>
+              <td>
+                <a class="btn btn-sm btn-warning me-1" href="/admin/user/32/edit">
+                  <i class="fas fa-edit"></i>
+                </a>
+                <form action="/admin/user/32/delete" method="post" class="d-inline"
+                      onsubmit="return confirm('Xác nhận xóa người dùng này?');"><input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <input type="hidden" name="_csrf" value="9dc6539a-b29d-4138-9c1c-e999f1d7c5df"/>
+                  <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                </form>
+              </td>
+            </tr>
+            
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- DISCOUNTS -->
+    <section id="discounts" class="feature-section card mb-5">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-tags me-2"></i>Mã giảm giá</h5>
+        <div class="d-flex gap-2">
+          <a class="btn btn-outline-light" href="/admin/discounts/new">
+            <i class="fas fa-plus-circle me-1"></i>Thêm mã
+          </a>
+          <a class="btn btn-primary" href="/admin/discounts">
+            <i class="fas fa-sliders-h me-1"></i>Quản lý
+          </a>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row g-3 align-items-center">
+          <div class="col-md-8">
+            <p class="mb-2 text-muted">Tạo, chỉnh sửa và vô hiệu hóa mã giảm giá để chạy campaign nhanh.</p>
+            <div class="d-flex flex-wrap gap-2">
+              <span class="badge bg-primary">OFF10</span>
+              <span class="badge bg-success">FREESHIP</span>
+              <span class="badge bg-warning text-dark">Học Sinh/Sinh Viên</span>
+              <span class="badge bg-info text-dark">NEWUSER</span>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="row text-center">
+              <div class="col-6">
+                <div class="small text-muted">Đang hoạt động</div>
+                <div class="h5 mb-0">0</div>
+              </div>
+              <div class="col-6">
+                <div class="small text-muted">Hết hạn/Vô hiệu</div>
+                <div class="h5 mb-0">3</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Money format + Toggle & hash logic + Hôm nay/Hôm qua -->
+  <script>
+    // ===== Money format =====
+    const fmtVND = (n) => Number(n || 0).toLocaleString('vi-VN',{style:'currency',currency:'VND',maximumFractionDigits:0});
+    document.querySelectorAll('.money').forEach(el=>{
+      const v = el.getAttribute('data-vnd');
+      if (v !== null) el.textContent = fmtVND(v);
+    });
+
+    // ===== CSRF (nếu có) =====
+    const csrfToken  = document.querySelector('meta[name="_csrf"]')?.content;
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+    // ===== Utils =====
+    const toISODate = (d) => d.toISOString().slice(0,10);
+    const setActive = (a,b) => { a.classList.add('active'); b.classList.remove('active'); };
+
+    // ===== Load KPI theo ngày qua API =====
+    async function loadMetrics(dateStr){
+      try{
+        const res = await fetch(`/admin/api/dashboard/metrics?date=${dateStr}`, {
+          headers: csrfToken && csrfHeader ? { [csrfHeader]: csrfToken } : {}
+        });
+        const m = await res.json();
+
+        document.getElementById('revDate').textContent     = m.dateLabel;
+        document.getElementById('revValue').textContent    = fmtVND(m.revenue);
+        document.getElementById('ordersCount').textContent = m.ordersCount;
+        document.getElementById('soldCount').textContent   = m.soldItems;
+        document.getElementById('cancelCount').textContent = m.canceledOrders;
+        document.getElementById('newCusCount').textContent = m.newCustomers;
+      }catch(e){
+        console.error('loadMetrics error', e);
+      }
+    }
+
+    // ===== Toggle hôm nay / hôm qua (GỌI API) =====
+    (function () {
+      const btnToday = document.getElementById('btnRevToday');
+      const btnYest  = document.getElementById('btnRevYesterday');
+
+      btnToday?.addEventListener('click', ()=>{
+        setActive(btnToday, btnYest);
+        loadMetrics(toISODate(new Date()));
+      });
+
+      btnYest?.addEventListener('click', ()=>{
+        setActive(btnYest, btnToday);
+        const d = new Date(); d.setDate(d.getDate() - 1);
+        loadMetrics(toISODate(d));
+      });
+    })();
+
+    // ===== Toggle & hash logic =====
+    (function () {
+      const sectionIds = ["orders", "reports", "products", "users", "discounts"];
+      const sections = Object.fromEntries(sectionIds.map(id => [id, document.getElementById(id)]));
+      const cards = Array.from(document.querySelectorAll('.menu-card'));
+
+      function showSection(id, {scroll=true} = {}) {
+        sectionIds.forEach(k => sections[k]?.classList.remove('active'));
+        cards.forEach(c => c.classList.remove('active'));
+        if (sections[id]) {
+          sections[id].classList.add('active');
+          const card = cards.find(c => c.dataset.target === id);
+          if (card) card.classList.add('active');
+          if (location.hash !== '#' + id) history.replaceState(null, '', '#' + id);
+          if (scroll) sections[id].scrollIntoView({behavior: "smooth", block: "start"});
+        }
+      }
+
+      cards.forEach(card => {
+        card.addEventListener('click', function (e) {
+          const href = this.getAttribute('href') || '';
+          if (href.startsWith('#')) {
+            e.preventDefault();
+            const target = this.dataset.target || href.substring(1);
+            showSection(target);
+          }
+        });
+      });
+
+      function initFromHash() {
+        const target = location.hash?.replace('#','');
+        if (sectionIds.includes(target)) showSection(target, {scroll:false});
+      }
+      window.addEventListener('hashchange', initFromHash);
+      initFromHash();
+
+      // Giữ #reports khi submit lọc
+      const reportForm = document.getElementById('reportFilterForm');
+      if (reportForm) {
+        // Khi thay đổi loại (daily/monthly), ẩn/hiện input phù hợp
+        const typeSelect = reportForm.querySelector('select[name="type"]');
+        if (typeSelect) {
+          typeSelect.addEventListener('change', function() {
+            const isDailyView = this.value === 'daily';
+            // Ẩn/hiện div input ngày
+            reportForm.querySelectorAll('.col-auto').forEach(div => {
+              const label = div.querySelector('label')?.textContent || '';
+              const hasDateInputs = label.includes('Từ ngày') || label.includes('Đến ngày');
+              const hasMonthInputs = label.includes('Từ tháng') || label.includes('Đến tháng');
+              
+              if (hasDateInputs) {
+                div.style.display = isDailyView ? 'block' : 'none';
+              } else if (hasMonthInputs) {
+                div.style.display = isDailyView ? 'none' : 'block';
+              }
+            });
+          });
+          typeSelect.dispatchEvent(new Event('change'));
+        }
+
+        // Xử lý submit để giữ hash
+        reportForm.addEventListener('submit', function (e) {
+          const base = reportForm.getAttribute('action') || window.location.pathname;
+          const fd = new FormData(reportForm);
+          const params = new URLSearchParams(fd).toString();
+          const url = base + (params ? ('?' + params) : '') + '#reports';
+          window.location.href = url;
+          e.preventDefault();
+          return false;
+        });
+
+        const resetLink = reportForm.closest('.card-body')?.querySelector('a.btn.btn-outline-secondary');
+        if (resetLink) {
+          const href = resetLink.getAttribute('href') || '/admin/dashboard';
+          resetLink.setAttribute('href', href + '#reports');
+        }
+      }
+
+      // Về dashboard vẫn giữ tab hiện tại
+      const keepHashLinks = document.querySelectorAll('a[href$="/admin/dashboard"], a[href$="dashboard"]');
+      keepHashLinks.forEach(a => {
+        a.addEventListener('click', function (e) {
+          const hash = location.hash;
+          if (hash) {
+            e.preventDefault();
+            window.location.href = this.getAttribute('href') + hash;
+          }
+        });
+      });
+    })();
+  </script>
+
+  <!-- AJAX xác nhận đơn trong khung nhỏ -->
+<script>
+(function (){
+  const CSRF_TOKEN  = document.querySelector('meta[name="_csrf"]')?.getAttribute('content') || '';
+  const CSRF_HEADER = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content') || 'X-CSRF-TOKEN';
+  const tbody = document.getElementById('pendingOrdersTbody');
+  const badge = document.querySelector('[data-pending-count]');
+
+  // Đếm số dòng thực sự đang hiển thị (bỏ qua placeholder)
+  function refreshPendingBadge() {
+    if (!tbody || !badge) return 0;
+    const count = tbody.querySelectorAll('tr:not(.placeholder-row)').length;
+    badge.textContent = String(count);
+    return count;
+  }
+
+  function renumber() {
+    if (!tbody) return;
+    let i = 1;
+    tbody.querySelectorAll('tr:not(.placeholder-row)').forEach(tr => {
+      const firstCell = tr.querySelector('td');
+      if (firstCell) firstCell.textContent = i++;
+    });
+  }
+
+  function ensurePlaceholder() {
+    const hasRow = !!tbody.querySelector('tr:not(.placeholder-row)');
+    if (!hasRow) {
+      tbody.innerHTML = `
+        <tr class="placeholder-row">
+          <td colspan="6" class="text-center text-muted">Chưa có đơn PENDING</td>
+        </tr>`;
+    }
+  }
+
+  function bindConfirmButtons(scope) {
+    (scope || document).querySelectorAll('.btn-confirm').forEach(btn => {
+      if (btn.dataset.bound === '1') return;
+      btn.dataset.bound = '1';
+
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-id');
+        if (!id) return;
+
+        const originalHTML = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Đang xử lý';
+
+        try {
+          const res = await fetch(`/admin/api/orders/${id}/status`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              [CSRF_HEADER]: CSRF_TOKEN,
+              'Accept': 'application/json'
+            },
+            body: 'status=CONFIRMED'
+          });
+
+          const data = await res.json().catch(()=> ({}));
+          if (!res.ok || data.ok !== true) {
+            throw new Error(data.error || ('HTTP ' + res.status));
+          }
+
+          // Xoá đúng 1 dòng
+          const row = document.getElementById(`row-${id}`);
+          if (row) row.remove();
+
+          // Cập nhật badge theo DOM hiện tại
+          const count = refreshPendingBadge();
+          if (count === 0) ensurePlaceholder();
+          else renumber();
+
+        } catch (e) {
+          alert('Xác nhận thất bại: ' + (e.message || e));
+          btn.disabled = false;
+          btn.innerHTML = originalHTML;
+        }
+      });
+    });
+  }
+
+  if (tbody) {
+    bindConfirmButtons(tbody);
+    // Lần đầu vào trang, đồng bộ lại badge theo DOM (phòng khi Thymeleaf render sai/khác)
+    refreshPendingBadge();
+  }
+})();
+</script>
+
+
+  <!-- Chi tiết doanh thu theo ngày: bấm để bung ra ĐƠN + SẢN PHẨM -->
+  <script>
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+
+    function renderDayDetail(data){
+      let html = '';
+      html += `<div class="fw-semibold mb-2">Đơn hàng (${data.orders.length}) — Doanh thu: ${fmtVND(data.revenue)}</div>`;
+      html += `<div class="accordion" id="acc-${data.date}">`;
+
+      data.orders.forEach((o, i) => {
+        const cid = `acc-${data.date}-${i}`;
+        html += `
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#${cid}">
+                ĐH #${o.id} — ${esc(o.customer)}${o.customerPhone ? ' — ' + esc(o.customerPhone) : ''} — Tổng: ${fmtVND(o.total)}
+              </button>
+            </h2>
+            <div id="${cid}" class="accordion-collapse collapse">
+              <div class="accordion-body p-0">
+                ${
+                  (o.discountCode || o.discountAmount || (o.discountPercent !== null && o.discountPercent !== undefined)) ? `
+                  <div class="p-2 bg-light border-bottom small d-flex flex-wrap gap-2">
+                    ${o.discountCode ? `<span class="badge bg-info text-dark">Mã giảm: ${esc(o.discountCode)}</span>` : ``}
+                    ${o.discountAmount ? `<span class="badge bg-success">Giảm: ${fmtVND(o.discountAmount)}</span>` : ``}
+                    ${(o.discountPercent !== null && o.discountPercent !== undefined)
+                        ? `<span class="badge bg-secondary">${Number(o.discountPercent).toFixed(2)}%</span>` : ``}
+                  </div>` : ``
+                }
+                ${ o.shippingAddress ? `
+                  <div class="p-2 border-bottom small">
+                    <i class="fa-solid fa-location-dot me-1"></i> <strong>Địa chỉ:</strong> ${esc(o.shippingAddress)}
+                  </div>` : `` }
+
+                <table class="table table-sm mb-0">
+                  <thead>
+                    <tr>
+                      <th>Sản phẩm</th>
+                      <th class="text-end">SL</th>
+                      <th class="text-end">Đơn giá</th>
+                      <th class="text-end">Thành tiền</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${o.items.map(it => `
+                      <tr>
+                        <td>${esc(it.productName)}</td>
+                        <td class="text-end">${it.quantity}</td>
+                        <td class="text-end">${fmtVND(it.unitPrice)}</td>
+                        <td class="text-end">${fmtVND(it.lineTotal)}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>`;
+      });
+
+      html += `</div>`;
+      return html;
+    }
+
+    (function(){
+      const rows = document.querySelectorAll('#reports .toggle-day');
+      if (!rows.length) return;
+
+      const csrfToken  = document.querySelector('meta[name="_csrf"]')?.content;
+      const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+      rows.forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const day = btn.dataset.day;
+          const detailRow = document.getElementById(`detail-${day}`);
+          const icon = btn.querySelector('i');
+
+          if (!detailRow.dataset.loaded) {
+            try {
+              const res = await fetch(`/admin/api/reports/day?date=${encodeURIComponent(day)}`, {
+                headers: csrfHeader && csrfToken ? { [csrfHeader]: csrfToken } : {}
+              });
+              const data = await res.json();
+              detailRow.querySelector('div').innerHTML = renderDayDetail(data);
+              detailRow.dataset.loaded = '1';
+            } catch (e) {
+              detailRow.querySelector('div').innerHTML = `<span class="text-danger">Tải dữ liệu thất bại.</span>`;
+            }
+          }
+
+          detailRow.classList.toggle('d-none');
+          icon.classList.toggle('fa-chevron-right');
+          icon.classList.toggle('fa-chevron-down');
+        });
+      });
+    })();
+  </script>
+
+  <!-- Side Nav Toggle Script -->
+  <script>
+    (function() {
+      const toggle = document.getElementById('sideNavToggle');
+      const close = document.getElementById('sideNavClose');
+      const sideNav = document.getElementById('sideNav');
+      const overlay = document.getElementById('sideNavOverlay');
+      const items = document.querySelectorAll('.side-nav-item');
+
+      function openSideNav() {
+        sideNav.classList.add('open');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeSideNav() {
+        sideNav.classList.remove('open');
+        overlay.classList.remove('active');
+        document.body.style.overflow = 'auto';
+      }
+
+      toggle?.addEventListener('click', openSideNav);
+      close?.addEventListener('click', closeSideNav);
+      overlay?.addEventListener('click', closeSideNav);
+
+      // Đóng khi click vào item (sau khi xử lý href)
+      items.forEach(item => {
+        item.addEventListener('click', () => {
+          setTimeout(closeSideNav, 100);
+        });
+      });
+
+      // Đóng khi nhấn ESC
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeSideNav();
+      });
+    })();
+  </script>
+
+</body>
+</html>

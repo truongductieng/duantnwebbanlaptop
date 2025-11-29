@@ -15,15 +15,10 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <!-- FontAwesome -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" rel="stylesheet"/>
+  <!-- Admin Dashboard CSS -->
+  <link rel="stylesheet" th:href="@{/css/admin-dashboard.css}" />
 
-  <style>
-  /* ===== Tổng thể ===== */
-  body {
-    font-family: 'Poppins', sans-serif;
-    background: #eef1f8;
-    padding-top: 72px; /* tránh che navbar cố định */
-    color: #333;
-  }
+  
 
   /* ===== Navbar ===== */
   .navbar {
@@ -210,11 +205,7 @@
     pointer-events: auto;
   }
 
-  /* Ẩn menu card cũ */
-  #menu {
-    display: none !important;
-  }
-</style>
+  
 </head>
 
 <body>
@@ -384,60 +375,7 @@
 
 
 
-<!-- ===== CSS phong cách xanh tím hiện đại ===== -->
-<style>
-/* ===== KPI Card ===== */
-.kpi-card {
-  background: linear-gradient(135deg, #ffffff, #f4f6ff);
-  border: 1px solid rgba(102, 126, 234, 0.15);
-  border-radius: 1rem;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
-  transition: all 0.3s ease;
-}
-.kpi-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 24px rgba(102,126,234,0.25);
-}
-
-.kpi-card .icon-wrapper {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #6a11cb, #2575fc);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  box-shadow: 0 4px 10px rgba(102,126,234,0.3);
-}
-
-.kpi-card .label {
-  font-size: 0.9rem;
-  color: #6c757d;
-}
-
-.kpi-card .value {
-  font-weight: 800;
-  font-size: 2rem;
-  color: #182848;
-}
-
-.btn-switch-item {
-  flex: 1;
-  border-radius: 8px;
-  border: 1px solid #6a11cb;
-  background: transparent;
-  color: #6a11cb;
-  font-weight: 500;
-  transition: all 0.3s;
-}
-.btn-switch-item.active,
-.btn-switch-item:hover {
-  background: linear-gradient(135deg, #6a11cb, #2575fc);
-  color: #fff;
-  border: none;
-}
-</style>
+<!-- KPI styles moved to admin-dashboard.css -->
 
 
 
@@ -478,31 +416,7 @@
   </div>
 </section>
 
-<!-- ===== CSS làm đẹp theo giao diện xanh tím ===== -->
-<style>
-.mini-card {
-  border: none;
-  border-radius: 15px;
-  background: linear-gradient(135deg, #ffffff, #f3f5ff);
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-}
-.mini-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 24px rgba(102, 126, 234, 0.25);
-}
-.mini-card .label {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: #6a11cb;
-  margin-bottom: 5px;
-}
-.mini-card .value {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #182848;
-}
-</style>
+<!-- mini-cards styles moved to admin-dashboard.css -->
 
 
 
@@ -700,62 +614,7 @@
   </div>
 </div>
 
-<!-- CSS hiện đại -->
-<style>
-  #menu .menu-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: #f7f5ff;
-    border-radius: 1rem;
-    padding: 2rem 1rem;
-    text-decoration: none;
-    color: #333;
-    transition: all 0.3s ease;
-    box-shadow: 0 3px 8px rgba(111, 66, 193, 0.1);
-  }
-
-  #menu .menu-card:hover {
-    background: linear-gradient(135deg, #6f42c1, #9b59b6);
-    color: #fff;
-    transform: translateY(-5px);
-    box-shadow: 0 8px 18px rgba(111, 66, 193, 0.3);
-  }
-
-  #menu .menu-icon {
-    background: rgba(111, 66, 193, 0.1);
-    border-radius: 50%;
-    width: 80px;
-    height: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 1rem;
-    transition: 0.3s;
-  }
-
-  #menu .menu-card:hover .menu-icon {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.1);
-  }
-
-  #menu i {
-    font-size: 2.5rem;
-    color: #6f42c1;
-    transition: color 0.3s;
-  }
-
-  #menu .menu-card:hover i {
-    color: #fff;
-  }
-
-  #menu h5 {
-    margin: 0;
-    font-weight: 600;
-    font-size: 1.05rem;
-  }
-</style>
+<!-- Menu card styles moved to admin-dashboard.css -->
 
     <!-- ===== /MENU ===== -->
 
@@ -959,21 +818,7 @@
   </div>
 </section>
 
-<!-- Hiệu ứng hover hàng -->
-<style>
-  .table-row:hover {
-    background-color: rgba(79, 70, 229, 0.08) !important;
-    transition: background-color 0.2s ease-in-out;
-  }
-  .btn-outline-primary:hover {
-    background-color: #4F46E5;
-    color: white !important;
-  }
-  .btn-outline-danger:hover {
-    background-color: #DC2626;
-    color: white !important;
-  }
-</style>
+<!-- Table hover styles moved to admin-dashboard.css -->
 
 
 

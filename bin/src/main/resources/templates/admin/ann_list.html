@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quản lý Thông báo</title>
+  <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+  <link href="/css/fontawesome.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bs-primary-rgb: 13, 110, 253;
+      --bs-success-rgb: 25, 135, 84;
+      --bs-font-sans-serif: "Segoe UI", system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background: #f8f9fa;
+      font-family: var(--bs-font-sans-serif);
+      min-height: 100vh;
+    }
+
+    .card {
+      border: none;
+      border-radius: 1rem;
+      box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+
+    .card-header {
+      background: linear-gradient(45deg, #0d6efd, #0a58ca);
+      border-radius: 1rem 1rem 0 0 !important;
+      border-bottom: 0;
+    }
+
+    .table {
+      margin-bottom: 0;
+    }
+
+    .table th {
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.025em;
+      background: #f8f9fa;
+      border-bottom-width: 1px;
+    }
+
+    .table td {
+      vertical-align: middle;
+      font-size: 0.95rem;
+      color: #495057;
+    }
+
+    .table-hover tbody tr:hover {
+      background-color: rgba(var(--bs-primary-rgb), 0.05);
+    }
+
+    .btn {
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(45deg, #0d6efd, #0a58ca);
+      border: none;
+    }
+
+    .btn-success {
+      background: linear-gradient(45deg, #198754, #157347);
+      border: none;
+    }
+
+    .alert {
+      border: none;
+      border-radius: 0.5rem;
+      padding: 1rem 1.25rem;
+    }
+
+    .alert-success {
+      background: linear-gradient(45deg, #198754, #157347);
+      color: white;
+    }
+
+    .alert-danger {
+      background: linear-gradient(45deg, #dc3545, #c82333);
+      color: white;
+    }
+
+    .alert-info {
+      background: linear-gradient(45deg, #0dcaf0, #0aa2c0);
+      color: white;
+      border: none;
+    }
+
+    .badge {
+      padding: 0.5em 0.75em;
+      font-weight: 500;
+    }
+
+    .badge.bg-success {
+      background: linear-gradient(45deg, #198754, #157347) !important;
+    }
+
+    .badge.bg-secondary {
+      background: linear-gradient(45deg, #6c757d, #5c636a) !important;
+    }
+
+    img.thumb {
+      height: 48px;
+      border-radius: 0.5rem;
+      object-fit: cover;
+      border: 2px solid #dee2e6;
+      padding: 2px;
+      background: white;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .table-responsive {
+      border-radius: 0.5rem;
+      box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+      background: white;
+    }
+  </style>
+</head>
+
+<body class="min-vh-100 py-5">
+<div class="container">
+  <div class="card shadow-sm fade-in mb-4">
+    <div class="card-header bg-primary text-white p-4">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h4 class="mb-1">
+            <i class="fas fa-bullhorn me-2"></i>
+            Quản lý Thông báo
+          </h4>
+          <p class="mb-0 text-white-50">
+            <i class="fas fa-info-circle me-1"></i>
+            Quản lý các thông báo hiển thị trên website
+          </p>
+        </div>
+        <div class="d-flex gap-2">
+          <a class="btn btn-light" th:href="@{/admin/dashboard}">
+            <i class="fas fa-home me-1"></i>
+            Dashboard
+          </a>
+          <a class="btn btn-success" th:href="@{/admin/ann/new}">
+            <i class="fas fa-plus-circle me-1"></i>
+            Thêm mới
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body p-0">
+      <!-- Alerts -->
+      <div class="p-4">
+        <div th:if="${message}" 
+             class="alert alert-success d-flex align-items-center fade-in">
+          <i class="fas fa-check-circle flex-shrink-0 me-2"></i>
+          <div th:text="${message}"></div>
+        </div>
+        <div th:if="${error}" 
+             class="alert alert-danger d-flex align-items-center fade-in">
+          <i class="fas fa-exclamation-circle flex-shrink-0 me-2"></i>
+          <div th:text="${error}"></div>
+        </div>
+
+        <div th:if="${active != null}" 
+             class="alert alert-info d-flex align-items-center fade-in">
+          <i class="fas fa-broadcast-tower flex-shrink-0 me-2"></i>
+          <div>
+            <strong>Thông báo đang hiển thị:</strong>
+            <span th:utext="${active.message}" class="ms-2">Nội dung</span>
+            <span class="badge bg-white text-primary ms-2" th:text="${active.variant}">INFO</span>
+            <span class="badge bg-dark ms-1" th:text="${active.position}">TOP</span>
+          </div>
+        </div>
+      </div>
+
+  <div th:if="${active != null}" class="alert alert-info">
+    <strong>Đang bật: </strong>
+    <span th:utext="${active.message}">Nội dung</span>
+    <span class="badge bg-secondary ms-2" th:text="${active.variant}">INFO</span>
+    <span class="badge bg-dark ms-2" th:text="${active.position}">TOP</span>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr>
+          <th class="ps-4">#</th>
+          <th>
+            <i class="fas fa-comment-alt me-2"></i>Nội dung
+          </th>
+          <th>
+            <i class="fas fa-image me-2"></i>Ảnh
+          </th>
+          <th>
+            <i class="fas fa-palette me-2"></i>Kiểu
+          </th>
+          <th>
+            <i class="fas fa-arrows-alt-v me-2"></i>Vị trí
+          </th>
+          <th class="text-center">
+            <i class="fas fa-toggle-on me-2"></i>Trạng thái
+          </th>
+          <th class="text-end pe-4">Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="a : ${announcements}" class="fade-in">
+          <td class="ps-4" th:text="${a.id}">1</td>
+          <td>
+            <div class="text-wrap" style="max-width: 300px;" th:utext="${a.message}">
+              Nội dung
+            </div>
+          </td>
+          <td>
+            <img th:if="${a.imageUrl}" th:src="${a.imageUrl}" class="thumb" alt="banner">
+            <span th:if="${a.imageUrl==null}" class="text-muted">
+              <i class="fas fa-image-slash"></i>
+            </span>
+          </td>
+          <td>
+            <span class="badge" 
+                  th:classappend="${'bg-' + #strings.toLowerCase(a.variant)}"
+                  th:text="${a.variant}">INFO</span>
+          </td>
+          <td>
+            <span class="badge bg-dark">
+              <i class="fas" 
+                 th:classappend="${a.position == 'TOP' ? 'fa-arrow-up' : 'fa-arrow-down'}">
+              </i>
+              <span th:text="${a.position}">TOP</span>
+            </span>
+          </td>
+          <td class="text-center">
+            <div class="d-flex align-items-center justify-content-center">
+              <span class="status-indicator"
+                    th:classappend="${a.enabled ? 'status-active' : 'status-inactive'}">
+              </span>
+              <span class="badge"
+                    th:classappend="${a.enabled ? 'bg-success' : 'bg-secondary'}"
+                    th:text="${a.enabled ? 'Đang hoạt động' : 'Đã tắt'}">
+                Tắt
+              </span>
+            </div>
+          </td>
+          <td class="text-end pe-4">
+            <div class="d-flex gap-2 justify-content-end">
+              <!-- Bật/Tắt -->
+              <form th:action="@{|/admin/ann/${a.id}/toggle|}" 
+                    method="post" 
+                    style="display: inline-block;">
+                <input type="hidden" 
+                       th:name="${_csrf.parameterName}" 
+                       th:value="${_csrf.token}"/>
+                <button type="submit" 
+                        class="btn btn-sm"
+                        th:classappend="${a.enabled ? 'btn-warning' : 'btn-success'}"
+                        data-bs-toggle="tooltip"
+                        style="min-width: 70px;"
+                        th:title="${a.enabled ? 'Tắt thông báo' : 'Kích hoạt thông báo'}">
+                  <i class="fas"
+                     th:classappend="${a.enabled ? 'fa-toggle-off' : 'fa-toggle-on'}"
+                     style="margin-right: 4px;"></i>
+                  <span th:text="${a.enabled ? 'Tắt' : 'Bật'}">Bật</span>
+                </button>
+              </form>
+
+              <!-- Sửa -->
+              <a class="btn btn-sm btn-outline-primary"
+                 style="min-width: 70px;"
+                 th:href="@{|/admin/ann/${a.id}/edit|}"
+                 data-bs-toggle="tooltip"
+                 title="Chỉnh sửa thông báo">
+                <i class="fas fa-edit" style="margin-right: 4px;"></i>
+                <span>Sửa</span>
+              </a>
+
+              <!-- Xóa -->
+              <form th:action="@{|/admin/ann/${a.id}/delete|}"
+                    method="post"
+                    style="display: inline-block;"
+                    onsubmit="return confirmDelete(event);">
+                <input type="hidden"
+                       th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}"/>
+                <button type="submit"
+                        class="btn btn-sm btn-outline-danger"
+                        style="min-width: 70px;"
+                        th:disabled="${a.enabled}"
+                        data-bs-toggle="tooltip"
+                        title="Xóa thông báo">
+                  <i class="fas fa-trash-alt" style="margin-right: 4px;"></i>
+                  <span>Xóa</span>
+                </button>
+              </form>
+              <div th:if="${a.enabled}" 
+                   class="text-muted small ms-2 d-flex align-items-center">
+                <i class="fas fa-info-circle me-1"></i>
+                Tắt để xóa
+              </div>
+            </div>
+          </td>
+        </tr>
+
+      <tr th:if="${#lists.isEmpty(announcements)}">
+        <td colspan="7" class="text-center p-5">
+          <div class="text-muted">
+            <i class="fas fa-bullhorn fa-3x mb-3"></i>
+            <h6>Chưa có thông báo nào</h6>
+            <p class="small mb-0">
+              Nhấn nút "Thêm mới" để tạo thông báo đầu tiên
+            </p>
+          </div>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+  // Initialize tooltips
+  var tooltipTriggerList = [].slice.call(
+    document.querySelectorAll('[data-bs-toggle="tooltip"]')
+  );
+  var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl);
+  });
+
+  // Confirm delete with SweetAlert2
+  function confirmDelete(event) {
+    event.preventDefault();
+    const form = event.target;
+
+    Swal.fire({
+      title: 'Xác nhận xóa?',
+      text: 'Bạn có chắc chắn muốn xóa thông báo này không?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc3545',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Xác nhận xóa',
+      cancelButtonText: 'Hủy'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        form.submit();
+      }
+    });
+
+    return false;
+  }
+
+  // Auto-hide alerts after 5 seconds
+  document.addEventListener('DOMContentLoaded', function() {
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+      setTimeout(() => {
+        alert.classList.add('fade');
+        setTimeout(() => alert.remove(), 150);
+      }, 5000);
+    });
+  });
+</script>
+
+</body>
+</html>

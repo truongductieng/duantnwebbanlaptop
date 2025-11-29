@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>Giỏ hàng</title>
+  <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
+      <link rel="stylesheet" th:href="@{/css/trangchu.css}" />
+</head>
+<body>
+<nav th:insert="~{fragments/navbar :: navbar}"></nav>
+
+<!-- đẩy nội dung xuống khỏi navbar -->
+<div class="container py-5" style="margin-top: 90px;">
+  <h2 class="mb-4">Giỏ hàng của bạn</h2>
+
+  <!-- ✅ Nút quay về trang chủ -->
+  <div class="mb-3">
+    <a class="btn btn-outline-secondary" th:href="@{/}">← Quay về trang chủ</a>
+  </div>
+
+  <!-- Thông báo flash -->
+  <div th:if="${error}"   class="alert alert-danger"  th:text="${error}"></div>
+  <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+
+  <!-- Giỏ trống -->
+  <div th:if="${#lists.isEmpty(cartItems)}" class="alert alert-info">
+    Giỏ hàng của bạn đang trống.
+  </div>
+
+  <div th:if="${!#lists.isEmpty(cartItems)}">
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+        <tr>
+          <th>Hình</th>
+          <th>Tên</th>
+          <th>Giá</th>
+          <th>Số lượng</th>
+          <th>Tổng</th>
+          <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item : ${cartItems}">
+          <td>
+            <img th:src="${item.laptop.imageUrl}"
+                 th:alt="${item.laptop.name}"
+                 style="width:60px;height:60px;object-fit:cover;border-radius:.25rem;">
+          </td>
+
+          <td th:text="${item.laptop.name}">Tên sản phẩm</td>
+
+          <!-- Đơn giá -->
+          <td th:text="${#numbers.formatDecimal(item.laptop.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</td>
+
+          <td>
+            <div class="d-flex align-items-center">
+              <form th:action="@{/cart/decrement/{id}(id=${item.laptop.id})}" method="post" class="me-1">
+                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <button class="btn btn-outline-secondary btn-sm">-</button>
+              </form>
+              <span class="px-2" th:text="${item.quantity}">1</span>
+              <form th:action="@{/cart/add/{id}(id=${item.laptop.id})}" method="post" class="ms-1">
+                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <button class="btn btn-outline-secondary btn-sm">+</button>
+              </form>
+            </div>
+          </td>
+
+          <!-- Thành tiền -->
+          <td th:text="${#numbers.formatDecimal(item.laptop.price * item.quantity, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</td>
+
+          <td>
+            <form th:action="@{/cart/remove/{id}(id=${item.laptop.id})}" method="post">
+              <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+              <button class="btn btn-outline-danger btn-sm">Xóa</button>
+            </form>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+      <!-- Khối mã giảm -->
+      <div>
+        <form class="d-flex" th:action="@{/cart/apply-discount}" method="post">
+          <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+          <input type="text" class="form-control me-2" name="discountCode" placeholder="Nhập mã giảm giá"
+                 th:value="${discountCode}">
+          <button class="btn btn-primary">Áp dụng</button>
+        </form>
+
+        <!-- Đã áp mã -->
+        <div class="mt-2" th:if="${discountCode}">
+          <span class="badge bg-success">
+            Mã: <b th:text="${discountCode}"></b>
+            <span th:if="${discountPercent != null}"> — <span th:text="${discountPercent}"></span>%</span>
+            <span th:if="${discountAmount != null}"> —
+              <span th:text="|-${#numbers.formatDecimal(discountAmount, 0, 'COMMA', 0, 'POINT')} ₫|"></span>
+            </span>
+          </span>
+          <form th:action="@{/cart/remove-discount}" method="post" class="d-inline ms-2">
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <button class="btn btn-sm btn-outline-danger">Bỏ mã</button>
+          </form>
+        </div>
+
+        <!-- Tổng sau giảm ở cột trái (tuỳ thích) -->
+        <div class="mt-2" th:if="${discountAmount != null}">
+          <div>Giảm giá:
+            <strong th:text="${#numbers.formatDecimal(discountAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</strong>
+          </div>
+          <div>Tổng sau giảm:
+            <strong th:text="${#numbers.formatDecimal(totalAfterDiscount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Khối tổng tiền -->
+      <div class="text-end ms-auto">
+        <div class="mb-2">Tổng tạm tính:
+          <strong th:text="${#numbers.formatDecimal(totalPrice, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</strong>
+        </div>
+        <div class="mb-2" th:if="${discountAmount != null}">Giảm mã:
+          <strong class="text-success" th:text="|-${#numbers.formatDecimal(discountAmount, 0, 'COMMA', 0, 'POINT')} ₫|">-0 ₫</strong>
+        </div>
+        <div class="mb-3" th:if="${discountAmount != null}">Tổng cộng:
+          <strong class="text-danger"
+                  th:text="${#numbers.formatDecimal(totalAfterDiscount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</strong>
+        </div>
+        <div class="mb-3" th:unless="${discountAmount != null}">Tổng cộng:
+          <strong class="text-danger"
+                  th:text="${#numbers.formatDecimal(totalPrice, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</strong>
+        </div>
+
+        <div class="d-flex gap-2 justify-content-end">
+          <form th:action="@{/cart/clear}" method="post">
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <button class="btn btn-outline-danger">Xóa tất cả</button>
+          </form>
+          <a class="btn btn-success" th:href="@{/checkout}">Thanh toán</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

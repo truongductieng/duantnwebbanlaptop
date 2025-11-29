@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Xác nhận đơn hàng</title>
+
+    <!-- Bootstrap CSS (đồng bộ với checkout) -->
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
+    <!-- Bootstrap Icons (CDN, nếu cần icon) -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --brand-50: #eef2ff;
+        --brand-100: #e0e7ff;
+        --brand-200: #c7d2fe;
+        --brand-600: #4f46e5; /* indigo-600 */
+        --brand-700: #4338ca; /* indigo-700 */
+        --ink-800: #1f2328;
+        --ink-600: #495057;
+      }
+
+      /* Nền gradient xanh tím đồng bộ với checkout */
+      .confirm-page {
+        background: radial-gradient(
+            1200px 800px at -10% -10%,
+            rgba(79, 70, 229, 0.2) 0%,
+            rgba(79, 70, 229, 0) 45%
+          ),
+          radial-gradient(
+            900px 700px at 110% 0%,
+            rgba(67, 56, 202, 0.18) 0%,
+            rgba(67, 56, 202, 0) 40%
+          ),
+          linear-gradient(135deg, var(--brand-600) 0%, var(--brand-700) 65%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+      }
+
+      /* Thẻ glass */
+      .card-glass {
+        background: rgba(255, 255, 255, 0.92);
+        border: 1px solid rgba(255, 255, 255, 0.65);
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+      }
+      .title {
+        color: var(--ink-800);
+        font-weight: 800;
+        letter-spacing: 0.2px;
+      }
+      .subtitle {
+        color: var(--ink-600);
+      }
+
+      /* Badge trạng thái giữ nguyên logic, chỉ chỉnh cỡ */
+      .status-badge {
+        font-size: 0.95rem;
+        padding: 0.45rem 0.9rem;
+      }
+
+      /* Brand button */
+      .btn-primary {
+        --bs-btn-bg: var(--brand-600);
+        --bs-btn-border-color: var(--brand-600);
+        --bs-btn-hover-bg: var(--brand-700);
+        --bs-btn-hover-border-color: var(--brand-700);
+        --bs-btn-focus-shadow-rgb: 79, 70, 229;
+        --bs-btn-active-bg: var(--brand-700);
+        --bs-btn-active-border-color: var(--brand-700);
+      }
+    </style>
+  </head>
+  <body class="confirm-page">
+    <main class="container py-5">
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8 col-xxl-6">
+          <div class="card-glass p-4 p-md-5 text-center">
+            <!-- Success message alert (nếu có) -->
+            <div
+              th:if="${message}"
+              class="alert alert-success alert-dismissible fade show mb-4"
+              role="alert"
+            >
+              <i class="bi bi-check-circle-fill me-2"></i>
+              <span th:text="${message}"></span>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+                aria-label="Close"
+              ></button>
+            </div>
+
+            <div class="mb-3">
+              <span
+                class="d-inline-flex align-items-center justify-content-center rounded-circle"
+                style="
+                  width: 80px;
+                  height: 80px;
+                  background: var(--brand-50);
+                  border: 1px solid var(--brand-100);
+                "
+              >
+                <i
+                  class="bi bi-check2-circle"
+                  style="font-size: 2.2rem; color: var(--brand-700)"
+                ></i>
+              </span>
+            </div>
+
+            <h1 class="title mb-2">Cảm ơn bạn đã đặt hàng!</h1>
+            <p class="subtitle mb-4">
+              Đơn hàng của bạn đã được ghi nhận và sẽ được xử lý trong thời gian
+              sớm nhất.
+            </p>
+
+            <div class="text-start mx-auto" style="max-width: 560px">
+              <div
+                class="d-flex justify-content-between align-items-center py-2 border-bottom"
+              >
+                <span class="fw-semibold">Mã đơn</span>
+                <span th:text="${order.id}">123</span>
+              </div>
+              <div
+                class="d-flex justify-content-between align-items-center py-2"
+              >
+                <span class="fw-semibold">Trạng thái</span>
+                <span
+                  th:class="${ order.status=='PENDING'   ? 'badge status-badge bg-warning text-dark' :
+                             order.status=='CONFIRMED' ? 'badge status-badge bg-info' :
+                             order.status=='SHIPPED'   ? 'badge status-badge bg-primary' :
+                             order.status=='DELIVERED' ? 'badge status-badge bg-success' :
+                                                          'badge status-badge bg-secondary' }"
+                  th:text="${order.status}"
+                  >PENDING</span
+                >
+              </div>
+            </div>
+
+            <div class="mt-4 d-flex justify-content-center gap-2">
+              <a th:href="@{/}" class="btn btn-primary">
+                <i class="bi bi-house-door-fill me-2"></i>Về trang chủ
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+  </body>
+</html>

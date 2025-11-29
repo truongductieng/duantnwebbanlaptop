@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quản lý trả hàng · Admin</title>
+
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --primary-color: #4f46e5;
+        --secondary-color: #7c3aed;
+        --success-color: #059669;
+        --danger-color: #dc2626;
+        --warning-color: #d97706;
+        --info-color: #2563eb;
+        --background: #f9fafb;
+        --card-bg: #ffffff;
+        --text-primary: #111827;
+        --text-secondary: #4b5563;
+        --border-color: #e5e7eb;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        background: var(--background);
+        color: var(--text-primary);
+        padding-top: 70px;
+      }
+
+      .navbar {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        ) !important;
+        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .card {
+        border: 1px solid var(--border-color);
+        border-radius: 1rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+      }
+
+      .card:hover {
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+      }
+
+      .card-header {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        color: #fff;
+        font-weight: 500;
+        padding: 1rem 1.5rem;
+        border-bottom: none;
+      }
+
+      .btn {
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        border-radius: 0.5rem;
+        transition: all 0.3s ease;
+      }
+
+      .table {
+        border-collapse: separate;
+        border-spacing: 0 0.5rem;
+      }
+
+      .table thead th {
+        background: var(--primary-color);
+        color: #fff;
+        font-weight: 500;
+        border: none;
+        padding: 1rem;
+      }
+
+      .table tbody tr {
+        background: #fff;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        transition: box-shadow 0.3s ease;
+      }
+
+      .table tbody tr:hover {
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        border: none;
+      }
+
+      .badge {
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        font-weight: 500;
+      }
+
+      /* Dropdown improvements */
+      .dropdown-menu {
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        animation: fadeIn 0.15s ease-in-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .dropdown-item {
+        transition: background-color 0.2s ease;
+      }
+
+      .dropdown-item:hover {
+        background-color: var(--background);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="/admin/dashboard">
+          <i class="fas fa-tachometer-alt me-2"></i>Admin Panel
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/dashboard">
+                <i class="fas fa-home me-1"></i>Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/orders">
+                <i class="fas fa-shopping-cart me-1"></i>Đơn hàng
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="/admin/returns">
+                <i class="fas fa-undo me-1"></i>Trả hàng
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="fas fa-arrow-left me-1"></i>Trang chủ
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid mt-4">
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div
+              class="card-header d-flex justify-content-between align-items-center"
+            >
+              <h4 class="mb-0">
+                <i class="fas fa-undo me-2"></i>Quản lý yêu cầu trả hàng
+              </h4>
+              <span
+                class="badge bg-light text-dark"
+                th:text="${returns.size()} + ' yêu cầu'"
+              ></span>
+            </div>
+            <div class="card-body">
+              <!-- Filter -->
+              <div class="row mb-3">
+                <div class="col-md-4">
+                  <form
+                    method="get"
+                    action="/admin/returns"
+                    class="d-flex gap-2"
+                  >
+                    <select
+                      name="status"
+                      class="form-select"
+                      onchange="this.form.submit()"
+                    >
+                      <option
+                        value="ALL"
+                        th:selected="${statusFilter == 'ALL'}"
+                      >
+                        Tất cả trạng thái
+                      </option>
+                      <option
+                        th:each="status : ${allStatuses}"
+                        th:value="${status.name()}"
+                        th:text="${status.label}"
+                        th:selected="${statusFilter == status.name()}"
+                      ></option>
+                    </select>
+                    <button type="submit" class="btn btn-primary">
+                      <i class="fas fa-filter"></i>
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              <!-- Table -->
+              <div class="table-responsive">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Đơn hàng</th>
+                      <th>Khách hàng</th>
+                      <th>Ngày tạo</th>
+                      <th>Số tiền hoàn</th>
+                      <th>Trạng thái</th>
+                      <th>Hành động</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr th:if="${returns.empty}">
+                      <td colspan="7" class="text-center text-muted">
+                        Không có yêu cầu trả hàng nào
+                      </td>
+                    </tr>
+                    <tr th:each="ret : ${returns}">
+                      <td>
+                        <strong>#<span th:text="${ret.id}"></span></strong>
+                      </td>
+                      <td>
+                        <a
+                          th:href="@{'/admin/orders/' + ${ret.order.id}}"
+                          class="text-decoration-none"
+                        >
+                          Đơn #<span th:text="${ret.order.id}"></span>
+                        </a>
+                      </td>
+                      <td th:text="${ret.customer.username}">customer</td>
+                      <td
+                        th:text="${#temporals.format(ret.createdAt, 'dd/MM/yyyy HH:mm')}"
+                      >
+                        01/01/2025
+                      </td>
+                      <td>
+                        <strong
+                          th:text="${#numbers.formatDecimal(ret.refundAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"
+                        >
+                          1.000.000 đ
+                        </strong>
+                      </td>
+                      <td>
+                        <span
+                          class="badge"
+                          th:classappend="${ret.status.name() == 'REQUESTED' ? 'bg-info' :
+                                           ret.status.name() == 'APPROVED' ? 'bg-success' :
+                                           ret.status.name() == 'REJECTED' ? 'bg-danger' :
+                                           ret.status.name() == 'ITEM_RECEIVED' ? 'bg-primary' :
+                                           ret.status.name() == 'REFUNDED' ? 'bg-success' : 'bg-secondary'}"
+                          th:text="${ret.status.label}"
+                        >
+                          Đã gửi yêu cầu
+                        </span>
+                      </td>
+                      <td>
+                        <div class="dropdown">
+                          <button
+                            class="btn btn-sm btn-outline-primary dropdown-toggle"
+                            type="button"
+                            data-bs-toggle="dropdown"
+                            data-bs-auto-close="true"
+                            aria-expanded="false"
+                          >
+                            <i class="fas fa-cog me-1"></i>Hành động
+                          </button>
+                          <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                            <!-- REQUESTED: Approve or Reject -->
+                            <li th:if="${ret.status.name() == 'REQUESTED'}">
+                              <a
+                                class="dropdown-item text-success"
+                                href="javascript:void(0)"
+                                th:onclick="'quickAction(' + ${ret.id} + ', \'approve\', \'Phê duyệt yêu cầu này?\')'"
+                              >
+                                <i class="fas fa-check me-2"></i>Phê duyệt
+                              </a>
+                            </li>
+                            <li th:if="${ret.status.name() == 'REQUESTED'}">
+                              <a
+                                class="dropdown-item text-danger"
+                                href="javascript:void(0)"
+                                th:onclick="'showRejectModal(' + ${ret.id} + ')'"
+                              >
+                                <i class="fas fa-times me-2"></i>Từ chối
+                              </a>
+                            </li>
+
+                            <!-- APPROVED: Mark as Received -->
+                            <li th:if="${ret.status.name() == 'APPROVED'}">
+                              <a
+                                class="dropdown-item text-primary"
+                                href="javascript:void(0)"
+                                th:onclick="'quickAction(' + ${ret.id} + ', \'received\', \'Xác nhận đã nhận hàng trả? Hành động này sẽ cập nhật kho.\')'"
+                              >
+                                <i class="fas fa-box me-2"></i>Đánh dấu đã nhận
+                              </a>
+                            </li>
+
+                            <!-- ITEM_RECEIVED: Mark as Refunded -->
+                            <li th:if="${ret.status.name() == 'ITEM_RECEIVED'}">
+                              <a
+                                class="dropdown-item text-success"
+                                href="javascript:void(0)"
+                                th:onclick="'quickAction(' + ${ret.id} + ', \'refund\', \'Xác nhận đã hoàn tiền cho khách hàng?\')'"
+                              >
+                                <i class="fas fa-money-bill me-2"></i>Xác nhận
+                                hoàn tiền
+                              </a>
+                            </li>
+
+                            <!-- Divider (chỉ hiển thị khi có action items) -->
+                            <li
+                              th:if="${ret.status.name() == 'REQUESTED' or ret.status.name() == 'APPROVED' or ret.status.name() == 'ITEM_RECEIVED'}"
+                            >
+                              <hr class="dropdown-divider" />
+                            </li>
+
+                            <!-- Always show View Detail -->
+                            <li>
+                              <a
+                                class="dropdown-item"
+                                th:href="@{'/admin/returns/' + ${ret.id}}"
+                              >
+                                <i class="fas fa-info-circle me-2"></i>Xem chi
+                                tiết đầy đủ
+                              </a>
+                            </li>
+                          </ul>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reject Modal -->
+    <div class="modal fade" id="rejectModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title">Từ chối yêu cầu trả hàng</h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="rejectReturnId" />
+            <label class="form-label fw-bold"
+              >Lý do từ chối <span class="text-danger">*</span></label
+            >
+            <textarea
+              id="rejectReasonInput"
+              class="form-control"
+              rows="3"
+              placeholder="Nhập lý do từ chối..."
+            ></textarea>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Hủy
+            </button>
+            <button
+              type="button"
+              class="btn btn-danger"
+              onclick="submitReject()"
+            >
+              Xác nhận từ chối
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      const csrfToken = document
+        .querySelector('meta[name="_csrf"]')
+        ?.getAttribute("content");
+      const csrfHeader = document
+        .querySelector('meta[name="_csrf_header"]')
+        ?.getAttribute("content");
+      let rejectModal;
+
+      document.addEventListener("DOMContentLoaded", function () {
+        rejectModal = new bootstrap.Modal(
+          document.getElementById("rejectModal")
+        );
+      });
+
+      // Quick action (approve, received, refund)
+      async function quickAction(returnId, action, confirmMsg) {
+        if (!confirm(confirmMsg)) return;
+
+        const headers = { "Content-Type": "application/json" };
+        if (csrfToken && csrfHeader) headers[csrfHeader] = csrfToken;
+
+        try {
+          const response = await fetch(`/admin/returns/${returnId}/${action}`, {
+            method: "POST",
+            headers: headers,
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            alert(result.message);
+            window.location.reload();
+          } else {
+            alert("Lỗi: " + result.message);
+          }
+        } catch (error) {
+          console.error(error);
+          alert("Có lỗi xảy ra. Vui lòng thử lại!");
+        }
+      }
+
+      // Show reject modal
+      function showRejectModal(returnId) {
+        document.getElementById("rejectReturnId").value = returnId;
+        document.getElementById("rejectReasonInput").value = "";
+        rejectModal.show();
+      }
+
+      // Submit reject with reason
+      async function submitReject() {
+        const returnId = document.getElementById("rejectReturnId").value;
+        const reason = document
+          .getElementById("rejectReasonInput")
+          .value.trim();
+
+        if (!reason) {
+          alert("Vui lòng nhập lý do từ chối!");
+          return;
+        }
+
+        const headers = { "Content-Type": "application/x-www-form-urlencoded" };
+        if (csrfToken && csrfHeader) headers[csrfHeader] = csrfToken;
+
+        try {
+          const response = await fetch(`/admin/returns/${returnId}/reject`, {
+            method: "POST",
+            headers: headers,
+            body: "adminNote=" + encodeURIComponent(reason),
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            alert(result.message);
+            rejectModal.hide();
+            window.location.reload();
+          } else {
+            alert("Lỗi: " + result.message);
+          }
+        } catch (error) {
+          console.error(error);
+          alert("Có lỗi xảy ra. Vui lòng thử lại!");
+        }
+      }
+    </script>
+  </body>
+</html>

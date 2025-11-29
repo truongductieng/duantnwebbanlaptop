@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title
+      th:text="${discount.id == null ? 'Thêm mã giảm giá' : 'Sửa mã giảm giá'}"
+    >
+      Mã giảm giá
+    </title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
+    <!-- FontAwesome -->
+    <link href="/css/fontawesome.min.css" rel="stylesheet" />
+    <!-- SweetAlert2 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --bs-primary-rgb: 13, 110, 253;
+        --bs-success-rgb: 25, 135, 84;
+        --bs-font-sans-serif: "Segoe UI", system-ui, -apple-system, sans-serif;
+      }
+
+      body {
+        background: #f8f9fa;
+        font-family: var(--bs-font-sans-serif);
+        min-height: 100vh;
+      }
+
+      .card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08);
+      }
+
+      .card-header {
+        background: linear-gradient(45deg, #0d6efd, #0a58ca);
+        border-radius: 1rem 1rem 0 0 !important;
+        border-bottom: 0;
+      }
+
+      .form-control:focus,
+      .form-select:focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+      }
+
+      .btn-primary {
+        background: linear-gradient(45deg, #0d6efd, #0a58ca);
+        border: none;
+      }
+
+      .btn-success {
+        background: linear-gradient(45deg, #198754, #157347);
+        border: none;
+      }
+
+      .form-floating > label {
+        padding-left: 1rem;
+      }
+
+      .form-floating > .form-control:focus ~ label,
+      .form-floating > .form-control:not(:placeholder-shown) ~ label {
+        color: #0d6efd;
+        opacity: 0.85;
+      }
+
+      .form-check-input:checked {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+      }
+
+      .input-group-text {
+        background: transparent;
+        border-right: 0;
+      }
+
+      .form-control.is-invalid:focus {
+        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+      }
+
+      .form-label {
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 0.5rem;
+      }
+
+      .input-date-wrapper {
+        position: relative;
+      }
+
+      .input-date-wrapper:after {
+        content: "\f133";
+        font-family: "Font Awesome 5 Free";
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+        pointer-events: none;
+      }
+
+      .date-input {
+        padding-right: 2.5rem;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .fade-in {
+        animation: fadeIn 0.3s ease-out;
+      }
+
+      .discount-badge {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        background: linear-gradient(45deg, #dc3545, #c82333);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        font-weight: 600;
+        box-shadow: 0 2px 4px rgba(220, 53, 69, 0.4);
+      }
+    </style>
+  </head>
+
+  <body class="min-vh-100 py-5" style="background-color: #f8f9fa">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-12 col-lg-8">
+          <div class="card shadow-sm fade-in">
+            <div
+              class="card-header bg-primary text-white p-4 position-relative"
+            >
+              <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">
+                  <i class="fas fa-tag me-2"></i>
+                  <span
+                    th:text="${discount.id == null ? 'Thêm mã giảm giá mới' : 'Chỉnh sửa mã giảm giá'}"
+                  ></span>
+                </h4>
+                <a th:href="@{/admin/discounts}" class="btn btn-light btn-sm">
+                  <i class="fas fa-times me-2"></i>
+                  Quay lại
+                </a>
+              </div>
+            </div>
+
+            <div class="card-body p-4">
+              <form
+                th:action="@{/admin/discounts/save}"
+                method="post"
+                th:object="${discount}"
+                novalidate
+                class="needs-validation"
+              >
+                <input type="hidden" th:field="*{id}" />
+
+                <!-- Thông báo lỗi -->
+                <div
+                  th:if="${#fields.hasAnyErrors()}"
+                  class="alert alert-danger d-flex align-items-center fade-in mb-4"
+                >
+                  <i
+                    class="fas fa-exclamation-circle flex-shrink-0 me-3 fa-lg"
+                  ></i>
+                  <div>Vui lòng kiểm tra lại thông tin bên dưới</div>
+                </div>
+
+                <div class="row g-4">
+                  <!-- CODE -->
+                  <div class="col-md-6">
+                    <div class="form-floating mb-1">
+                      <input
+                        type="text"
+                        class="form-control"
+                        th:field="*{code}"
+                        th:classappend="${#fields.hasErrors('code')} ? 'is-invalid' : ''"
+                        required
+                        id="codeInput"
+                        autocomplete="off"
+                        placeholder="Nhập mã giảm giá"
+                      />
+                      <label for="codeInput">
+                        <i class="fas fa-ticket-alt me-2"></i>
+                        Mã giảm giá
+                      </label>
+                    </div>
+                    <div class="form-text text-muted">
+                      <i class="fas fa-info-circle me-1"></i>
+                      Ví dụ: OFF10, SALE20 (tự động viết HOA)
+                    </div>
+                    <div
+                      class="invalid-feedback"
+                      th:if="${#fields.hasErrors('code')}"
+                      th:errors="*{code}"
+                    ></div>
+                  </div>
+
+                  <!-- PERCENT -->
+                  <div class="col-md-6">
+                    <div class="form-floating mb-1">
+                      <input
+                        type="number"
+                        class="form-control"
+                        th:field="*{percent}"
+                        th:classappend="${#fields.hasErrors('percent')} ? 'is-invalid' : ''"
+                        min="1"
+                        max="100"
+                        required
+                        placeholder="Nhập phần trăm giảm giá"
+                      />
+                      <label>
+                        <i class="fas fa-percent me-2"></i>
+                        Phần trăm giảm
+                      </label>
+                    </div>
+                    <div class="form-text text-muted">
+                      <i class="fas fa-info-circle me-1"></i>
+                      Nhập số từ 1 đến 100
+                    </div>
+                    <div
+                      class="invalid-feedback"
+                      th:if="${#fields.hasErrors('percent')}"
+                      th:errors="*{percent}"
+                    ></div>
+                  </div>
+
+                  <!-- DATES -->
+                  <div class="col-12">
+                    <div class="card bg-light border-0 mb-1">
+                      <div class="card-body">
+                        <h6 class="card-subtitle mb-3">
+                          <i class="fas fa-calendar-alt me-2"></i>
+                          Thời gian áp dụng
+                        </h6>
+
+                        <div class="row g-4">
+                          <div class="col-md-6">
+                            <div class="form-floating">
+                              <input
+                                type="date"
+                                class="form-control date-input"
+                                id="startDate"
+                                th:field="*{startDate}"
+                                th:classappend="${#fields.hasErrors('startDate')} ? 'is-invalid' : ''"
+                                th:value="${discount.startDate != null ? #temporals.format(discount.startDate,'yyyy-MM-dd') : ''}"
+                                placeholder="Chọn ngày bắt đầu"
+                              />
+                              <label for="startDate">
+                                <i class="fas fa-hourglass-start me-2"></i>
+                                Ngày bắt đầu
+                              </label>
+                            </div>
+                          </div>
+
+                          <div class="col-md-6">
+                            <div class="form-floating">
+                              <input
+                                type="date"
+                                class="form-control date-input"
+                                id="endDate"
+                                th:field="*{endDate}"
+                                th:classappend="${#fields.hasErrors('endDate')} ? 'is-invalid' : ''"
+                                th:value="${discount.endDate != null ? #temporals.format(discount.endDate,'yyyy-MM-dd') : ''}"
+                                placeholder="Chọn ngày kết thúc"
+                              />
+                              <label for="endDate">
+                                <i class="fas fa-hourglass-end me-2"></i>
+                                Ngày kết thúc
+                              </label>
+                            </div>
+                            <div
+                              class="invalid-feedback"
+                              th:if="${#fields.hasErrors('endDate')}"
+                              th:errors="*{endDate}"
+                            ></div>
+                          </div>
+                        </div>
+
+                        <div class="form-text text-muted mt-2">
+                          <i class="fas fa-info-circle me-1"></i>
+                          Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- ACTIVE -->
+                  <div class="col-12">
+                    <div class="card bg-light border-0">
+                      <div class="card-body">
+                        <div class="form-check form-switch">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            th:field="*{active}"
+                            id="activeChk"
+                            role="switch"
+                          />
+                          <label class="form-check-label ms-2" for="activeChk">
+                            <i class="fas fa-toggle-on me-2"></i>
+                            Kích hoạt mã giảm giá
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <hr class="my-4" />
+
+                <div class="d-flex justify-content-between align-items-center">
+                  <button
+                    class="btn btn-success btn-lg px-4"
+                    type="submit"
+                    id="submitBtn"
+                  >
+                    <i class="fas fa-save me-2"></i>
+                    <span
+                      th:text="${discount.id == null ? 'Tạo mã giảm giá' : 'Lưu thay đổi'}"
+                      >Lưu</span
+                    >
+                  </button>
+
+                  <div class="d-flex gap-2">
+                    <a class="btn btn-light" th:href="@{/admin/discounts}">
+                      <i class="fas fa-times me-2"></i>
+                      Hủy
+                    </a>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Success Toast -->
+          <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050">
+            <div
+              class="toast align-items-center text-white bg-success border-0"
+              role="alert"
+              aria-live="assertive"
+              aria-atomic="true"
+              id="successToast"
+            >
+              <div class="d-flex">
+                <div class="toast-body">
+                  <i class="fas fa-check-circle me-2"></i>
+                  <span id="toastMessage"></span>
+                </div>
+                <button
+                  type="button"
+                  class="btn-close btn-close-white me-2 m-auto"
+                  data-bs-dismiss="toast"
+                  aria-label="Close"
+                ></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Form elements
+        const form = document.querySelector("form");
+        const submitBtn = document.getElementById("submitBtn");
+        const codeInput = document.getElementById("codeInput");
+        const percentInput = document.querySelector('input[type="number"]');
+        const startDate = document.getElementById("startDate");
+        const endDate = document.getElementById("endDate");
+        const activeChk = document.getElementById("activeChk");
+
+        // Toast setup
+        const successToast = document.getElementById("successToast");
+        const toast = new bootstrap.Toast(successToast, { delay: 3000 });
+
+        // Auto uppercase CODE input
+        if (codeInput) {
+          const toUpper = () => {
+            codeInput.value = (codeInput.value || "").trim().toUpperCase();
+          };
+          codeInput.addEventListener("input", toUpper);
+          codeInput.addEventListener("blur", toUpper);
+
+          // Validate code format
+          codeInput.addEventListener("input", function () {
+            const isValid = /^[A-Z0-9]{3,10}$/.test(this.value);
+            if (!isValid && this.value) {
+              this.classList.add("is-invalid");
+              this.nextElementSibling.textContent =
+                "Mã giảm giá chỉ được chứa chữ cái và số, độ dài 3-10 ký tự";
+            } else {
+              this.classList.remove("is-invalid");
+            }
+          });
+        }
+
+        // Validate percent input
+        if (percentInput) {
+          percentInput.addEventListener("input", function () {
+            const value = parseInt(this.value);
+            if (value < 1 || value > 100) {
+              this.classList.add("is-invalid");
+              this.nextElementSibling.textContent =
+                "Phần trăm giảm giá phải từ 1 đến 100";
+            } else {
+              this.classList.remove("is-invalid");
+            }
+          });
+        }
+
+        // Date validation
+        if (startDate && endDate) {
+          function syncMinEnd() {
+            if (startDate.value) {
+              endDate.min = startDate.value;
+              if (endDate.value && endDate.value < startDate.value) {
+                endDate.value = startDate.value;
+              }
+            }
+          }
+
+          startDate.addEventListener("change", syncMinEnd);
+          endDate.addEventListener("change", function () {
+            if (this.value < startDate.value) {
+              this.classList.add("is-invalid");
+              this.nextElementSibling.textContent =
+                "Ngày kết thúc phải sau ngày bắt đầu";
+            } else {
+              this.classList.remove("is-invalid");
+            }
+          });
+
+          // Set min date to today
+          const today = new Date().toISOString().split("T")[0];
+          startDate.min = today;
+          endDate.min = today;
+
+          syncMinEnd();
+        }
+
+        // Form submission
+        if (form) {
+          form.addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            if (!form.checkValidity()) {
+              e.stopPropagation();
+              form.classList.add("was-validated");
+
+              Swal.fire({
+                icon: "error",
+                title: "Lỗi nhập liệu",
+                text: "Vui lòng kiểm tra lại thông tin đã nhập",
+                confirmButtonColor: "#0d6efd",
+              });
+
+              return;
+            }
+
+            // Confirm submission
+            const result = await Swal.fire({
+              title: "Xác nhận lưu",
+              text: "Bạn có chắc chắn muốn lưu thông tin mã giảm giá này?",
+              icon: "question",
+              showCancelButton: true,
+              confirmButtonColor: "#198754",
+              cancelButtonColor: "#6c757d",
+              confirmButtonText: "Xác nhận",
+              cancelButtonText: "Hủy",
+            });
+
+            if (result.isConfirmed) {
+              submitBtn.disabled = true;
+              const originalText = submitBtn.innerHTML;
+              submitBtn.innerHTML =
+                '<span class="spinner-border spinner-border-sm me-2"></span>Đang xử lý...';
+
+              try {
+                await form.submit();
+                document.getElementById("toastMessage").textContent =
+                  "Lưu mã giảm giá thành công!";
+                toast.show();
+              } catch (error) {
+                console.error("Submit error:", error);
+                Swal.fire({
+                  icon: "error",
+                  title: "Lỗi",
+                  text: "Có lỗi xảy ra, vui lòng thử lại sau",
+                  confirmButtonColor: "#0d6efd",
+                });
+              } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+              }
+            }
+          });
+        }
+
+        // Initialize tooltips
+        const tooltipTriggerList = [].slice.call(
+          document.querySelectorAll('[data-bs-toggle="tooltip"]')
+        );
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+          return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+      });
+    </script>
+  </body>
+</html>

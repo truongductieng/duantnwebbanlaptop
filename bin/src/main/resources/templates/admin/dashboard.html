@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Dashboard</title>
+
+  <!-- CSRF cho AJAX -->
+  <meta name="_csrf" th:content="${_csrf.token}" />
+  <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet"/>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <!-- FontAwesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" rel="stylesheet"/>
+
+  <style>
+  /* ===== Tổng thể ===== */
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: #eef1f8;
+    padding-top: 72px; /* tránh che navbar cố định */
+    color: #333;
+  }
+
+  /* ===== Navbar ===== */
+  .navbar {
+    background: linear-gradient(90deg, #4b6cb7, #182848) !important; /* xanh tím đậm */
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  }
+  .navbar-brand {
+    font-weight: 600;
+    font-size: 1.2rem;
+    letter-spacing: 0.5px;
+  }
+  .navbar .btn-outline-light {
+    border-color: rgba(255,255,255,0.6);
+    color: #fff;
+    transition: all 0.3s;
+  }
+  .navbar .btn-outline-light:hover {
+    background: rgba(255,255,255,0.15);
+    border-color: transparent;
+  }
+
+  /* ===== Card ===== */
+  .card {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    background: #fff;
+  }
+  .card-header {
+    background: linear-gradient(135deg, #6a11cb, #2575fc); /* xanh tím gradient */
+    color: #fff;
+    font-weight: 500;
+  }
+
+  /* ===== Buttons ===== */
+  .btn-primary {
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    border: none;
+    color: #fff;
+  }
+  .btn-primary:hover {
+    opacity: 0.9;
+  }
+  .btn-success {
+    background: linear-gradient(135deg, #00b09b, #96c93d);
+    border: none;
+  }
+  .btn-warning {
+    background: linear-gradient(135deg, #f7971e, #ffd200);
+    border: none;
+  }
+  .btn-danger {
+    background: linear-gradient(135deg, #e53935, #e35d5b);
+    border: none;
+  }
+
+  /* ===== Bảng ===== */
+  .table thead th {
+    background: linear-gradient(135deg, #4b6cb7, #182848);
+    color: #fff;
+    border: none;
+  }
+  .table tbody tr:hover {
+    background: rgba(75, 108, 183, 0.07);
+  }
+
+  /* ===== Hiệu ứng icon ===== */
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+  .hero-icon {
+    animation: bounce 2s infinite;
+    color: #6a11cb;
+  }
+
+  /* ===== Menu Card ===== */
+  .menu-card {
+    display: block;
+    padding: 2rem;
+    border-radius: 1rem;
+    background: #fff;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .menu-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+  }
+  .menu-card i {
+    color: #6a11cb;
+  }
+  .menu-card.active {
+    outline: 3px solid #9c8df2;
+  }
+
+  /* ===== Section offset ===== */
+  section { scroll-margin-top: 96px; }
+
+  /* ===== KPI Section ===== */
+  .kpi .label { font-size: .9rem; color: #6c757d; }
+  .kpi .value { font-weight: 800; font-size: clamp(20px, 3.2vw, 34px); color: #182848; }
+  .kpi .icon { opacity: .7; color: #6a11cb; }
+
+  /* ===== Side Navigation ===== */
+  .side-nav {
+    position: fixed;
+    left: -300px;
+    top: 72px;
+    width: 300px;
+    height: calc(100vh - 72px);
+    background: linear-gradient(180deg, #4b6cb7, #182848);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    z-index: 999;
+    transition: left 0.3s ease;
+    overflow-y: auto;
+  }
+
+  .side-nav.open {
+    left: 0;
+  }
+
+  .side-nav-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    background: rgba(0, 0, 0, 0.1);
+  }
+
+  .side-nav-menu {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 0;
+  }
+
+  .side-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+  }
+
+  .side-nav-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border-left-color: #ffd200;
+  }
+
+  .side-nav-item.active {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    border-left-color: #ffd200;
+    font-weight: 600;
+  }
+
+  .side-nav-item i {
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
+  }
+
+  .side-nav-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0);
+    z-index: 998;
+    transition: background 0.3s ease;
+    pointer-events: none;
+  }
+
+  .side-nav-overlay.active {
+    background: rgba(0, 0, 0, 0.5);
+    pointer-events: auto;
+  }
+
+  /* Ẩn menu card cũ */
+  #menu {
+    display: none !important;
+  }
+</style>
+</head>
+
+<body>
+
+  <!-- ===== NAVBAR ===== -->
+  <nav class="navbar navbar-expand-lg navbar-dark mb-4 fixed-top">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center" th:href="@{/admin/dashboard}">
+        <i class="fas fa-gem me-2 text-light"></i>
+        ADMIN 
+      </a>
+
+      <div class="ms-auto d-flex align-items-center gap-2">
+        <button id="sideNavToggle" class="btn btn-outline-light" title="Menu">
+          <i class="fas fa-bars"></i>
+        </button>
+        <a class="btn btn-outline-light" th:href="@{/}" title="Trang chủ">
+          <i class="fas fa-home"></i>
+        </a>
+        <form th:action="@{/logout}" method="post" class="d-inline">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+          <button type="submit" class="btn btn-outline-light" title="Đăng xuất">
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Side Navigation -->
+  <div id="sideNav" class="side-nav">
+    <div class="side-nav-header">
+      <h5 class="mb-0">Menu</h5>
+      <button id="sideNavClose" class="btn btn-sm btn-light">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <nav class="side-nav-menu">
+      <a href="#orders" data-target="orders" class="side-nav-item">
+        <i class="fa-solid fa-box-open"></i>
+        <span>Đơn hàng</span>
+      </a>
+      <a th:href="@{/admin/returns}" class="side-nav-item">
+        <i class="fa-solid fa-rotate-left"></i>
+        <span>Quản lý trả hàng</span>
+      </a>
+      <a href="#reports" data-target="reports" class="side-nav-item">
+        <i class="fa-solid fa-chart-column"></i>
+        <span>Thống kê</span>
+      </a>
+      <a href="#products" data-target="products" class="side-nav-item">
+        <i class="fa-solid fa-cubes-stacked"></i>
+        <span>Sản phẩm</span>
+      </a>
+      <a href="#users" data-target="users" class="side-nav-item">
+        <i class="fa-solid fa-user-group"></i>
+        <span>Người dùng</span>
+      </a>
+      <a href="#discounts" data-target="discounts" class="side-nav-item">
+        <i class="fa-solid fa-ticket"></i>
+        <span>Mã giảm giá</span>
+      </a>
+      <a th:href="@{/admin/ann}" class="side-nav-item">
+        <i class="fa-solid fa-photo-film"></i>
+        <span>Thông báo ảnh</span>
+      </a>
+      <a th:href="@{/admin/reviews}" class="side-nav-item">
+        <i class="fa-solid fa-comments"></i>
+        <span>Đánh giá & bình luận</span>
+      </a>
+      <a th:href="@{/admin/chat}" class="side-nav-item">
+        <i class="fa-solid fa-comments"></i>
+        <span>Chat người dùng</span>
+      </a>
+      <a th:href="@{/admin/brands}" class="side-nav-item">
+        <i class="fa-solid fa-tags"></i>
+        <span>Quản lý Brand</span>
+      </a>
+    </nav>
+  </div>
+
+  <!-- Overlay khi side nav mở -->
+  <div id="sideNavOverlay" class="side-nav-overlay"></div>
+
+  <div class="container mt-4">
+    <!-- Nội dung trang -->
+  </div>
+</body>
+    <section class="text-center mb-4">
+<i class="fas fa-laptop-code fa-5x hero-icon mb-3"></i>
+      <h1 class="fw-bold">Xin chào, Admin VIP!</h1>
+      <p class="text-muted">Vui lòng chọn chức năng quản trị bên dưới</p>
+    </section>
+
+    <!-- ===== KPI (trên cùng) ===== -->
+    <section id="kpi-and-tops" class="mb-5">
+  <div class="row g-4 kpi">
+
+
+    
+    <!-- 💰 Doanh thu -->
+    <div class="col-12 col-lg-4">
+      <div class="card p-4 h-100 kpi-card">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div>
+            <div class="label fw-semibold text-secondary">Doanh thu</div>
+            <div id="revDate" class="small text-muted" th:text="${todayStr}">dd/MM/yyyy</div>
+          </div>
+          <div class="icon-wrapper">
+            <i class="fa-solid fa-sack-dollar fa-2x"></i>
+          </div>
+        </div>
+
+        <div id="revValue" class="value money mt-2" th:data-vnd="${todayRevenue}">0₫</div>
+
+        <div class="btn-switch mt-4 d-flex gap-2">
+          <button id="btnRevToday" type="button" class="btn btn-sm btn-switch-item active">Hôm nay</button>
+          <button id="btnRevYesterday" type="button" class="btn btn-sm btn-switch-item">Hôm qua</button>
+        </div>
+      </div>
+    </div>
+
+
+
+
+    <!-- 📦 Đơn hàng -->
+    <div class="col-12 col-lg-4">
+      <div class="card p-4 h-100 kpi-card">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div>
+            <div class="label fw-semibold text-secondary">Đơn hàng</div>
+            <div class="small text-muted">Hôm nay</div>
+          </div>
+          <div class="icon-wrapper">
+            <i class="fa-solid fa-cart-shopping fa-2x"></i>
+          </div>
+        </div>
+
+        <div class="value mt-2" th:text="${orderCountToday}">0</div>
+        <div class="text-muted small">Tổng đơn đã xử lý hôm nay</div>
+      </div>
+    </div>
+
+
+
+    <!-- 👥 Khách hàng -->
+    <div class="col-12 col-lg-4">
+      <div class="card p-4 h-100 kpi-card">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div>
+            <div class="label fw-semibold text-secondary">Khách hàng mới</div>
+            <div class="small text-muted">Hôm nay</div>
+          </div>
+          <div class="icon-wrapper">
+            <i class="fa-solid fa-user-plus fa-2x"></i>
+          </div>
+        </div>
+
+        <div class="value mt-2" th:text="${newCustomersToday}">0</div>
+        <div class="text-muted small">Đăng ký mới trong ngày</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+
+
+<!-- ===== CSS phong cách xanh tím hiện đại ===== -->
+<style>
+/* ===== KPI Card ===== */
+.kpi-card {
+  background: linear-gradient(135deg, #ffffff, #f4f6ff);
+  border: 1px solid rgba(102, 126, 234, 0.15);
+  border-radius: 1rem;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+}
+.kpi-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 24px rgba(102,126,234,0.25);
+}
+
+.kpi-card .icon-wrapper {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(102,126,234,0.3);
+}
+
+.kpi-card .label {
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+.kpi-card .value {
+  font-weight: 800;
+  font-size: 2rem;
+  color: #182848;
+}
+
+.btn-switch-item {
+  flex: 1;
+  border-radius: 8px;
+  border: 1px solid #6a11cb;
+  background: transparent;
+  color: #6a11cb;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+.btn-switch-item.active,
+.btn-switch-item:hover {
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
+  color: #fff;
+  border: none;
+}
+</style>
+
+
+
+
+
+       <!-- Số đơn, SP bán ra, Đơn hủy, Khách mới -->
+<section id="mini-kpis" class="mb-4">
+  <div class="row g-3 justify-content-center">
+
+    <div class="col-6 col-md-3 col-lg-2">
+      <div class="card text-center p-4 mini-card">
+        <div class="label">Đơn</div>
+        <div id="ordersCount" class="value" th:text="${ordersToday}">0</div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3 col-lg-2">
+      <div class="card text-center p-4 mini-card">
+        <div class="label">SP bán ra</div>
+        <div id="soldCount" class="value" th:text="${itemsSoldToday}">0</div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3 col-lg-2">
+      <div class="card text-center p-4 mini-card">
+        <div class="label">Đơn huỷ</div>
+        <div id="cancelCount" class="value" th:text="${cancelledToday}">0</div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3 col-lg-2">
+      <div class="card text-center p-4 mini-card">
+        <div class="label">Khách mới</div>
+        <div id="newCusCount" class="value" th:text="${newUsersToday}">0</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===== CSS làm đẹp theo giao diện xanh tím ===== -->
+<style>
+.mini-card {
+  border: none;
+  border-radius: 15px;
+  background: linear-gradient(135deg, #ffffff, #f3f5ff);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+.mini-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(102, 126, 234, 0.25);
+}
+.mini-card .label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #6a11cb;
+  margin-bottom: 5px;
+}
+.mini-card .value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #182848;
+}
+</style>
+
+
+
+
+
+      <!-- TRÁI: Top SL | PHẢI: Đơn mới chờ xác nhận -->
+      <div class="row g-4 mt-1">
+        <!-- Top theo SL (giữ nguyên) -->
+      <!-- ========== TOP 5 THEO SỐ LƯỢNG (7 NGÀY) ========== -->
+<div class="col-12 col-xl-6">
+  <div class="card top-card p-4 h-100">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="m-0 fw-semibold text-gradient">
+        <i class="fa-solid fa-crown me-2 text-warning"></i>
+        Top 5 sản phẩm bán chạy (7 ngày)
+      </h5>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table custom-table align-middle mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Sản phẩm</th>
+            <th class="text-end">Số lượng</th>
+            <th class="text-end">Doanh thu</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Lặp dữ liệu động từ database -->
+          <tr th:each="p, idx : ${topQty7}">
+            <td th:text="${idx.index + 1}">1</td>
+            <td th:text="${p.productName}">Tên SP</td>
+            <td class="text-end fw-semibold text-primary" th:text="${p.quantity}">0</td>
+            <td class="text-end fw-semibold money text-success" th:data-vnd="${p.revenue}">₫0</td>
+          </tr>
+
+          <!-- Khi không có dữ liệu -->
+          <tr th:if="${#lists.isEmpty(topQty7)}">
+            <td colspan="4" class="text-center text-muted py-3">Chưa có dữ liệu</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+      
+        <!-- ========== ĐƠN MỚI CHỜ XÁC NHẬN ========== -->
+<div class="col-12 col-xl-6">
+  <div class="card order-card p-4 h-100">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="m-0 fw-semibold text-gradient">
+        <i class="fa-solid fa-bell me-2 text-warning"></i>
+        Đơn mới chờ xác nhận
+        <span class="badge bg-gradient ms-2" data-pending-count
+              th:text="${#lists.size(orders)}">0</span>
+      </h5>
+      <a class="btn btn-sm btn-outline-primary rounded-pill shadow-sm" th:href="@{/admin/orders}">
+        Xem tất cả
+      </a>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table custom-table align-middle mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Mã đơn</th>
+            <th>Khách</th>
+            <th class="text-end">Tổng</th>
+            <th>Ngày tạo</th>
+            <th class="text-center">Xử lý</th>
+          </tr>
+        </thead>
+        <tbody id="pendingOrdersTbody">
+          <!-- Hiển thị tối đa 5 đơn -->
+          <tr th:each="o, idx : ${orders}" th:if="${idx.index} < 5" th:attr="id=|row-${o.id}|">
+            <td th:text="${idx.index + 1}">1</td>
+            <td th:text="${o.id}" class="fw-semibold text-primary">1001</td>
+            <td th:text="${o.customer != null ? o.customer.username : 'Khách'}">user</td>
+            <td class="text-end fw-semibold text-success"
+                th:text="${#numbers.formatDecimal(o.total,0,'COMMA',2,'POINT')} + '₫'">0₫</td>
+            <td th:text="${#temporals.format(o.createdAt,'dd/MM/yyyy HH:mm')}">--/--/---- --:--</td>
+            <td class="text-center">
+              <button type="button" class="btn btn-sm btn-gradient btn-confirm shadow-sm"
+                      th:attr="data-id=${o.id}">
+                <i class="fas fa-check-circle me-1"></i> Xác nhận
+              </button>
+            </td>
+          </tr>
+
+          <!-- Khi không có đơn -->
+          <tr th:if="${#lists.isEmpty(orders)}">
+            <td colspan="6" class="text-center text-muted py-3">Chưa có đơn PENDING</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+    <!-- ===== /KPI ===== -->
+
+    <!-- ===== MENU ===== -->
+    <div class="row g-4 mb-5" id="menu">
+  <!-- Đơn hàng -->
+  <div class="col-md-3">
+    <a href="#orders" data-target="orders" class="menu-card">
+      <div class="menu-icon">
+        <i class="fa-solid fa-box-open"></i>
+      </div>
+      <h5>Đơn hàng</h5>
+    </a>
+  </div>
+
+  <!-- Thống kê -->
+  <div class="col-md-3">
+    <a href="#reports" data-target="reports" class="menu-card">
+      <div class="menu-icon">
+        <i class="fa-solid fa-chart-column"></i>
+      </div>
+      <h5>Thống kê</h5>
+    </a>
+  </div>
+
+  <!-- Sản phẩm -->
+  <div class="col-md-3">
+    <a href="#products" data-target="products" class="menu-card">
+      <div class="menu-icon">
+        <i class="fa-solid fa-cubes-stacked"></i>
+      </div>
+      <h5>Sản phẩm</h5>
+    </a>
+  </div>
+
+  <!-- Người dùng -->
+  <div class="col-md-3">
+    <a href="#users" data-target="users" class="menu-card">
+      <div class="menu-icon">
+        <i class="fa-solid fa-user-group"></i>
+      </div>
+      <h5>Người dùng</h5>
+    </a>
+  </div>
+
+  <!-- Mã giảm giá -->
+  <div class="col-md-3">
+    <a href="#discounts" data-target="discounts" class="menu-card">
+      <div class="menu-icon">
+        <i class="fa-solid fa-ticket"></i>
+      </div>
+      <h5>Mã giảm giá</h5>
+    </a>
+  </div>
+
+  <!-- Thông báo ảnh -->
+  <div class="col-md-3">
+    <a th:href="@{/admin/ann}" class="menu-card">
+      <div class="menu-icon">
+        <i class="fa-solid fa-photo-film"></i>
+      </div>
+      <h5>Thông báo ảnh</h5>
+    </a>
+  </div>
+
+  <!-- Đánh giá & bình luận -->
+  <div class="col-md-3">
+    <a th:href="@{/admin/reviews}" class="menu-card">
+      <div class="menu-icon">
+        <i class="fa-solid fa-comments"></i>
+      </div>
+      <h5>Đánh giá & bình luận</h5>
+    </a>
+  </div>
+
+  <!-- Chat người dùng -->
+  <div class="col-md-3">
+    <a th:href="@{/admin/chat}" class="menu-card">
+      <div class="menu-icon">
+        <i class="fa-solid fa-comments"></i>
+      </div>
+      <h5>Chat người dùng</h5>
+    </a>
+  </div>
+
+  <!-- Quản lý Brand -->
+  <div class="col-md-3">
+    <a th:href="@{/admin/brands}" class="menu-card">
+      <div class="menu-icon">
+        <i class="fa-solid fa-tags"></i>
+      </div>
+      <h5>Quản lý Brand</h5>
+    </a>
+  </div>
+</div>
+
+<!-- CSS hiện đại -->
+<style>
+  #menu .menu-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #f7f5ff;
+    border-radius: 1rem;
+    padding: 2rem 1rem;
+    text-decoration: none;
+    color: #333;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 8px rgba(111, 66, 193, 0.1);
+  }
+
+  #menu .menu-card:hover {
+    background: linear-gradient(135deg, #6f42c1, #9b59b6);
+    color: #fff;
+    transform: translateY(-5px);
+    box-shadow: 0 8px 18px rgba(111, 66, 193, 0.3);
+  }
+
+  #menu .menu-icon {
+    background: rgba(111, 66, 193, 0.1);
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    transition: 0.3s;
+  }
+
+  #menu .menu-card:hover .menu-icon {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+  }
+
+  #menu i {
+    font-size: 2.5rem;
+    color: #6f42c1;
+    transition: color 0.3s;
+  }
+
+  #menu .menu-card:hover i {
+    color: #fff;
+  }
+
+  #menu h5 {
+    margin: 0;
+    font-weight: 600;
+    font-size: 1.05rem;
+  }
+</style>
+
+    <!-- ===== /MENU ===== -->
+
+    <!-- ORDERS -->
+    <section id="orders" class="feature-section card mb-5">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-shopping-cart me-2"></i>Đơn hàng (Pending)</h5>
+        <a class="btn btn-primary" th:href="@{/admin/orders}">
+          <i class="fas fa-list-alt me-1"></i>Xem tất cả
+        </a>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr><th>ID</th><th>Ngày tạo</th><th>Khách hàng</th><th>Tổng tiền</th><th>Hành động</th></tr>
+          </thead>
+          <tbody>
+            <tr th:each="order : ${orders}">
+              <td th:text="${order.id}"></td>
+              <td th:text="${#temporals.format(order.createdAt,'dd/MM/yyyy HH:mm')}"></td>
+              <td th:text="${order.customer.username}"></td>
+              <td th:text="${#numbers.formatDecimal(order.total,0,'COMMA',2,'POINT')} + '₫'"></td>
+              <td>
+                <!-- SỬA endpoint confirm đúng -->
+                <form th:action="@{/admin/orders/{id}/status(id=${order.id})}" method="post" class="d-inline">
+                  <input type="hidden" name="status" th:value="${T(com.ductieng.model.OrderStatus).CONFIRMED}"/>
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                  <button type="submit" class="btn btn-sm btn-success me-1"><i class="fas fa-check-circle"></i></button>
+                </form>
+                <form th:action="@{/admin/orders/{id}/delete(id=${order.id})}" method="post" class="d-inline"
+                      onsubmit="return confirm('Xác nhận xóa?');">
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                  <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                </form>
+              </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(orders)}">
+              <td colspan="5" class="text-center py-4">Không có đơn hàng pending</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- REPORTS -->
+    <section id="reports" class="feature-section mb-5">
+      <div class="card mb-4">
+        <div class="card-body">
+          <form id="reportFilterForm" th:action="@{/admin/dashboard}" method="get" class="row g-3 align-items-end">
+            <div class="col-auto">
+              <label class="form-label">Loại</label>
+              <select name="type" class="form-select">
+                <option value="daily" th:selected="${type=='daily'}">Ngày</option>
+                <option value="monthly" th:selected="${type=='monthly'}">Tháng</option>
+              </select>
+            </div>
+            
+            <!-- Input Ngày -->
+            <div class="col-auto" th:style="${type != 'daily'} ? 'display: none;' : ''">
+              <label class="form-label">Từ ngày</label>
+              <input type="date" name="start" class="form-control" th:value="${start}"/>
+            </div>
+            <div class="col-auto" th:style="${type != 'daily'} ? 'display: none;' : ''">
+              <label class="form-label">Đến ngày</label>
+              <input type="date" name="end" class="form-control" th:value="${end}"/>
+            </div>
+            
+            <!-- Input Tháng -->
+            <div class="col-auto" th:style="${type == 'daily'} ? 'display: none;' : ''">
+              <label class="form-label">Từ tháng</label>
+              <input type="month" name="startMonth" class="form-control" th:value="${startMonth}"/>
+            </div>
+            <div class="col-auto" th:style="${type == 'daily'} ? 'display: none;' : ''">
+              <label class="form-label">Đến tháng</label>
+              <input type="month" name="endMonth" class="form-control" th:value="${endMonth}"/>
+            </div>
+            
+            <div class="col-auto">
+              <button class="btn btn-primary"><i class="fas fa-filter me-1"></i>Lọc</button>
+              <a th:href="@{/admin/dashboard}" class="btn btn-outline-secondary"><i class="fas fa-undo me-1"></i>Đặt lại</a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><i class="fas fa-table me-2"></i>Doanh thu chi tiết</div>
+        <div class="table-responsive p-3">
+          <table class="table table-striped mb-0">
+            <thead>
+              <tr>
+                <th th:text="${type=='daily'?'Ngày':'Tháng'}">Thời gian</th>
+                <th class="text-end">Doanh thu</th>
+              </tr>
+            </thead>
+
+            <!-- DAILY: có nút bấm để bung chi tiết -->
+            <tbody th:if="${type=='daily'}">
+              <th:block th:each="rd : ${revenueData}">
+                <tr>
+                  <td>
+                    <button class="btn btn-sm btn-outline-primary toggle-day"
+                            th:attr="data-day=${rd.period}">
+                      <i class="fa fa-chevron-right me-1"></i>
+                      <span th:text="${rd.period}">2025-08-23</span>
+                    </button>
+                  </td>
+                  <td class="text-end" th:text="${#numbers.formatDecimal(rd.revenue,0,'COMMA',2,'POINT')} + '₫'"></td>
+                </tr>
+                <!-- Hàng chi tiết của chính ngày trên -->
+                <tr class="detail-row d-none" th:attr="id=${'detail-' + rd.period}">
+                  <td colspan="2">
+                    <div class="p-3 small">
+                      <span class="spinner-border spinner-border-sm me-2"></span>Đang tải...
+                    </div>
+                  </td>
+                </tr>
+              </th:block>
+              <tr th:if="${#lists.isEmpty(revenueData)}">
+                <td colspan="2" class="text-center text-muted py-3">Không có dữ liệu</td>
+              </tr>
+            </tbody>
+
+            <!-- MONTHLY: hiển thị bình thường -->
+            <tbody th:if="${type!='daily'}">
+              <tr th:each="rd : ${revenueData}">
+                <td th:text="${rd.period}"></td>
+                <td class="text-end" th:text="${#numbers.formatDecimal(rd.revenue,0,'COMMA',2,'POINT')} + '₫'"></td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(revenueData)}">
+                <td colspan="2" class="text-center text-muted py-3">Không có dữ liệu</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+
+
+
+
+    <!-- PRODUCTS -->
+    
+<section id="products" class="card border-0 shadow-lg mb-5 rounded-4" 
+         style="background: linear-gradient(135deg, #5B21B6, #4F46E5); color: white;">
+  <div class="card-header border-0 d-flex justify-content-between align-items-center px-4 py-3"
+       style="background: rgba(255, 255, 255, 0.1); border-radius: 1rem 1rem 0 0;">
+    <h4 class="mb-0 fw-bold">
+      <i class="fas fa-box-open me-2"></i>Danh sách sản phẩm
+    </h4>
+    <a class="btn btn-light fw-semibold text-primary px-3 py-2 rounded-pill shadow-sm" 
+       th:href="@{/admin/product/new}">
+      <i class="fas fa-plus-circle me-1"></i>Thêm mới
+    </a>
+  </div>
+
+  <div class="card-body bg-white rounded-bottom-4 p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 align-middle">
+        <thead style="background-color: #4F46E5; color: white;">
+          <tr>
+            <th class="ps-4">ID</th>
+            <th>Tên</th>
+            <th>Hãng</th>
+            <th>Giá</th>
+            <th>Số lượng</th>
+            <th class="text-center pe-4">Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="p : ${list}" class="table-row">
+            <td class="ps-4 fw-semibold text-dark" th:text="${p.id}"></td>
+            <td th:text="${p.name}" class="text-secondary"></td>
+            <td th:text="${p.brand}" class="text-secondary"></td>
+            <td th:text="${#numbers.formatDecimal(p.price,0,'COMMA',2,'POINT')}" class="text-success fw-semibold"></td>
+            <td th:text="${p.quantity}" class="text-secondary"></td>
+            <td class="text-center pe-4">
+              <a class="btn btn-sm btn-outline-primary me-1 rounded-pill px-3 py-1 fw-semibold"
+                 th:href="@{/admin/product/{id}/edit(id=${p.id})}">
+                <i class="fas fa-edit me-1"></i>Sửa
+              </a>
+              <form th:action="@{/admin/product/{id}/delete(id=${p.id})}" method="post" class="d-inline"
+                    onsubmit="return confirm('Xác nhận xóa sản phẩm này?');">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-semibold">
+                  <i class="fas fa-trash-alt me-1"></i>Xóa
+                </button>
+              </form>
+            </td>
+          </tr>
+
+          <tr th:if="${#lists.isEmpty(list)}">
+            <td colspan="6" class="text-center py-4 text-muted">
+              <i class="fas fa-info-circle me-1"></i>Chưa có sản phẩm nào
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- Hiệu ứng hover hàng -->
+<style>
+  .table-row:hover {
+    background-color: rgba(79, 70, 229, 0.08) !important;
+    transition: background-color 0.2s ease-in-out;
+  }
+  .btn-outline-primary:hover {
+    background-color: #4F46E5;
+    color: white !important;
+  }
+  .btn-outline-danger:hover {
+    background-color: #DC2626;
+    color: white !important;
+  }
+</style>
+
+
+
+
+
+    <!-- USERS -->
+    <section id="users" class="feature-section card mb-5">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-users me-2"></i>Người dùng</h5>
+        <a class="btn btn-primary" th:href="@{/admin/user/new}">
+          <i class="fas fa-user-plus me-1"></i>Thêm mới
+        </a>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr><th>ID</th><th>Username</th><th>Role</th><th>Hành động</th></tr>
+          </thead>
+          <tbody>
+            <tr th:each="u : ${users}">
+              <td th:text="${u.id}"></td>
+              <td th:text="${u.username}"></td>
+              <td th:text="${u.role}"></td>
+              <td>
+                <a class="btn btn-sm btn-warning me-1" th:href="@{/admin/user/{id}/edit(id=${u.id})}">
+                  <i class="fas fa-edit"></i>
+                </a>
+                <form th:action="@{/admin/user/{id}/delete(id=${u.id})}" method="post" class="d-inline"
+                      onsubmit="return confirm('Xác nhận xóa người dùng này?');">
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                  <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                </form>
+              </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(users)}">
+              <td colspan="4" class="text-center py-4">Chưa có người dùng</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- DISCOUNTS -->
+    <section id="discounts" class="feature-section card mb-5">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-tags me-2"></i>Mã giảm giá</h5>
+        <div class="d-flex gap-2">
+          <a class="btn btn-outline-light" th:href="@{/admin/discounts/new}">
+            <i class="fas fa-plus-circle me-1"></i>Thêm mã
+          </a>
+          <a class="btn btn-primary" th:href="@{/admin/discounts}">
+            <i class="fas fa-sliders-h me-1"></i>Quản lý
+          </a>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row g-3 align-items-center">
+          <div class="col-md-8">
+            <p class="mb-2 text-muted">Tạo, chỉnh sửa và vô hiệu hóa mã giảm giá để chạy campaign nhanh.</p>
+            <div class="d-flex flex-wrap gap-2">
+              <span class="badge bg-primary">OFF10</span>
+              <span class="badge bg-success">FREESHIP</span>
+              <span class="badge bg-warning text-dark">Học Sinh/Sinh Viên</span>
+              <span class="badge bg-info text-dark">NEWUSER</span>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="row text-center">
+              <div class="col-6">
+                <div class="small text-muted">Đang hoạt động</div>
+                <div class="h5 mb-0" th:text="${activeDiscounts != null ? activeDiscounts : 0}">0</div>
+              </div>
+              <div class="col-6">
+                <div class="small text-muted">Hết hạn/Vô hiệu</div>
+                <div class="h5 mb-0" th:text="${inactiveDiscounts != null ? inactiveDiscounts : 0}">0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Money format + Toggle & hash logic + Hôm nay/Hôm qua -->
+  <script th:inline="javascript">
+    // ===== Money format =====
+    const fmtVND = (n) => Number(n || 0).toLocaleString('vi-VN',{style:'currency',currency:'VND',maximumFractionDigits:0});
+    document.querySelectorAll('.money').forEach(el=>{
+      const v = el.getAttribute('data-vnd');
+      if (v !== null) el.textContent = fmtVND(v);
+    });
+
+    // ===== CSRF (nếu có) =====
+    const csrfToken  = document.querySelector('meta[name="_csrf"]')?.content;
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+    // ===== Utils =====
+    const toISODate = (d) => d.toISOString().slice(0,10);
+    const setActive = (a,b) => { a.classList.add('active'); b.classList.remove('active'); };
+
+    // ===== Load KPI theo ngày qua API =====
+    async function loadMetrics(dateStr){
+      try{
+        const res = await fetch(`/admin/api/dashboard/metrics?date=${dateStr}`, {
+          headers: csrfToken && csrfHeader ? { [csrfHeader]: csrfToken } : {}
+        });
+        const m = await res.json();
+
+        document.getElementById('revDate').textContent     = m.dateLabel;
+        document.getElementById('revValue').textContent    = fmtVND(m.revenue);
+        document.getElementById('ordersCount').textContent = m.ordersCount;
+        document.getElementById('soldCount').textContent   = m.soldItems;
+        document.getElementById('cancelCount').textContent = m.canceledOrders;
+        document.getElementById('newCusCount').textContent = m.newCustomers;
+      }catch(e){
+        console.error('loadMetrics error', e);
+      }
+    }
+
+    // ===== Toggle hôm nay / hôm qua (GỌI API) =====
+    (function () {
+      const btnToday = document.getElementById('btnRevToday');
+      const btnYest  = document.getElementById('btnRevYesterday');
+
+      btnToday?.addEventListener('click', ()=>{
+        setActive(btnToday, btnYest);
+        loadMetrics(toISODate(new Date()));
+      });
+
+      btnYest?.addEventListener('click', ()=>{
+        setActive(btnYest, btnToday);
+        const d = new Date(); d.setDate(d.getDate() - 1);
+        loadMetrics(toISODate(d));
+      });
+    })();
+
+    // ===== Toggle & hash logic =====
+    (function () {
+      const sectionIds = ["orders", "reports", "products", "users", "discounts"];
+      const sections = Object.fromEntries(sectionIds.map(id => [id, document.getElementById(id)]));
+      const cards = Array.from(document.querySelectorAll('.menu-card'));
+
+      function showSection(id, {scroll=true} = {}) {
+        sectionIds.forEach(k => sections[k]?.classList.remove('active'));
+        cards.forEach(c => c.classList.remove('active'));
+        if (sections[id]) {
+          sections[id].classList.add('active');
+          const card = cards.find(c => c.dataset.target === id);
+          if (card) card.classList.add('active');
+          if (location.hash !== '#' + id) history.replaceState(null, '', '#' + id);
+          if (scroll) sections[id].scrollIntoView({behavior: "smooth", block: "start"});
+        }
+      }
+
+      cards.forEach(card => {
+        card.addEventListener('click', function (e) {
+          const href = this.getAttribute('href') || '';
+          if (href.startsWith('#')) {
+            e.preventDefault();
+            const target = this.dataset.target || href.substring(1);
+            showSection(target);
+          }
+        });
+      });
+
+      function initFromHash() {
+        const target = location.hash?.replace('#','');
+        if (sectionIds.includes(target)) showSection(target, {scroll:false});
+      }
+      window.addEventListener('hashchange', initFromHash);
+      initFromHash();
+
+      // Giữ #reports khi submit lọc
+      const reportForm = document.getElementById('reportFilterForm');
+      if (reportForm) {
+        // Khi thay đổi loại (daily/monthly), ẩn/hiện input phù hợp
+        const typeSelect = reportForm.querySelector('select[name="type"]');
+        if (typeSelect) {
+          typeSelect.addEventListener('change', function() {
+            const isDailyView = this.value === 'daily';
+            // Ẩn/hiện div input ngày
+            reportForm.querySelectorAll('.col-auto').forEach(div => {
+              const label = div.querySelector('label')?.textContent || '';
+              const hasDateInputs = label.includes('Từ ngày') || label.includes('Đến ngày');
+              const hasMonthInputs = label.includes('Từ tháng') || label.includes('Đến tháng');
+              
+              if (hasDateInputs) {
+                div.style.display = isDailyView ? 'block' : 'none';
+              } else if (hasMonthInputs) {
+                div.style.display = isDailyView ? 'none' : 'block';
+              }
+            });
+          });
+          typeSelect.dispatchEvent(new Event('change'));
+        }
+
+        // Xử lý submit để giữ hash
+        reportForm.addEventListener('submit', function (e) {
+          const base = reportForm.getAttribute('action') || window.location.pathname;
+          const fd = new FormData(reportForm);
+          const params = new URLSearchParams(fd).toString();
+          const url = base + (params ? ('?' + params) : '') + '#reports';
+          window.location.href = url;
+          e.preventDefault();
+          return false;
+        });
+
+        const resetLink = reportForm.closest('.card-body')?.querySelector('a.btn.btn-outline-secondary');
+        if (resetLink) {
+          const href = resetLink.getAttribute('href') || '/admin/dashboard';
+          resetLink.setAttribute('href', href + '#reports');
+        }
+      }
+
+      // Về dashboard vẫn giữ tab hiện tại
+      const keepHashLinks = document.querySelectorAll('a[href$="/admin/dashboard"], a[href$="dashboard"]');
+      keepHashLinks.forEach(a => {
+        a.addEventListener('click', function (e) {
+          const hash = location.hash;
+          if (hash) {
+            e.preventDefault();
+            window.location.href = this.getAttribute('href') + hash;
+          }
+        });
+      });
+    })();
+  </script>
+
+  <!-- AJAX xác nhận đơn trong khung nhỏ -->
+<script>
+(function (){
+  const CSRF_TOKEN  = document.querySelector('meta[name="_csrf"]')?.getAttribute('content') || '';
+  const CSRF_HEADER = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content') || 'X-CSRF-TOKEN';
+  const tbody = document.getElementById('pendingOrdersTbody');
+  const badge = document.querySelector('[data-pending-count]');
+
+  // Đếm số dòng thực sự đang hiển thị (bỏ qua placeholder)
+  function refreshPendingBadge() {
+    if (!tbody || !badge) return 0;
+    const count = tbody.querySelectorAll('tr:not(.placeholder-row)').length;
+    badge.textContent = String(count);
+    return count;
+  }
+
+  function renumber() {
+    if (!tbody) return;
+    let i = 1;
+    tbody.querySelectorAll('tr:not(.placeholder-row)').forEach(tr => {
+      const firstCell = tr.querySelector('td');
+      if (firstCell) firstCell.textContent = i++;
+    });
+  }
+
+  function ensurePlaceholder() {
+    const hasRow = !!tbody.querySelector('tr:not(.placeholder-row)');
+    if (!hasRow) {
+      tbody.innerHTML = `
+        <tr class="placeholder-row">
+          <td colspan="6" class="text-center text-muted">Chưa có đơn PENDING</td>
+        </tr>`;
+    }
+  }
+
+  function bindConfirmButtons(scope) {
+    (scope || document).querySelectorAll('.btn-confirm').forEach(btn => {
+      if (btn.dataset.bound === '1') return;
+      btn.dataset.bound = '1';
+
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-id');
+        if (!id) return;
+
+        const originalHTML = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Đang xử lý';
+
+        try {
+          const res = await fetch(`/admin/api/orders/${id}/status`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              [CSRF_HEADER]: CSRF_TOKEN,
+              'Accept': 'application/json'
+            },
+            body: 'status=CONFIRMED'
+          });
+
+          const data = await res.json().catch(()=> ({}));
+          if (!res.ok || data.ok !== true) {
+            throw new Error(data.error || ('HTTP ' + res.status));
+          }
+
+          // Xoá đúng 1 dòng
+          const row = document.getElementById(`row-${id}`);
+          if (row) row.remove();
+
+          // Cập nhật badge theo DOM hiện tại
+          const count = refreshPendingBadge();
+          if (count === 0) ensurePlaceholder();
+          else renumber();
+
+        } catch (e) {
+          alert('Xác nhận thất bại: ' + (e.message || e));
+          btn.disabled = false;
+          btn.innerHTML = originalHTML;
+        }
+      });
+    });
+  }
+
+  if (tbody) {
+    bindConfirmButtons(tbody);
+    // Lần đầu vào trang, đồng bộ lại badge theo DOM (phòng khi Thymeleaf render sai/khác)
+    refreshPendingBadge();
+  }
+})();
+</script>
+
+
+  <!-- Chi tiết doanh thu theo ngày: bấm để bung ra ĐƠN + SẢN PHẨM -->
+  <script>
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+
+    function renderDayDetail(data){
+      let html = '';
+      html += `<div class="fw-semibold mb-2">Đơn hàng (${data.orders.length}) — Doanh thu: ${fmtVND(data.revenue)}</div>`;
+      html += `<div class="accordion" id="acc-${data.date}">`;
+
+      data.orders.forEach((o, i) => {
+        const cid = `acc-${data.date}-${i}`;
+        html += `
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#${cid}">
+                ĐH #${o.id} — ${esc(o.customer)}${o.customerPhone ? ' — ' + esc(o.customerPhone) : ''} — Tổng: ${fmtVND(o.total)}
+              </button>
+            </h2>
+            <div id="${cid}" class="accordion-collapse collapse">
+              <div class="accordion-body p-0">
+                ${
+                  (o.discountCode || o.discountAmount || (o.discountPercent !== null && o.discountPercent !== undefined)) ? `
+                  <div class="p-2 bg-light border-bottom small d-flex flex-wrap gap-2">
+                    ${o.discountCode ? `<span class="badge bg-info text-dark">Mã giảm: ${esc(o.discountCode)}</span>` : ``}
+                    ${o.discountAmount ? `<span class="badge bg-success">Giảm: ${fmtVND(o.discountAmount)}</span>` : ``}
+                    ${(o.discountPercent !== null && o.discountPercent !== undefined)
+                        ? `<span class="badge bg-secondary">${Number(o.discountPercent).toFixed(2)}%</span>` : ``}
+                  </div>` : ``
+                }
+                ${ o.shippingAddress ? `
+                  <div class="p-2 border-bottom small">
+                    <i class="fa-solid fa-location-dot me-1"></i> <strong>Địa chỉ:</strong> ${esc(o.shippingAddress)}
+                  </div>` : `` }
+
+                <table class="table table-sm mb-0">
+                  <thead>
+                    <tr>
+                      <th>Sản phẩm</th>
+                      <th class="text-end">SL</th>
+                      <th class="text-end">Đơn giá</th>
+                      <th class="text-end">Thành tiền</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${o.items.map(it => `
+                      <tr>
+                        <td>${esc(it.productName)}</td>
+                        <td class="text-end">${it.quantity}</td>
+                        <td class="text-end">${fmtVND(it.unitPrice)}</td>
+                        <td class="text-end">${fmtVND(it.lineTotal)}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>`;
+      });
+
+      html += `</div>`;
+      return html;
+    }
+
+    (function(){
+      const rows = document.querySelectorAll('#reports .toggle-day');
+      if (!rows.length) return;
+
+      const csrfToken  = document.querySelector('meta[name="_csrf"]')?.content;
+      const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+      rows.forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const day = btn.dataset.day;
+          const detailRow = document.getElementById(`detail-${day}`);
+          const icon = btn.querySelector('i');
+
+          if (!detailRow.dataset.loaded) {
+            try {
+              const res = await fetch(`/admin/api/reports/day?date=${encodeURIComponent(day)}`, {
+                headers: csrfHeader && csrfToken ? { [csrfHeader]: csrfToken } : {}
+              });
+              const data = await res.json();
+              detailRow.querySelector('div').innerHTML = renderDayDetail(data);
+              detailRow.dataset.loaded = '1';
+            } catch (e) {
+              detailRow.querySelector('div').innerHTML = `<span class="text-danger">Tải dữ liệu thất bại.</span>`;
+            }
+          }
+
+          detailRow.classList.toggle('d-none');
+          icon.classList.toggle('fa-chevron-right');
+          icon.classList.toggle('fa-chevron-down');
+        });
+      });
+    })();
+  </script>
+
+  <!-- Side Nav Toggle Script -->
+  <script>
+    (function() {
+      const toggle = document.getElementById('sideNavToggle');
+      const close = document.getElementById('sideNavClose');
+      const sideNav = document.getElementById('sideNav');
+      const overlay = document.getElementById('sideNavOverlay');
+      const items = document.querySelectorAll('.side-nav-item');
+
+      function openSideNav() {
+        sideNav.classList.add('open');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeSideNav() {
+        sideNav.classList.remove('open');
+        overlay.classList.remove('active');
+        document.body.style.overflow = 'auto';
+      }
+
+      toggle?.addEventListener('click', openSideNav);
+      close?.addEventListener('click', closeSideNav);
+      overlay?.addEventListener('click', closeSideNav);
+
+      // Đóng khi click vào item (sau khi xử lý href)
+      items.forEach(item => {
+        item.addEventListener('click', () => {
+          setTimeout(closeSideNav, 100);
+        });
+      });
+
+      // Đóng khi nhấn ESC
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeSideNav();
+      });
+    })();
+  </script>
+
+</body>
+</html>

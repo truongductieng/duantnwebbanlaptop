@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Form Thông báo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
+    <link href="/css/fontawesome.min.css" rel="stylesheet" />
+
+    <style>
+      :root {
+        --bs-primary-rgb: 13, 110, 253;
+        --bs-success-rgb: 25, 135, 84;
+        --bs-font-sans-serif: "Segoe UI", system-ui, -apple-system, sans-serif;
+      }
+
+      body {
+        background: #f8f9fa;
+        font-family: var(--bs-font-sans-serif);
+        min-height: 100vh;
+      }
+
+      .card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+      }
+
+      .card-header {
+        background: linear-gradient(45deg, #0d6efd, #0a58ca);
+        border-radius: 1rem 1rem 0 0 !important;
+        border-bottom: 0;
+        padding: 1.5rem;
+      }
+
+      .form-control,
+      .form-select {
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        border-color: #dee2e6;
+        font-size: 0.95rem;
+      }
+
+      .form-control:focus,
+      .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+      }
+
+      .form-check-input:checked {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+      }
+
+      .form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: #495057;
+      }
+
+      .form-text {
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+      }
+
+      .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: all 0.2s;
+      }
+
+      .btn-primary {
+        background: linear-gradient(45deg, #0d6efd, #0a58ca);
+        border: none;
+      }
+
+      .btn-primary:hover {
+        background: linear-gradient(45deg, #0b5ed7, #094db1);
+        transform: translateY(-1px);
+      }
+
+      .preview-image {
+        border-radius: 0.5rem;
+        border: 2px solid #dee2e6;
+        padding: 0.25rem;
+        background: white;
+        max-height: 100px;
+        object-fit: contain;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .fade-in {
+        animation: fadeIn 0.3s ease-out;
+      }
+    </style>
+  </head>
+
+  <body class="min-vh-100 py-5">
+    <div class="container py-4" style="max-width: 720px">
+      <div class="card shadow fade-in">
+        <div class="card-header bg-primary text-white">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h4 class="mb-1">
+                <i class="fas fa-bullhorn me-2"></i>
+                <span
+                  th:text="${announcement.id == null} ? 'Tạo thông báo mới' : 'Chỉnh sửa thông báo'"
+                  >Form</span
+                >
+              </h4>
+              <p class="mb-0 text-white-50">
+                <i class="fas fa-info-circle me-1"></i>
+                Quản lý và cấu hình thông báo hiển thị trên website
+              </p>
+            </div>
+            <a class="btn btn-light" th:href="@{/admin/ann}">
+              <i class="fas fa-arrow-left me-2"></i>
+              Quay về
+            </a>
+          </div>
+        </div>
+
+        <form
+          th:action="${announcement.id == null} ? @{/admin/ann} : @{|/admin/ann/${announcement.id}|}"
+          method="post"
+          class="card-body p-4"
+          enctype="multipart/form-data"
+        >
+          <input
+            type="hidden"
+            th:name="${_csrf.parameterName}"
+            th:value="${_csrf.token}"
+          />
+
+          <div class="mb-4">
+            <label class="form-label">
+              <i class="fas fa-comment-alt me-2"></i>
+              Nội dung thông báo
+            </label>
+            <textarea
+              class="form-control"
+              name="message"
+              rows="4"
+              placeholder="Nhập nội dung thông báo..."
+              th:text="${announcement.message}"
+              required
+            ></textarea>
+            <div class="form-text">
+              <i class="fas fa-code me-1"></i>
+              Hỗ trợ HTML cơ bản: &lt;b&gt; in đậm, &lt;i&gt; in nghiêng,
+              &lt;a&gt; liên kết...
+            </div>
+          </div>
+
+          <div class="row g-4 mb-4">
+            <div class="col-md-6">
+              <label class="form-label">
+                <i class="fas fa-palette me-2"></i>
+                Kiểu thông báo
+              </label>
+              <select
+                class="form-select"
+                name="variant"
+                th:value="${announcement.variant}"
+              >
+                <option value="INFO">
+                  <i class="fas fa-info-circle"></i> Thông tin (Xanh)
+                </option>
+                <option value="SUCCESS">
+                  <i class="fas fa-check-circle"></i> Thành công (Xanh lá)
+                </option>
+                <option value="WARNING">
+                  <i class="fas fa-exclamation-triangle"></i> Cảnh báo (Vàng)
+                </option>
+                <option value="DANGER">
+                  <i class="fas fa-times-circle"></i> Nguy hiểm (Đỏ)
+                </option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">
+                <i class="fas fa-arrows-alt-v me-2"></i>
+                Vị trí hiển thị
+              </label>
+              <select
+                class="form-select"
+                name="position"
+                th:value="${announcement.position}"
+              >
+                <option value="TOP">
+                  <i class="fas fa-arrow-up"></i> Đầu trang
+                </option>
+                <option value="BOTTOM">
+                  <i class="fas fa-arrow-down"></i> Cuối trang
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label">
+              <i class="fas fa-image me-2"></i>
+              Ảnh nền
+            </label>
+            <input
+              type="file"
+              name="imageFile"
+              class="form-control"
+              accept=".jpg,.jpeg,.png,.webp"
+            />
+            <div
+              th:if="${announcement.imageUrl}"
+              class="mt-3 p-3 bg-light rounded-3"
+            >
+              <div class="d-flex align-items-center">
+                <img
+                  th:src="${announcement.imageUrl}"
+                  class="preview-image me-3"
+                />
+                <div class="text-muted">
+                  <i class="fas fa-check-circle text-success me-1"></i>
+                  Ảnh hiện tại đã tải lên
+                </div>
+              </div>
+            </div>
+            <div class="form-text">
+              <i class="fas fa-info-circle me-1"></i>
+              Hỗ trợ định dạng: JPG, PNG, WebP. Không chọn ảnh mới sẽ giữ nguyên
+              ảnh cũ.
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <div class="form-check form-switch">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                role="switch"
+                name="enabled"
+                th:checked="${announcement.enabled}"
+              />
+              <label class="form-check-label">
+                <i class="fas fa-toggle-on me-2"></i>
+                Kích hoạt ngay khi lưu
+              </label>
+            </div>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button class="btn btn-primary">
+              <i class="fas fa-save me-2"></i>
+              Lưu thông báo
+            </button>
+            <a class="btn btn-light" th:href="@{/admin/ann}">
+              <i class="fas fa-times me-2"></i>
+              Hủy
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+  </body>
+</html>

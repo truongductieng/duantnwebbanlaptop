@@ -161,7 +161,7 @@
                   <div class="small text-muted">Trạng thái</div>
                   <div>
                     <span
-                      th:text="${order.status}"
+                      th:text="${order.status.label}"
                       th:class="${ 'badge ' + (
                         order.status == T(com.ductieng.model.OrderStatus).PENDING    ? 'bg-warning text-dark' :
                         order.status == T(com.ductieng.model.OrderStatus).CONFIRMED  ? 'bg-info text-dark' :
@@ -537,7 +537,7 @@
             <div class="d-flex justify-content-between align-items-center mb-3">
               <span class="text-muted">Trạng thái</span>
               <span
-                th:text="${order.status}"
+                th:text="${order.status.label}"
                 th:class="${'badge ' + (
                   order.status == T(com.ductieng.model.OrderStatus).PENDING    ? 'bg-warning text-dark' :
                   order.status == T(com.ductieng.model.OrderStatus).CONFIRMED  ? 'bg-info text-dark' :

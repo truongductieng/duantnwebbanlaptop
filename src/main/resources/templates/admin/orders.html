@@ -43,23 +43,27 @@
         font-family: "Poppins", sans-serif;
         background: var(--background);
         color: var(--text-primary);
-        padding-top: 60px;
+        padding-top: 72px; /* tránh che navbar cố định */
       }
 
       /* Navbar */
       .navbar {
-        background: linear-gradient(
-          135deg,
-          var(--primary-color),
-          var(--secondary-color)
-        ) !important;
-        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
-        backdrop-filter: blur(10px);
+        background: linear-gradient(90deg, #4b6cb7, #182848) !important; /* xanh tím đậm giống dashboard */
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
       }
-
       .navbar-brand {
         font-weight: 600;
+        font-size: 1.2rem;
         letter-spacing: 0.5px;
+      }
+      .navbar .btn-outline-light {
+        border-color: rgba(255,255,255,0.6);
+        color: #fff;
+        transition: all 0.3s;
+      }
+      .navbar .btn-outline-light:hover {
+        background: rgba(255,255,255,0.15);
+        border-color: transparent;
       }
 
       .navbar .btn {
@@ -311,8 +315,9 @@
 
   <nav class="navbar navbar-expand-lg navbar-dark mb-4 fixed-top">
     <div class="container">
-      <a class="navbar-brand" th:href="@{/admin/dashboard}">
-        <i class="fas fa-gem me-2"></i>ADMIN MANAGER
+      <a class="navbar-brand d-flex align-items-center" th:href="@{/admin/dashboard}">
+        <i class="fas fa-gem me-2 text-light"></i>
+        ADMIN 
       </a>
       <div class="ms-auto d-flex align-items-center gap-2">
         <a class="btn btn-outline-light" th:href="@{/}"

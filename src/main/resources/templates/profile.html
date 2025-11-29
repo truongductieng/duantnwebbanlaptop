@@ -178,27 +178,27 @@
                 </td>
                 <td>
                   <span
-                    th:text="${order.status}"
-                    th:class="${'badge ' + (
-                        order.status == T(com.ductieng.model.OrderStatus).PENDING    ? 'bg-warning text-dark' :
-                        order.status == T(com.ductieng.model.OrderStatus).CONFIRMED  ? 'bg-info text-dark' :
-                        order.status == T(com.ductieng.model.OrderStatus).SHIPPED    ? 'bg-primary text-light' :
-                        order.status == T(com.ductieng.model.OrderStatus).DELIVERED  ? 'bg-success text-light' :
-                        order.status == T(com.ductieng.model.OrderStatus).CANCELED   ? 'bg-danger text-light' :
-                        'bg-secondary')}"
+                    th:text="${order.status.label}"
+                    th:classappend="${order.status.name() == 'PENDING' ? 'badge bg-warning text-dark' : 
+                        order.status.name() == 'CONFIRMED' ? 'badge bg-info text-dark' :
+                        order.status.name() == 'SHIPPED' ? 'badge bg-primary text-light' :
+                        order.status.name() == 'DELIVERED' ? 'badge bg-success text-light' :
+                        order.status.name() == 'CANCELED' ? 'badge bg-danger text-light' :
+                        'badge bg-secondary'}"
                   ></span>
                 </td>
                 <td>
                   <div class="d-flex flex-wrap gap-2">
                     <div
                       th:each="it, stat : ${order.items}"
-                      th:if="${stat.index < 4}"
+                      th:if="${stat.index < 4 and it.product != null}"
                       class="position-relative"
                     >
                       <img
                         th:src="${it.product.imageUrl}"
                         th:alt="${it.product.name}"
                         class="thumb-48 border"
+                        onerror="this.src='https://via.placeholder.com/48?text=No+Image'"
                       />
                       <span
                         class="badge bg-dark position-absolute top-0 start-100 translate-middle rounded-pill"
@@ -219,8 +219,7 @@
 
                     <!-- Nút thanh toán lại (chỉ PENDING với VNPay) -->
                     <form
-                      th:if="${order.status == T(com.ductieng.model.OrderStatus).PENDING
-                               and order.paymentMethod == T(com.ductieng.model.PaymentMethod).VNPAY}"
+                      th:if="${order.status.name() == 'PENDING' and order.paymentMethod.name() == 'VNPAY'}"
                       th:action="@{/profile/order/{id}/retry-payment(id=${order.id})}"
                       method="post"
                       class="d-inline"

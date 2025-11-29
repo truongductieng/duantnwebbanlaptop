@@ -33,10 +33,10 @@ public class ProductController {
     private final ProductService productService;
 
     public ProductController(LaptopService laptopService,
-                             CartService cartService,
-                             ReviewService reviewService,
-                             UserService userService,
-                             ProductService productService) {
+            CartService cartService,
+            ReviewService reviewService,
+            UserService userService,
+            ProductService productService) {
         this.laptopService = laptopService;
         this.cartService = cartService;
         this.reviewService = reviewService;
@@ -45,7 +45,7 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public String detail(@PathVariable Long id, Model m) {
+    public String detail(@PathVariable Long id, Model m, Authentication auth) {
         Laptop lap;
         try {
             lap = laptopService.findById(id);
@@ -65,20 +65,32 @@ public class ProductController {
             if ((lap.getImageUrl() == null || lap.getImageUrl().isBlank()) && !imgs.isEmpty()) {
                 lap.setImageUrl(imgs.get(0).getUrl());
             }
-        } catch (Exception ignore) {}
+        } catch (Exception ignore) {
+        }
+
+        // Kiểm tra xem user đã mua sản phẩm này với đơn hàng DELIVERED chưa
+        boolean canReview = false;
+        if (auth != null && auth.isAuthenticated()) {
+            User user = userService.findByUsername(auth.getName());
+            if (user != null) {
+                canReview = reviewService.hasUserPurchasedProduct(user, lap);
+            }
+        }
 
         m.addAttribute("laptop", lap);
         m.addAttribute("reviews", reviewService.findByLaptop(lap));
         m.addAttribute("avgRating", reviewService.averageRating(lap));
+        m.addAttribute("canReview", canReview);
         return "product";
     }
 
     @PostMapping("/{id}/add-to-cart")
     public String addToCart(@PathVariable Long id,
-                            @RequestParam(defaultValue = "1") int quantity,
-                            Authentication auth) {
+            @RequestParam(defaultValue = "1") int quantity,
+            Authentication auth) {
         try {
-            if (quantity < 1) quantity = 1;
+            if (quantity < 1)
+                quantity = 1;
             cartService.addToCart(id, quantity, auth);
             return "redirect:/cart?added";
         } catch (IllegalArgumentException ex) {
@@ -91,12 +103,12 @@ public class ProductController {
     // === GỬI REVIEW: AJAX -> trả fragment; bình thường -> redirect ===
     @PostMapping(value = "/{id}/review", produces = MediaType.TEXT_HTML_VALUE)
     public String addReview(@PathVariable Long id,
-                            @RequestParam(name = "rating", defaultValue = "5") int rating,
-                            @RequestParam(name = "comment", required = false) String comment,
-                            Authentication auth,
-                            HttpServletRequest request,
-                            RedirectAttributes ra,
-                            Model model) {
+            @RequestParam(name = "rating", defaultValue = "5") int rating,
+            @RequestParam(name = "comment", required = false) String comment,
+            Authentication auth,
+            HttpServletRequest request,
+            RedirectAttributes ra,
+            Model model) {
         boolean isAjax = "XMLHttpRequest".equalsIgnoreCase(request.getHeader("X-Requested-With"));
 
         if (auth == null || !auth.isAuthenticated()) {
@@ -111,9 +123,20 @@ public class ProductController {
             Laptop lap = laptopService.findById(id);
             User user = userService.findByUsername(auth.getName());
             if (user == null) {
-                if (isAjax) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Không tìm thấy tài khoản");
+                if (isAjax)
+                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Không tìm thấy tài khoản");
                 ra.addFlashAttribute("error", "Không tìm thấy tài khoản.");
                 return "redirect:/login";
+            }
+
+            // Kiểm tra xem user đã mua sản phẩm này với đơn hàng DELIVERED chưa
+            if (!reviewService.hasUserPurchasedProduct(user, lap)) {
+                String errorMsg = "Bạn chỉ có thể đánh giá sản phẩm sau khi đã mua và nhận hàng thành công.";
+                if (isAjax) {
+                    throw new ResponseStatusException(HttpStatus.FORBIDDEN, errorMsg);
+                }
+                ra.addFlashAttribute("error", errorMsg);
+                return "redirect:/product/" + id;
             }
 
             Review saved = reviewService.addReview(lap, user, rating, comment);
@@ -129,7 +152,8 @@ public class ProductController {
         } catch (ResponseStatusException e) {
             throw e;
         } catch (Exception e) {
-            if (isAjax) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Gửi đánh giá thất bại");
+            if (isAjax)
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Gửi đánh giá thất bại");
             ra.addFlashAttribute("error", "Gửi đánh giá thất bại.");
             return "redirect:/product/" + id;
         }

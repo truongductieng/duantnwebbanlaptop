@@ -86,7 +86,7 @@ public class CheckoutController {
     }
 
     @GetMapping("/checkout")
-    public String showCheckoutForm(Model model, HttpSession session) {
+    public String showCheckoutForm(Model model, HttpSession session, Authentication authentication) {
         // 1) Lấy giỏ & tổng gốc
         List<CartItem> items = cartService.getItems();
         model.addAttribute("cartItems", items);
@@ -124,12 +124,33 @@ public class CheckoutController {
 
         BigDecimal totalAfterDiscount = totalPrice.subtract(discountAmount).setScale(2, RoundingMode.HALF_UP);
 
-        // 4) Pre-populate form
+        // 4) Pre-populate form với thông tin user
         CheckoutForm form = new CheckoutForm();
         form.setDiscountCode(discountCode);
         form.setDiscountPercent(discountPercent != null ? discountPercent : 0);
         form.setDiscountAmount(discountAmount);
         form.setTotalAfterDiscount(totalAfterDiscount);
+
+        // Tự động điền thông tin user nếu đã đăng nhập
+        if (authentication != null && authentication.isAuthenticated()) {
+            User user = loadUserFromAuth(authentication);
+            if (user != null) {
+                // Điền thông tin từ user vào form
+                if (user.getFullName() != null && !user.getFullName().isBlank()) {
+                    form.setFullName(user.getFullName());
+                } else if (user.getUsername() != null) {
+                    form.setFullName(user.getUsername());
+                }
+
+                if (user.getEmail() != null && !user.getEmail().isBlank()) {
+                    form.setEmail(user.getEmail());
+                }
+
+                if (user.getPhone() != null && !user.getPhone().isBlank()) {
+                    form.setPhone(user.getPhone());
+                }
+            }
+        }
 
         // 5) Model cho view
         model.addAttribute("discountCode", discountCode);

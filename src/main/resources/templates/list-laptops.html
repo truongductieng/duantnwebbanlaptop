@@ -996,11 +996,11 @@
                     <span class="fill" th:style="|width:${pctVal}%;|"></span>
                   </span>
                   <span class="rating-text">
-                    <small th:text="|${#numbers.formatDecimal(avgVal,1,1)}/5|"
-                      >0.0/5</small
+                    <strong th:text="|${#numbers.formatDecimal(avgVal,1,1)}|"
+                      >0.0</strong
                     >
-                    <small class="text-muted" th:text="|(${cntVal} đánh giá)|"
-                      >(0 đánh giá)</small
+                    <small class="text-muted" th:text="|(${cntVal})|"
+                      >(0)</small
                     >
                   </span>
                 </div>
@@ -1215,7 +1215,7 @@
 
         /* Rating */
         .rating-wrap {
-          margin-bottom: 1rem;
+          margin-bottom: 0.3rem;
         }
 
         .rating {
@@ -1231,7 +1231,7 @@
 
         /* Price */
         .price-wrap {
-          margin-top: auto;
+          margin-top: 0;
         }
 
         .price {

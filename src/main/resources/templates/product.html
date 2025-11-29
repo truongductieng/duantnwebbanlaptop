@@ -1,251 +1,778 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head>
-  <meta charset="UTF-8">
-  <title th:text="${laptop.name} + ' — Laptop Shop'">Chi tiết Laptop</title>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <title th:text="${laptop.name} + ' — Laptop Shop'">Chi tiết Laptop</title>
 
-  <!-- Bootstrap + Icons -->
-  <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-      <link rel="stylesheet" th:href="@{/css/trangchu.css}" />
+    <!-- Bootstrap + Icons -->
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+    />
+    <link rel="stylesheet" th:href="@{/css/trangchu.css}" />
 
-  <style>
-    /* Icon điều hướng carousel màu xanh */
-    #laptopCarousel{
-      --bs-carousel-control-prev-icon-bg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23007bff' d='M11.354 1.646a.5.5 0 0 1 0 .708L6.707 7l4.647 4.646a.5.5 0 0 1-.708.708l-5-5a.5.5 0 0 1 0-.708l5-5a.5.5 0 0 1 .708 0z'/%3E%3C/svg%3E");
-      --bs-carousel-control-next-icon-bg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23007bff' d='M4.646 1.646a.5.5 0 0 1 .708 0l5 5a.5.5 0 0 1 0 .708l-5 5a.5.5 0 0 1-.708-.708L9.293 7 4.646 2.354a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
-    }
-    #laptopCarousel .carousel-control-prev-icon,
-    #laptopCarousel .carousel-control-next-icon{
-      filter:none;background-size:100% 100%;width:2rem;height:2rem
-    }
-    #laptopCarousel .carousel-control-prev,
-    #laptopCarousel .carousel-control-next{width:4rem;height:4rem}
+    <style>
+      :root {
+        --product-primary: #6366f1;
+        --product-primary-dark: #4f46e5;
+        --product-success: #10b981;
+        --product-warning: #f59e0b;
+        --product-danger: #ef4444;
+        --product-gradient: linear-gradient(135deg, #6366f1, #8b5cf6);
+        --product-shadow: 0 10px 40px rgba(99, 102, 241, 0.15);
+        --product-shadow-hover: 0 15px 50px rgba(99, 102, 241, 0.25);
+      }
 
-    .carousel .rounded-img{max-height:420px;object-fit:contain;border-radius:1rem}
-    .card-soft{border-radius:1rem}
-    .shadow-smooth{box-shadow:0 10px 24px rgba(0,0,0,.06)}
+      body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+      }
 
-    .rating-stars{display:flex;gap:.35rem;font-size:1.6rem;cursor:pointer;user-select:none}
-    .rating-stars .star{transition:transform .1s ease}
-    .rating-stars .star:hover{transform:translateY(-2px) scale(1.05)}
-    .star.inactive{color:#ced4da}
-    .star.active{color:#ffc107}
+      /* Carousel Modern Design */
+      #laptopCarousel {
+        border-radius: 1.5rem;
+        overflow: hidden;
+        box-shadow: var(--product-shadow);
+        transition: all 0.3s ease;
+        background: #ffffff;
+      }
+      #laptopCarousel:hover {
+        box-shadow: var(--product-shadow-hover);
+        transform: translateY(-4px);
+      }
 
-    .review-item{border-bottom:1px dashed #e9ecef;padding-bottom:.75rem;margin-bottom:1rem}
-    .review-item:last-child{border:0;margin:0;padding:0}
-    .badge-avg{font-size:1.05rem}
-  </style>
-</head>
-<body>
+      .carousel-inner {
+        border-radius: 1.5rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+      }
 
-<!-- Navbar -->
-<div th:replace="~{fragments/navbar :: navbar}"></div>
+      .carousel .rounded-img {
+        max-height: 480px;
+        object-fit: contain;
+        border-radius: 1.5rem;
+        padding: 2rem;
+        transition: transform 0.3s ease;
+      }
+      #laptopCarousel:hover .carousel-item.active .rounded-img {
+        transform: scale(1.03);
+      }
 
-<div class="container" style="margin-top: 100px;">
-  <div class="container py-4">
+      /* Custom Carousel Controls */
+      .carousel-control-prev,
+      .carousel-control-next {
+        width: 50px;
+        height: 50px;
+        top: 50%;
+        transform: translateY(-50%);
+        opacity: 0;
+        transition: all 0.3s ease;
+      }
+      #laptopCarousel:hover .carousel-control-prev,
+      #laptopCarousel:hover .carousel-control-next {
+        opacity: 1;
+      }
+      .carousel-control-prev {
+        left: 15px;
+      }
+      .carousel-control-next {
+        right: 15px;
+      }
+      .carousel-control-prev-icon,
+      .carousel-control-next-icon {
+        background-color: var(--product-primary);
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        background-size: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+      }
+      .carousel-control-prev:hover .carousel-control-prev-icon,
+      .carousel-control-next:hover .carousel-control-next-icon {
+        background-color: var(--product-primary-dark);
+        transform: scale(1.1);
+      }
 
-    <div class="row g-4">
-      <!-- Carousel -->
-      <div class="col-md-6">
-        <div id="laptopCarousel" class="carousel slide shadow-smooth card-soft" data-bs-ride="carousel">
-          <div class="carousel-indicators" th:if="${!#lists.isEmpty(laptop.images)}">
-            <button type="button"
-                    th:each="image, stat : ${laptop.images}"
-                    th:attr="data-bs-target='#laptopCarousel',data-bs-slide-to=${stat.index}"
-                    th:classappend="${stat.index == 0} ? ' active'">
-            </button>
-          </div>
-          <div class="carousel-inner">
-            <div th:if="${!#lists.isEmpty(laptop.images)}"
-                 th:each="image, stat : ${laptop.images}"
-                 th:class="'carousel-item' + (${stat.index == 0} ? ' active' : '')">
-              <img th:src="@{${image.url}}"
-                   class="d-block w-100 rounded-img"
-                   th:alt="${laptop.name} + ' ảnh ' + (${stat.index}+1)"/>
-            </div>
-            <div th:if="${#lists.isEmpty(laptop.images)}" class="carousel-item active">
-              <img th:src="@{${laptop.imageUrl}}"
-                   class="d-block w-100 rounded-img"
-                   th:alt="${laptop.name}"/>
-            </div>
-          </div>
-          <button class="carousel-control-prev" type="button" data-bs-target="#laptopCarousel" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon"></span>
-            <span class="visually-hidden">Trước</span>
-          </button>
-          <button class="carousel-control-next" type="button" data-bs-target="#laptopCarousel" data-bs-slide="next">
-            <span class="carousel-control-next-icon"></span>
-            <span class="visually-hidden">Sau</span>
-          </button>
-        </div>
-      </div>
+      /* Carousel Indicators */
+      .carousel-indicators {
+        margin-bottom: 1rem;
+      }
+      .carousel-indicators [data-bs-target] {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: rgba(99, 102, 241, 0.3);
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+      }
+      .carousel-indicators .active {
+        background-color: var(--product-primary);
+        width: 30px;
+        border-radius: 6px;
+      }
 
-      <!-- Info + add-to-cart -->
-      <div class="col-md-6">
-        <div class="card card-soft shadow-smooth h-100">
-          <div class="card-body">
-            <h2 class="mb-1" th:text="${laptop.name}">Tên Laptop</h2>
-            <p class="text-muted" th:text="${laptop.brand}">Thương hiệu</p>
-            <h3 class="text-primary fw-bold"
-                th:text="|${T(java.lang.String).format('%,.0f', laptop.price)} ₫|">Giá</h3>
+      /* Product Info Card */
+      .product-info-card {
+        border-radius: 1.5rem;
+        border: none;
+        box-shadow: var(--product-shadow);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        background: #ffffff;
+      }
+      .product-info-card:hover {
+        box-shadow: var(--product-shadow-hover);
+      }
 
-            <hr>
-            <h6 class="text-uppercase text-secondary mb-2">Cấu hình</h6>
-            <ul class="list-unstyled mb-4">
-              <li>
-                <strong>CPU &amp; RAM &amp; SSD:</strong>
-                <span th:text="${laptop.configuration}">i5-1135G7, 8GB, 512GB</span>
-              </li>
-            </ul>
+      .product-title {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #1a1a2e;
+        margin-bottom: 0.5rem;
+        line-height: 1.3;
+      }
 
-            <!-- Nếu anh đang dùng /cart/add/{id} riêng thì giữ; nếu muốn dùng controller ở ProductController thì đổi action về /product/{id}/add-to-cart -->
-            <form th:action="@{/cart/add/{id}(id=${laptop.id})}" method="post">
-              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-              <button type="submit" class="btn btn-primary">
-                <i class="bi bi-cart-plus"></i> Thêm vào giỏ hàng
+      .brand-tag {
+        display: inline-block;
+        padding: 0.5rem 1.25rem;
+        background: var(--product-gradient);
+        color: #ffffff;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+      }
+
+      .price-tag {
+        font-size: 2.5rem;
+        font-weight: 900;
+        background: var(--product-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 1rem 0;
+        display: inline-block;
+      }
+
+      .config-section {
+        background: linear-gradient(
+          135deg,
+          #f8f9fa 0%,
+          #e9ecef 50%,
+          #f8f9fa 100%
+        );
+        padding: 1.5rem;
+        border-radius: 1rem;
+        margin: 1.5rem 0;
+      }
+      .config-section h6 {
+        color: var(--product-primary);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.85rem;
+        margin-bottom: 1rem;
+      }
+      .config-section ul {
+        margin: 0;
+        padding-left: 0;
+      }
+      .config-section li {
+        padding: 0.5rem 0;
+        border-bottom: 1px dashed #dee2e6;
+      }
+      .config-section li:last-child {
+        border: none;
+      }
+
+      /* Buttons */
+      .btn-add-cart {
+        background: var(--product-gradient);
+        border: none;
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 700;
+        border-radius: 50px;
+        box-shadow: 0 8px 24px rgba(99, 102, 241, 0.35);
+        transition: all 0.3s ease;
+        color: #ffffff;
+      }
+      .btn-add-cart:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 32px rgba(99, 102, 241, 0.45);
+        background: linear-gradient(135deg, #8b5cf6, #6366f1);
+      }
+
+      .btn-back {
+        border: 2px solid var(--product-primary);
+        color: var(--product-primary);
+        padding: 1rem 2rem;
+        font-weight: 600;
+        border-radius: 50px;
+        transition: all 0.3s ease;
+        background: transparent;
+      }
+      .btn-back:hover {
+        background: var(--product-primary);
+        color: #ffffff;
+        transform: translateX(-5px);
+      }
+
+      /* Reviews Section */
+      .review-card {
+        border-radius: 1.5rem;
+        border: none;
+        box-shadow: var(--product-shadow);
+        background: #ffffff;
+      }
+
+      .review-header {
+        background: var(--product-gradient);
+        color: #ffffff;
+        padding: 1.5rem;
+        border-radius: 1.5rem 1.5rem 0 0;
+      }
+      .review-header h4 {
+        margin: 0;
+        font-weight: 800;
+      }
+
+      .badge-avg {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        padding: 0.75rem 1.5rem;
+        border-radius: 50px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+      }
+
+      /* Rating Stars */
+      .rating-stars {
+        display: flex;
+        gap: 0.5rem;
+        font-size: 2rem;
+        cursor: pointer;
+        user-select: none;
+        justify-content: center;
+        padding: 1rem 0;
+      }
+      .rating-stars .star {
+        transition: all 0.2s ease;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+      }
+      .rating-stars .star:hover {
+        transform: translateY(-5px) scale(1.15) rotate(15deg);
+      }
+      .star.inactive {
+        color: #e5e7eb;
+      }
+      .star.active {
+        color: #fbbf24;
+        animation: starPulse 0.3s ease;
+      }
+
+      @keyframes starPulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.2);
+        }
+      }
+
+      /* Review Items */
+      .review-item {
+        padding: 1.5rem;
+        border-bottom: 2px solid #f3f4f6;
+        transition: all 0.3s ease;
+      }
+      .review-item:hover {
+        background: #f9fafb;
+        padding-left: 2rem;
+      }
+      .review-item:last-child {
+        border: 0;
+      }
+
+      .reviewer-name {
+        font-weight: 700;
+        color: var(--product-primary);
+        font-size: 1.1rem;
+      }
+
+      .review-rating {
+        color: #fbbf24;
+        font-size: 1.2rem;
+      }
+
+      .review-time {
+        color: #9ca3af;
+        font-size: 0.9rem;
+      }
+
+      .review-comment {
+        margin-top: 0.75rem;
+        color: #4b5563;
+        line-height: 1.6;
+        font-size: 1rem;
+      }
+
+      /* Review Form */
+      .review-form-card {
+        border-radius: 1.5rem;
+        border: none;
+        box-shadow: var(--product-shadow);
+        background: #ffffff;
+      }
+
+      .review-form-card .card-body {
+        padding: 2rem;
+      }
+
+      .review-form-card .card-title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #1a1a2e;
+        margin-bottom: 1.5rem;
+      }
+
+      .form-control {
+        border-radius: 1rem;
+        border: 2px solid #e5e7eb;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+      }
+      .form-control:focus {
+        border-color: var(--product-primary);
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+      }
+
+      .btn-submit-review {
+        background: var(--product-success);
+        border: none;
+        padding: 1rem 2rem;
+        font-weight: 700;
+        border-radius: 50px;
+        box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35);
+        transition: all 0.3s ease;
+      }
+      .btn-submit-review:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 32px rgba(16, 185, 129, 0.45);
+        background: #059669;
+      }
+
+      .alert-info {
+        border-radius: 1rem;
+        border: 2px solid #60a5fa;
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        color: #1e40af;
+        padding: 1.25rem;
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .product-title {
+          font-size: 1.5rem;
+        }
+        .price-tag {
+          font-size: 1.8rem;
+        }
+        .btn-add-cart,
+        .btn-back {
+          padding: 0.75rem 1.5rem;
+          font-size: 1rem;
+          width: 100%;
+          margin-bottom: 0.5rem;
+        }
+        .carousel .rounded-img {
+          max-height: 300px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <div class="container" style="margin-top: 100px">
+      <div class="container py-4">
+        <div class="row g-4">
+          <!-- Carousel -->
+          <div class="col-md-6">
+            <div
+              id="laptopCarousel"
+              class="carousel slide"
+              data-bs-ride="carousel"
+            >
+              <div
+                class="carousel-indicators"
+                th:if="${!#lists.isEmpty(laptop.images)}"
+              >
+                <button
+                  type="button"
+                  th:each="image, stat : ${laptop.images}"
+                  th:attr="data-bs-target='#laptopCarousel',data-bs-slide-to=${stat.index}"
+                  th:classappend="${stat.index == 0} ? ' active'"
+                ></button>
+              </div>
+              <div class="carousel-inner">
+                <div
+                  th:if="${!#lists.isEmpty(laptop.images)}"
+                  th:each="image, stat : ${laptop.images}"
+                  th:class="'carousel-item' + (${stat.index == 0} ? ' active' : '')"
+                >
+                  <img
+                    th:src="@{${image.url}}"
+                    class="d-block w-100 rounded-img"
+                    th:alt="${laptop.name} + ' ảnh ' + (${stat.index}+1)"
+                  />
+                </div>
+                <div
+                  th:if="${#lists.isEmpty(laptop.images)}"
+                  class="carousel-item active"
+                >
+                  <img
+                    th:src="@{${laptop.imageUrl}}"
+                    class="d-block w-100 rounded-img"
+                    th:alt="${laptop.name}"
+                  />
+                </div>
+              </div>
+              <button
+                class="carousel-control-prev"
+                type="button"
+                data-bs-target="#laptopCarousel"
+                data-bs-slide="prev"
+              >
+                <span class="carousel-control-prev-icon"></span>
+                <span class="visually-hidden">Trước</span>
               </button>
-            </form>
-
-            <!-- Link quay về -->
-            <a href="javascript:history.back()" class="btn btn-outline-secondary ms-2">← Quay về</a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Reviews -->
-    <div class="row g-4 mt-1">
-      <!-- Danh sách đánh giá -->
-      <div class="col-lg-7">
-        <div class="card card-soft shadow-smooth">
-          <div class="card-body">
-            <div class="d-flex align-items-center justify-content-between mb-3">
-              <h4 class="mb-0">Đánh giá</h4>
-              <span class="badge text-bg-warning badge-avg">
-                ★ <span id="avgRating" th:text="${#numbers.formatDecimal(avgRating,1,1)}">0.0</span> / 5
-              </span>
+              <button
+                class="carousel-control-next"
+                type="button"
+                data-bs-target="#laptopCarousel"
+                data-bs-slide="next"
+              >
+                <span class="carousel-control-next-icon"></span>
+                <span class="visually-hidden">Sau</span>
+              </button>
             </div>
+          </div>
 
-            <div id="reviews" th:attr="data-laptop-id=${laptop.id}">
-              <div th:if="${#lists.isEmpty(reviews)}" class="text-muted">Chưa có đánh giá nào.</div>
-              <div th:each="r : ${reviews}" class="review-item">
-                <!-- ✅ Sửa fragment call: dùng ~{} và truyền tham số r -->
-                <div th:replace="~{fragments/review-item :: item(r=${r})}"></div>
+          <!-- Info + add-to-cart -->
+          <div class="col-md-6">
+            <div class="card product-info-card h-100">
+              <div class="card-body p-4">
+                <span class="brand-tag mb-3" th:text="${laptop.brand}"
+                  >Thương hiệu</span
+                >
+
+                <h1 class="product-title mt-3" th:text="${laptop.name}">
+                  Tên Laptop
+                </h1>
+
+                <div
+                  class="price-tag"
+                  th:text="|${T(java.lang.String).format('%,.0f', laptop.price)} ₫|"
+                >
+                  Giá
+                </div>
+
+                <div class="config-section">
+                  <h6><i class="bi bi-cpu me-2"></i>Cấu hình chi tiết</h6>
+                  <ul class="list-unstyled mb-0">
+                    <li>
+                      <i class="bi bi-check-circle-fill text-success me-2"></i>
+                      <strong>Cấu hình:</strong>
+                      <span th:text="${laptop.configuration}"
+                        >i5-1135G7, 8GB, 512GB</span
+                      >
+                    </li>
+                  </ul>
+                </div>
+
+                <div class="d-grid gap-2 mt-4">
+                  <form
+                    th:action="@{/cart/add/{id}(id=${laptop.id})}"
+                    method="post"
+                    class="mb-2"
+                  >
+                    <input
+                      type="hidden"
+                      th:name="${_csrf.parameterName}"
+                      th:value="${_csrf.token}"
+                    />
+                    <button type="submit" class="btn btn-add-cart w-100">
+                      <i class="bi bi-cart-plus me-2"></i>Thêm vào giỏ hàng
+                    </button>
+                  </form>
+
+                  <a href="javascript:history.back()" class="btn btn-back w-100"
+                    ><i class="bi bi-arrow-left me-2"></i>Quay về</a
+                  >
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Form gửi đánh giá -->
-      <div class="col-lg-5">
-        <div class="card card-soft shadow-smooth">
-          <div class="card-body">
-            <h5 class="card-title mb-3">Viết đánh giá</h5>
-
-            <!-- Chỉ hiển thị form khi đã đăng nhập -->
-            <div sec:authorize="isAuthenticated()">
-              <form id="reviewForm" th:action="@{/product/{id}/review(id=${laptop.id})}" method="post">
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                <!-- Sao tương tác -->
-                <input type="hidden" id="rating" name="rating" value="5">
-                <div class="rating-stars mb-3" id="stars" aria-label="Chọn số sao">
-                  <span class="star active">★</span>
-                  <span class="star active">★</span>
-                  <span class="star active">★</span>
-                  <span class="star active">★</span>
-                  <span class="star active">★</span>
+        <!-- Reviews -->
+        <div class="row g-4 mt-1">
+          <!-- Danh sách đánh giá -->
+          <div class="col-lg-7">
+            <div class="card review-card">
+              <div class="review-header">
+                <div class="d-flex align-items-center justify-content-between">
+                  <h4 class="mb-0">
+                    <i class="bi bi-chat-square-text me-2"></i>Đánh giá từ khách
+                    hàng
+                  </h4>
+                  <span class="badge-avg">
+                    <i class="bi bi-star-fill me-1"></i>
+                    <span
+                      id="avgRating"
+                      th:text="${#numbers.formatDecimal(avgRating,1,1)}"
+                      >0.0</span
+                    >
+                    / 5
+                  </span>
                 </div>
+              </div>
 
-                <div class="mb-3">
-                  <label for="comment" class="form-label">Bình luận</label>
-                  <textarea name="comment" id="comment" class="form-control" rows="3" placeholder="Chia sẻ trải nghiệm của bạn..."></textarea>
+              <div class="card-body p-0">
+                <div id="reviews" th:attr="data-laptop-id=${laptop.id}">
+                  <div
+                    th:if="${#lists.isEmpty(reviews)}"
+                    class="text-muted text-center py-5"
+                  >
+                    <i
+                      class="bi bi-chat-square-dots display-1 text-muted mb-3"
+                    ></i>
+                    <p class="mb-0">
+                      Chưa có đánh giá nào. Hãy là người đầu tiên đánh giá sản
+                      phẩm này!
+                    </p>
+                  </div>
+                  <div th:each="r : ${reviews}" class="review-item">
+                    <div class="d-flex align-items-start gap-3">
+                      <div class="flex-grow-1">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                          <span
+                            class="reviewer-name"
+                            th:text="${r.user.username}"
+                            >User</span
+                          >
+
+                          <!-- Stars -->
+                          <span class="review-rating" aria-label="Số sao">
+                            <i
+                              th:each="i : ${#numbers.sequence(1,5)}"
+                              th:class="${i <= r.rating} ? 'bi bi-star-fill' : 'bi bi-star'"
+                            ></i>
+                          </span>
+
+                          <!-- Time -->
+                          <small
+                            class="review-time ms-auto"
+                            th:text="${#temporals.format(r.createdAt, 'dd/MM/yyyy HH:mm')}"
+                            >time</small
+                          >
+                        </div>
+
+                        <!-- Comment -->
+                        <div class="review-comment" th:text="${r.comment}">
+                          Bình luận…
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <button type="submit" id="btnSend" class="btn btn-success w-100">Gửi đánh giá</button>
-              </form>
+              </div>
             </div>
+          </div>
 
-            <!-- Nhắc đăng nhập khi ẩn form -->
-            <div class="form-text mt-2" sec:authorize="isAnonymous()">
-              Bạn phải <a th:href="@{/login}">đăng nhập</a> để gửi đánh giá.
+          <!-- Form gửi đánh giá -->
+          <div class="col-lg-5">
+            <div class="card review-form-card">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <i class="bi bi-pencil-square me-2"></i>Viết đánh giá của bạn
+                </h5>
+
+                <!-- Chỉ hiển thị form khi đã đăng nhập VÀ đã mua sản phẩm với đơn hàng DELIVERED -->
+                <div sec:authorize="isAuthenticated()" th:if="${canReview}">
+                  <form
+                    id="reviewForm"
+                    th:action="@{/product/{id}/review(id=${laptop.id})}"
+                    method="post"
+                  >
+                    <input
+                      type="hidden"
+                      th:name="${_csrf.parameterName}"
+                      th:value="${_csrf.token}"
+                    />
+                    <!-- Sao tương tác -->
+                    <input type="hidden" id="rating" name="rating" value="5" />
+
+                    <label class="form-label fw-bold mb-2"
+                      >Đánh giá của bạn</label
+                    >
+                    <div
+                      class="rating-stars mb-3"
+                      id="stars"
+                      aria-label="Chọn số sao"
+                    >
+                      <span class="star active">★</span>
+                      <span class="star active">★</span>
+                      <span class="star active">★</span>
+                      <span class="star active">★</span>
+                      <span class="star active">★</span>
+                    </div>
+
+                    <div class="mb-3">
+                      <label for="comment" class="form-label fw-bold"
+                        >Nhận xét của bạn</label
+                      >
+                      <textarea
+                        name="comment"
+                        id="comment"
+                        class="form-control"
+                        rows="4"
+                        placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này..."
+                      ></textarea>
+                    </div>
+                    <button
+                      type="submit"
+                      id="btnSend"
+                      class="btn btn-submit-review w-100"
+                    >
+                      <i class="bi bi-send-fill me-2"></i>Gửi đánh giá
+                    </button>
+                  </form>
+                </div>
+
+                <!-- Thông báo khi chưa mua sản phẩm -->
+                <div sec:authorize="isAuthenticated()" th:if="${!canReview}">
+                  <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Bạn cần mua và nhận hàng thành công để có thể đánh giá sản
+                    phẩm này.
+                  </div>
+                </div>
+
+                <!-- Nhắc đăng nhập khi ẩn form -->
+                <div sec:authorize="isAnonymous()">
+                  <div class="alert alert-info">
+                    <i class="bi bi-person-circle me-2"></i>
+                    Bạn phải
+                    <a th:href="@{/login}" class="fw-bold text-decoration-none"
+                      >đăng nhập</a
+                    >
+                    và mua sản phẩm để gửi đánh giá.
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+
+        <div class="mt-4" th:replace="~{fragments/footer :: footer}"></div>
       </div>
     </div>
 
-    <div class="mt-4" th:replace="~{fragments/footer :: footer}"></div>
-  </div>
-</div>
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 
-<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Sao rating
+        const stars = document.querySelectorAll("#stars .star");
+        const ratingInput = document.getElementById("rating");
+        function paint(n) {
+          stars.forEach(
+            (s, i) => (s.className = "star " + (i < n ? "active" : "inactive"))
+          );
+        }
+        stars.forEach((el, idx) => {
+          el.addEventListener("mouseenter", () => paint(idx + 1));
+          el.addEventListener("mouseleave", () =>
+            paint(+ratingInput?.value || 5)
+          );
+          el.addEventListener("click", () => {
+            if (ratingInput) {
+              ratingInput.value = String(idx + 1);
+              paint(idx + 1);
+            }
+          });
+        });
+        if (ratingInput) paint(+ratingInput.value || 5);
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  // Sao rating
-  const stars = document.querySelectorAll('#stars .star');
-  const ratingInput = document.getElementById('rating');
-  function paint(n){ stars.forEach((s,i)=> s.className='star ' + (i < n ? 'active' : 'inactive')); }
-  stars.forEach((el, idx) => {
-    el.addEventListener('mouseenter', () => paint(idx+1));
-    el.addEventListener('mouseleave', () => paint(+ratingInput?.value || 5));
-    el.addEventListener('click', () => { if(ratingInput){ ratingInput.value = String(idx+1); paint(idx+1); } });
-  });
-  if (ratingInput) paint(+ratingInput.value || 5);
+        // Gửi review AJAX
+        const form = document.getElementById("reviewForm");
+        const btn = document.getElementById("btnSend");
+        form?.addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const action = form.getAttribute("action");
+          const formData = new FormData(form);
 
-  // Gửi review AJAX
-  const form = document.getElementById('reviewForm');
-  const btn = document.getElementById('btnSend');
-  form?.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const action = form.getAttribute('action');
-    const formData = new FormData(form);
+          btn.disabled = true;
+          const oldTxt = btn.innerText;
+          btn.innerText = "Đang gửi...";
+          try {
+            const resp = await fetch(action, {
+              method: "POST",
+              headers: { "X-Requested-With": "XMLHttpRequest" },
+              body: formData,
+            });
+            if (!resp.ok) {
+              if (resp.status === 401) {
+                // Bị logout giữa chừng
+                window.location.href = "/login";
+                return;
+              }
+              throw new Error("HTTP " + resp.status);
+            }
+            const html = await resp.text();
 
-    btn.disabled = true; const oldTxt = btn.innerText; btn.innerText = 'Đang gửi...';
-    try {
-      const resp = await fetch(action, {
-        method: 'POST',
-        headers: { 'X-Requested-With': 'XMLHttpRequest' },
-        body: formData
+            const container = document.getElementById("reviews");
+            const wrap = document.createElement("div");
+            wrap.className = "review-item";
+            wrap.innerHTML = html.trim();
+            const empty = container.querySelector(".text-muted");
+            if (empty) empty.remove();
+            container.prepend(wrap);
+
+            // Cập nhật điểm trung bình
+            const laptopId = container?.dataset.laptopId;
+            if (laptopId) {
+              const avgResp = await fetch(`/product/${laptopId}/avg`);
+              if (avgResp.ok) {
+                const txt = await avgResp.text();
+                document.getElementById("avgRating").textContent = txt;
+              }
+            }
+
+            form.reset();
+            if (ratingInput) {
+              ratingInput.value = "5";
+              paint(5);
+            }
+          } catch (err) {
+            alert("Gửi đánh giá thất bại. Vui lòng thử lại!");
+            console.error(err);
+          } finally {
+            btn.disabled = false;
+            btn.innerText = oldTxt;
+          }
+        });
       });
-      if (!resp.ok) {
-        if (resp.status === 401) {
-          // Bị logout giữa chừng
-          window.location.href = '/login';
-          return;
-        }
-        throw new Error('HTTP ' + resp.status);
-      }
-      const html = await resp.text();
-
-      const container = document.getElementById('reviews');
-      const wrap = document.createElement('div'); wrap.className='review-item';
-      wrap.innerHTML = html.trim();
-      const empty = container.querySelector('.text-muted');
-      if (empty) empty.remove();
-      container.prepend(wrap);
-
-      // Cập nhật điểm trung bình
-      const laptopId = container?.dataset.laptopId;
-      if (laptopId) {
-        const avgResp = await fetch(`/product/${laptopId}/avg`);
-        if (avgResp.ok) {
-          const txt = await avgResp.text();
-          document.getElementById('avgRating').textContent = txt;
-        }
-      }
-
-      form.reset(); if (ratingInput) { ratingInput.value='5'; paint(5); }
-    } catch (err) {
-      alert('Gửi đánh giá thất bại. Vui lòng thử lại!');
-      console.error(err);
-    } finally {
-      btn.disabled = false; btn.innerText = oldTxt;
-    }
-  });
-});
-</script>
-</body>
+    </script>
+  </body>
 </html>

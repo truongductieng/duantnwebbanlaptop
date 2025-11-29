@@ -110,13 +110,22 @@ public class ProfileController {
         User user = loadUserFromAuth(authentication);
         if (user == null) {
             model.addAttribute("error", "Vui lòng đăng nhập để xem hồ sơ.");
-            return "profile";
+            return "redirect:/login";
         }
 
-        List<Order> orders = orderService.getByCustomerWithItems(user);
-        model.addAttribute("orders", orders);
-        model.addAttribute("user", user);
-        model.addAttribute("oauth2", isOAuth2(authentication));
+        try {
+            List<Order> orders = orderService.getByCustomerWithItems(user);
+            model.addAttribute("orders", orders);
+            model.addAttribute("user", user);
+            model.addAttribute("oauth2", isOAuth2(authentication));
+        } catch (Exception e) {
+            log.error("Error loading profile: {}", e.getMessage(), e);
+            model.addAttribute("error", "Có lỗi xảy ra khi tải dữ liệu.");
+            model.addAttribute("orders", List.of());
+            model.addAttribute("user", user);
+            model.addAttribute("oauth2", isOAuth2(authentication));
+        }
+
         return "profile";
     }
 
@@ -147,49 +156,53 @@ public class ProfileController {
             @RequestParam String email,
             @RequestParam String phone,
             Authentication authentication,
-            Model model) {
+            Model model,
+            RedirectAttributes redirectAttributes) {
         User user = loadUserFromAuth(authentication);
         if (user == null) {
-            model.addAttribute("error", "Không tìm thấy tài khoản.");
-            return "profile";
+            redirectAttributes.addFlashAttribute("error", "Không tìm thấy tài khoản.");
+            return "redirect:/profile";
         }
 
         boolean oauth2 = isOAuth2(authentication);
 
-        // Cho phép đổi username nếu KHÔNG phải OAuth2 (Google)
-        if (!oauth2 && username != null && !username.isBlank()) {
-            user.setUsername(username.trim());
-        }
-        user.setEmail(email.trim());
-        user.setPhone(phone.trim());
-        userService.save(user);
+        try {
+            // Cho phép đổi username nếu KHÔNG phải OAuth2 (Google)
+            if (!oauth2 && username != null && !username.isBlank()) {
+                user.setUsername(username.trim());
+            }
+            user.setEmail(email.trim());
+            user.setPhone(phone.trim());
+            userService.save(user);
 
-        model.addAttribute("message", "Cập nhật thông tin thành công.");
-        model.addAttribute("user", user);
-        model.addAttribute("orders", orderService.getByCustomerWithItems(user));
-        model.addAttribute("oauth2", oauth2);
-        return "profile";
+            redirectAttributes.addFlashAttribute("message", "Cập nhật thông tin thành công.");
+        } catch (Exception e) {
+            log.error("Error updating profile: {}", e.getMessage(), e);
+            redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra: " + e.getMessage());
+        }
+
+        return "redirect:/profile";
     }
 
     // ==== UPLOAD ẢNH ĐẠI DIỆN ====
     @PostMapping("/avatar")
     public String uploadAvatar(@RequestParam("file") MultipartFile file,
             Authentication authentication,
-            Model model) {
+            RedirectAttributes redirectAttributes) {
         User user = loadUserFromAuth(authentication);
         if (user == null) {
-            model.addAttribute("error", "Tài khoản không hợp lệ.");
+            redirectAttributes.addFlashAttribute("error", "Tài khoản không hợp lệ.");
             return "redirect:/profile";
         }
 
         try {
             if (file.isEmpty() || file.getSize() > 2_000_000) {
-                model.addAttribute("error", "Ảnh trống hoặc vượt 2MB.");
+                redirectAttributes.addFlashAttribute("error", "Ảnh trống hoặc vượt 2MB.");
                 return "redirect:/profile";
             }
             String ct = file.getContentType();
             if (ct == null || !(ct.equals("image/png") || ct.equals("image/jpeg"))) {
-                model.addAttribute("error", "Chỉ chấp nhận PNG/JPG.");
+                redirectAttributes.addFlashAttribute("error", "Chỉ chấp nhận PNG/JPG.");
                 return "redirect:/profile";
             }
 
@@ -205,9 +218,10 @@ public class ProfileController {
             user.setAvatarUrl(url);
             userService.save(user);
 
-            model.addAttribute("message", "Cập nhật ảnh đại diện thành công.");
+            redirectAttributes.addFlashAttribute("message", "Cập nhật ảnh đại diện thành công.");
         } catch (IOException e) {
-            model.addAttribute("error", "Lỗi khi lưu ảnh: " + e.getMessage());
+            log.error("Error uploading avatar: {}", e.getMessage(), e);
+            redirectAttributes.addFlashAttribute("error", "Lỗi khi lưu ảnh: " + e.getMessage());
         }
         return "redirect:/profile";
     }
@@ -224,7 +238,8 @@ public class ProfileController {
     public String changePassword(@RequestParam String oldPassword,
             @RequestParam String newPassword,
             Model model,
-            Authentication authentication) {
+            Authentication authentication,
+            RedirectAttributes redirectAttributes) {
         if (isOAuth2(authentication)) {
             model.addAttribute("error", "Tài khoản Google không hỗ trợ đổi mật khẩu tại đây.");
             return "change-password";
@@ -241,11 +256,17 @@ public class ProfileController {
             return "change-password";
         }
 
-        // Tránh double-encode: sử dụng service chuyên trách cập nhật mật khẩu
-        // vì UserService.save() sẽ tự encode lại password nếu không cẩn thận
-        userService.updatePassword(user.getUsername(), newPassword);
+        try {
+            // Tránh double-encode: sử dụng service chuyên trách cập nhật mật khẩu
+            // vì UserService.save() sẽ tự encode lại password nếu không cẩn thận
+            userService.updatePassword(user.getUsername(), newPassword);
 
-        model.addAttribute("message", "Đổi mật khẩu thành công.");
+            model.addAttribute("message", "Đổi mật khẩu thành công.");
+        } catch (Exception e) {
+            log.error("Error changing password: {}", e.getMessage(), e);
+            model.addAttribute("error", "Có lỗi xảy ra khi đổi mật khẩu.");
+        }
+
         return "change-password";
     }
 
